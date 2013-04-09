@@ -1,0 +1,22 @@
+Zrobić klasteryzację z zadanymi centrami mód na 
+
+wyestymować dwa pierwsze momenty, bez mieszanych kowariancji. 
+	Estymacja na powyżej 2500. Specyfikacja jak w Baragatti.
+	
+Zaimplementować wybór modelu liniowego, jak u Byrne i Pierre'a Jacoba. 
+	
+	Jak zmienia się prawdopodobieństwo akceptacji. 
+	
+	Porównać wyniki Lianga z wynikami Baragatti. 
+	
+	Zaimplementować adaptację .
+	
+	Jaka jest akceptacja kroków w RWalku -> jeśli odbiega od 25%. 
+	Zaimplementować adaptacyjny random walk. 
+	
+	Albo jeśli poziom akceptacji będzie za duży, to zwiększyć wariancję. 
+	
+	Adaptive Metropolis Hastings : 	Haariom, Saksmann, Tuominnen.
+	Matti Vihola: 			adaptive ...
+	Moulines, Andrieu:		Zbieżność 			
+	Moulines, Fort:			Law of large numbers for adapive and interactive algorithms.
