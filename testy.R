@@ -260,6 +260,7 @@ library(graphics)
 
 
 good_levels <- pretty(range(Liang_Distribution_Values, finite=TRUE), 20)
+colorRampPalette(c('dark red','white','dark blue'))
 
 filled.contour(x = Grid,
                y = Grid,
@@ -269,13 +270,64 @@ filled.contour(x = Grid,
                col=terrain.colors(length(good_levels)-1)
                )
 
-length(levels)-1
+filled.contour(x = Grid,
+               y = Grid,
+               z = Liang_Distribution_Values,
+               color.palette = cm.colors,
+               levels = good_levels,
+               col=colorRampPalette(c("white", "blue"), space = "Lab")(length(good_levels)-1)
+              )
+
+nlevels = 20
+filled.contour(x = Grid,
+               y = Grid,
+               z = Liang_Distribution_Values,
+               color.palette = cm.colors,
+               levels = pretty(nlevels), nlevels = 20, 
+               col=color.palette(length(nlevels)-1)
+)
+
+contour( 
+          x = Grid,
+          y = Grid,
+          z = Liang_Distribution_Values,
+          zlim = range(Liang_Distribution_Values, finite = TRUE),
+          nlevels = 5, 
+          levels = pretty( range(Liang_Distribution_Values, finite = TRUE), nlevels)
+      ) 
+
+length(M)
+help(points)
 
 
+points(c(4,8))
+matrix(nrow=2, ncol=2)
+
+ls()
 
 
+range(Liang_Distribution_Values, finite = TRUE),
+help(pretty)
+help(contour)
+
+filled.contour(volcano,
+               color.palette =
+                 colorRampPalette(c("red", "white", "blue")),
+               asp = 1)
+
+filled.contour(volcano,
+               color.palette =
+                 colorRampPalette(c("red", "white", "blue"),
+                                  space = "Lab"),
+               asp = 1)
 
 
+jet.colors <-
+  colorRampPalette(c("#00007F", "blue", "#007FFF", "cyan",
+                     "#7FFF7F", "yellow", "#FF7F00", "red", "#7F0000"))
+filled.contour(volcano, color = jet.colors, asp = 1)
+
+x <- colorRamp(c("red", "white", "blue"))
 
 
 
