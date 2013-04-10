@@ -252,5 +252,35 @@ G <- function()
 M <- G()
 
 system.time(G())
+Liang_Distribution_Values
+
+
+library(graphics)
+
+
+
+good_levels <- pretty(range(Liang_Distribution_Values, finite=TRUE), 20)
+
+filled.contour(x = Grid,
+               y = Grid,
+               z = Liang_Distribution_Values,
+                 color.palette = cm.colors,
+               levels = good_levels,
+               col=terrain.colors(length(good_levels)-1)
+               )
+
+length(levels)-1
+
+
+
+
+
+
+
+
+
+
+
+
 
 
