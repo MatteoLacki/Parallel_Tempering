@@ -134,12 +134,17 @@ CRUCIFIX 	<- function( Pair_of_Drawn_Indices,  No_of_Chains )
 ####################################################
 
 	
-PREPARE_DATA_FOR_2D_GGPLOT_CONTOUR	 <- function( List_of_Generated_Chains, No_of_Chains, Problem_Dimension	)
+PREPARE_DATA_FOR_2D_GGPLOT_CONTOUR	 <- 
+			function( 	
+				List_of_Generated_Chains, 
+				No_of_Chains, 
+				Problem_Dimension
+				)
 {
 	if( Problem_Dimension != 2) stop("Wrong dimension.")
 	
 	return(
-		t(	
+			
 		sapply(	List_of_Generated_Chains, 
 			function( Generated_Step_Results ){ 
 				tmp 				<- numeric(10)
@@ -149,9 +154,47 @@ PREPARE_DATA_FOR_2D_GGPLOT_CONTOUR	 <- function( List_of_Generated_Chains, No_of
 				} 
 			)
 		)	
-	)
+	
 }
 
+
+####################################################
+	# This function heavily depends on the strategy of random walk and random swap.
+
+PREPARE_FULL_DATA_FOR_2D_GGPLOT_CONTOUR	 <- 
+			function( 
+				Data_for_2D_ggplot_contour, 
+				No_of_Chains, 
+				No_of_Steps
+				Problem_Dimension, 
+				Temperatures,
+				)
+{
+
+	X <- c()
+
+	for (i in 1:No_of_Chains) 
+	{
+		X <- 	
+			cbind(
+				X, 
+				rbind( 
+					1:(2*No_of_Steps + 1),
+					rep.int( 
+						Temperatures[i], 
+						times=( 2*No_of_Steps + 1) 
+						),
+					Data_for_2D_ggplot_contour[(2*i-1):(2*i),]
+				)
+			)
+	}
+	
+	X	<- t(X)
+	X 	<- as.data.frame(X)
+	names(X)<- c("Iteration", "Temperature", "x", "y")	# Should add step type. 
+	
+	return()	
+}
 
 
 

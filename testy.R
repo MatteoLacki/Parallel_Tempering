@@ -424,11 +424,113 @@ t(
 		)
 )
 
-dim(W)
+M
+
+t(	
+	sapply(	M, 
+		function(x){ 
+
+			for (i in 1:5)
+				{		}
+
+				k[(2*0:4 + 1)] <- x[1, 1:5]
+				k[2*1:5] <- x[2,1:5]
+			return(k)		
+			} 
+		)
+)
+
+
+W
+
+No_of_Steps <- 100
+No_of_Chains <- 5
+Temperatures <- Liang_Temperatures
+
+Z <- 
+	sapply(
+		1:No_of_Chains,
+		function(x)
+		{
+			rbind( 
+				1:(2*No_of_Steps + 1),
+				rep.int( 
+					Temperatures[x], 
+					times=( 2*No_of_Steps + 1) 
+					),
+				W[(2*x-1):(2*x),]
+			)	
+		}
+	)
+
+
+
+dim(Z)
+
+
+v<-
+rbind( 
+	1:(2*No_of_Steps + 1),
+	rep.int( 
+		Temperatures[3], 
+		times=( 2*No_of_Steps + 1) 
+		),
+	W[(2*3-1):(2*3),]
+)
+v
+
+X <- c()
+
+for (i in 1:No_of_Chains) 
+{
+	X 	<- 	cbind(
+				X, 
+				rbind( 
+					1:(2*No_of_Steps + 1),
+					rep.int( 
+						Temperatures[i], 
+						times=( 2*No_of_Steps + 1) 
+						),
+					W[(2*i-1):(2*i),]
+				)
+	
+			)
+}
+
+dim(X)
+
+t(X[,199:204])
+
+dim(v)
+head(t(v))
+
+
+
+
+
 
 k <- numeric(10)
 k[(2*0:4 + 1)] <- z[1, 1:5]
 k[2*1:5] <- z[2,1:5]
+
+
+for (i in 1:5)
+{
+	cbind( t(z[,i]) , Liang_Temperatures[i], 
+}
+cbind(t(z[,1]), 3)
+
+sapply(
+	z,
+	function(x)	
+	{
+		
+	}
+)
+
+for (i in 1:5) 
+
+
 
 W <- PREPARE_DATA_FOR_2D_GGPLOT_CONTOUR( M, Liang_No_of_Chains, Liang_Problem_Dimension )
 
