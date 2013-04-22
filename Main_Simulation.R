@@ -42,8 +42,6 @@ Liang_Distribution_Values   <- as.matrix(read.csv2("./Data/Liang_Density_Values.
 	
 persp(Grid,Grid, Liang_Distribution_Values , theta = 12, phi = 30)
 
-class(Liang_Distribution_Values)
-
 	# Idea: we could even draw the points that were drawn from different phases of the algorithm.
 
 #############################################################

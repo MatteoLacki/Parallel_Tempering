@@ -287,20 +287,32 @@ filled.contour(x = Grid,
                col=color.palette(length(nlevels)-1)
 )
 
+
+nlevels = 15
 contour( 
           x = Grid,
           y = Grid,
           z = Liang_Distribution_Values,
+          xlim = range(Grid, finite = TRUE),   
+          ylim = range(Grid, finite = TRUE),   
           zlim = range(Liang_Distribution_Values, finite = TRUE),
-          nlevels = 5, 
           levels = pretty( range(Liang_Distribution_Values, finite = TRUE), nlevels)
       ) 
+
+range(Grid, finite = TRUE)[1]
+
+
 
 length(M)
 help(points)
 
 
-points(c(4,8))
+points(c(4,8)+c(range(Grid, finite = TRUE)[1]
+,range(Grid, finite = TRUE)[1]
+))
+
+points(c(0,0))
+
 matrix(nrow=2, ncol=2)
 
 ls()
@@ -329,10 +341,42 @@ filled.contour(volcano, color = jet.colors, asp = 1)
 
 x <- colorRamp(c("red", "white", "blue"))
 
+library(ggplot2)
+library(reshape2)
+volcano3d <- melt(volcano)
+names(volcano3d) <- c("x", "y", "z")
+head(volcano3d)
+
+dim(Liang_Distribution_Values)
+
+Liang_Distribution_Values_2   <- OTHER_VALUE_ESTABLISHER(Grid, LIANG_TARGET_DENSITY)
+
+data <-as.data.frame( OTHER_VALUE_ESTABLISHER(Grid[1:5], LIANG_TARGET_DENSITY) )
+
+names(data) <- c("x", "y", "z")
+head(data)
+v <- ggplot(data, aes(x, y, z =z )) 
+v + stat_contour()
+
+head(Liang_Distribution_Values_2)
 
 
+data <-as.data.frame( OTHER_VALUE_ESTABLISHER(Grid, LIANG_TARGET_DENSITY) )
 
+names(data) <- c("x", "y", "z")
+write.csv2(data, "./Data/Liang_Density_Values_For_Contour_gg2plot.csv", row.names=FALSE, col.names=FALSE)
 
+data2 <- as.data.frame( 
+                        matrix( c(0,0,1,1), 
+                                nrow=2,
+                                ncol=2
+                        )  
+                      )
 
+names(data2) <- c("x", "y")
 
+qplot(x,y, data = data2)
 
+head(data)
+v <- ggplot(data, aes(x, y, z =z )) 
+v + stat_contour() + theme_bw() + geom_point(data = data2, aes(x=x, y=y))

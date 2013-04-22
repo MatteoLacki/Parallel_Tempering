@@ -2,6 +2,7 @@ a <- seq(1,20)
 b <- a^0.25
 plot(a,b, bty = "l")
 
+library(ggplot2)
 
 df <- as.data.frame(cbind(a,b))
 
@@ -55,14 +56,30 @@ library(reshape2)
 melt(volcano)
 ggplot2()
 
+volcano3d <- melt(volcano)
+names(volcano3d) <- c("x", "y", "z")
 
+
+v <- ggplot(volcano3d, aes(x, y, z = z))
+v + stat_contour()
 summary(volcano)
 head(volcano)
 head(melt(volcano))
 
+
 head(Liang_Distribution_Values)
-Liang3D <- head(melt(Liang_Distribution_Values))
+melt(Liang_Distribution_Values)
+
+Z <- Liang_Distribution_Values
+Z
+
+colnames(Z) <- c()
+
+dim(Liang3D)
+
 colnames(Liang3D) <- c("x","y","z")
+
+
 
 v <- ggplot(Liang3D, aes(x, y, z = z))
 v + stat_contour()
