@@ -251,6 +251,8 @@ G <- function()
 
 M <- G()
 
+M
+
 system.time(G())
 Liang_Distribution_Values
 
@@ -366,17 +368,95 @@ data <-as.data.frame( OTHER_VALUE_ESTABLISHER(Grid, LIANG_TARGET_DENSITY) )
 names(data) <- c("x", "y", "z")
 write.csv2(data, "./Data/Liang_Density_Values_For_Contour_gg2plot.csv", row.names=FALSE, col.names=FALSE)
 
+
+data <- read.csv2("./Data/Liang_Density_Values_For_Contour_gg2plot.csv")
+
+d <- rnorm(100, mean=5, sd=1)
+
+d <- d[d >=0 && d <= 10 ]
+length(d)
 data2 <- as.data.frame( 
-                        matrix( c(0,0,1,1), 
-                                nrow=2,
+                        matrix( d, 
+                                nrow=50,
                                 ncol=2
                         )  
                       )
 
+data2 <- as.data.frame(matrix(c(5,5,2.5,7.5), nrow=2, ncol=2))
+
 names(data2) <- c("x", "y")
 
-qplot(x,y, data = data2)
 
 head(data)
+head(data2)
+d <- qplot(data=data2, aes(x, y))
+
+
+p <- qplot(x,y, data = data2)
+
+p <- ggplot(data = data2, aes(x=x, y=y))
+p + stat_contour(data=data,aes(x, y, z =z ), bins=10, size=.5, colour="grey50") + geom_point()
+p + stat_contour(data=data,aes(x, y, z =z ), bins=10, size=.5, colour="grey50") + geom_point() + theme_bw() 
+p + stat_contour(data=data,aes(x, y, z =z ), size=.5, colour="grey50") + geom_point()
+
+p + stat_contour(data=data,aes(x, y, z =z ), bins=5, size=1) + stat_contour(data=data,aes(x, y, z =z ), bins=10, size=.5, colour="grey50") 
+p + stat_contour(data=data,aes(x, y, z =z ), bins=20, size=.5, colour="grey50") 
+p + stat_contour(data=data,aes(x, y, z =z ), bins=20, size=.5, colour=aes(fill=..level..), geom="polygon")
+
 v <- ggplot(data, aes(x, y, z =z )) 
-v + stat_contour() + theme_bw() + geom_point(data = data2, aes(x=x, y=y))
+v + stat_contour() + theme_bw() 
+
++ geom_point(data = data2, aes(x=x, y=y))
+length(M)
+M
+min(W)
+max(W)
+
+W <- 
+t(	
+	sapply(	M, 
+		function(x){ 
+			k <- numeric(10)
+			k[(2*0:4 + 1)] <- x[1, 1:5]
+			k[2*1:5] <- x[2,1:5]
+			return(k)		
+			} 
+		)
+)
+
+dim(W)
+
+k <- numeric(10)
+k[(2*0:4 + 1)] <- z[1, 1:5]
+k[2*1:5] <- z[2,1:5]
+
+W <- PREPARE_DATA_FOR_2D_GGPLOT_CONTOUR( M, Liang_No_of_Chains, Liang_Problem_Dimension )
+
+Main_Chain 		<- as.data.frame(W[,1:2])
+names(Main_Chain) 	<- c("x", "y")
+
+Second_Chain		<- as.data.frame(W[,3:4])
+names(Second_Chain) 	<- c("x", "y")
+
+replicate(5, c("x", "y"))
+
+p <- ggplot(data = Main_Chain, aes(x=x, y=y))
+p + stat_contour(data=data,aes(x, y, z =z ), bins=10, size=.5, colour="grey50") + geom_point(colour="red") + geom_point(data=Second_Chain,  colour="blue")
+
+p + stat_contour(data=data,aes(x, y, z =z ), bins=10, size=.5, colour="grey50") + geom_point() + theme_bw() 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

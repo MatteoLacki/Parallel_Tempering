@@ -3,7 +3,8 @@
 	source("./Functions/additional_functions_for_simulation.R")
 
 
-SIMULATION <- 		function(	
+SIMULATION <- 		function(
+				Show_details,						
 				No_of_Chains,
 				No_of_Steps, 
 				Problem_Dimension,

@@ -133,4 +133,31 @@ CRUCIFIX 	<- function( Pair_of_Drawn_Indices,  No_of_Chains )
 
 ####################################################
 
+	
+PREPARE_DATA_FOR_2D_GGPLOT_CONTOUR	 <- function( List_of_Generated_Chains, No_of_Chains, Problem_Dimension	)
+{
+	if( Problem_Dimension != 2) stop("Wrong dimension.")
+	
+	return(
+		t(	
+		sapply(	List_of_Generated_Chains, 
+			function( Generated_Step_Results ){ 
+				tmp 				<- numeric(10)
+				tmp[(2*0:(No_of_Chains-1) + 1)] <- Generated_Step_Results[ 1, 1:No_of_Chains]
+				tmp[ 2*1:No_of_Chains]		<- Generated_Step_Results[ 2, 1:No_of_Chains]
+				return(tmp)		
+				} 
+			)
+		)	
+	)
+}
+
+
+
+
+
+
+
+
+####################################################
 

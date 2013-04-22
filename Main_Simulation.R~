@@ -2,6 +2,7 @@ rm(list = ls())
 
 directory <- "/home/matteo/Documents/Scienza/Laurea_di_Matematica/Implementation"
 #############################################################
+getwd()
 setwd(directory)
 rm(directory)
 
@@ -31,17 +32,15 @@ ls()
 
 	# Wanna see it? Why not !
 
-#Grid 				<- seq(-2, 12, by=.2)
+Grid 				<- seq(-2, 12, by=.2)
 
 	# It takes quite long to establish these 490 values of the target density. It's a bit bizarre.
 #Liang_Distribution_Values 	<- VALUE_ESTABLISHER(Grid, LIANG_TARGET_DENSITY)
 
-#write.csv2(Liang_Distribution_Values, "./Data/Liang_Density_Values.csv")
-#read.csv2("./Data/Liang_Density_Values.csv")	
+#write.csv2(Liang_Distribution_Values, "./Data/Liang_Density_Values.csv", row.names=FALSE, col.names=FALSE)
+Liang_Distribution_Values   <- as.matrix(read.csv2("./Data/Liang_Density_Values.csv")	)
 	
-#persp(Grid,Grid, Liang_Distribution_Values , theta = 12, phi = 30)
-
-
+persp(Grid,Grid, Liang_Distribution_Values , theta = 12, phi = 30)
 
 	# Idea: we could even draw the points that were drawn from different phases of the algorithm.
 
