@@ -264,31 +264,36 @@ SWAP_STEP 	<- 	function(
 {
 		# Preparing the pairs of indeces that have to be updated.
 	
-	Pairs_in_Lexical_Order_Needing_Update_of_Unnormalised_Probability_of_Swap <-
-			 
-			 PAIRS_IN_LEXICAL_ORDER_NEEDING_UPDATE_OF_UNNORMALISED_PROBABILITY_OF_SWAP(
-			 	Updated_Steps_with_Last_Random_Walk,
-			 	No_of_Chains	
-			 )
+	Anything_changed_last_iteration <- any(Updated_Steps_with_Last_Random_Walk)
+
+	if (Anything_changed_last_iteration) {  
+
+		Pairs_in_Lexical_Order_Needing_Update_of_Unnormalised_Probability_of_Swap <-
+				 
+				 PAIRS_IN_LEXICAL_ORDER_NEEDING_UPDATE_OF_UNNORMALISED_PROBABILITY_OF_SWAP(
+				 	Updated_Steps_with_Last_Random_Walk,
+				 	No_of_Chains	
+				 )
 	
 	
-		# Here we calculate swap index probabilities in places where something 
-		# did change in the last Random Walk
+			# Here we calculate swap index probabilities in places where something 
+			# did change in the last Random Walk
 
-	Current_Unnormalised_Probabilities_of_Pair_Swaps[
-		Pairs_in_Lexical_Order_Needing_Update_of_Unnormalised_Probability_of_Swap
-			] <- 
-			UPDATING_UNNORMALISED_PROBABILITIES_OF_PAIR_SWAPS(
-				FALSE,
-				Pairs_in_Lexical_Order_Needing_Update_of_Unnormalised_Probability_of_Swap,
-				Current_States,
-				From_Lexic_Matrix,
-				Current_States_Log_Densities,
-				Inverse_Temperatures,
-				STRATEGY,
-				QUASI_METRIC
-			)
-
+		Current_Unnormalised_Probabilities_of_Pair_Swaps[
+			Pairs_in_Lexical_Order_Needing_Update_of_Unnormalised_Probability_of_Swap
+				] <- 
+				UPDATING_UNNORMALISED_PROBABILITIES_OF_PAIR_SWAPS(
+					FALSE,
+					Pairs_in_Lexical_Order_Needing_Update_of_Unnormalised_Probability_of_Swap,
+					Current_States,
+					From_Lexic_Matrix,
+					Current_States_Log_Densities,
+					Inverse_Temperatures,
+					STRATEGY,
+					QUASI_METRIC
+				)
+	}
+		
 				
 		# Drawing a random pair of indeces (i,j) = m from given strategy
 	
@@ -310,19 +315,8 @@ SWAP_STEP 	<- 	function(
 				Proposal_Swap,
 				No_of_Chains
 			)
-		
-#	Cross_Lexic 	<-	
-#			apply(
-#				Cross,
-#				2,
-#				function(x) 
-#				{
-#					TRANSLATE_INTO_LEXICAL_ORDER(
-#						x,
-#						No_of_Chains
-#					)
-#				}	
-#			)	
+
+# AAABBB		
 
 	Cross_Lexic	<- 	TRANSLATE_INTO_LEXICAL_ORDER_MANY_PAIRS_OF_INDECES(
 					Cross,
@@ -333,6 +327,7 @@ SWAP_STEP 	<- 	function(
  		# Here we calculate the additional terms that must appear in the 
  		# statistical sum of p_{ij}( S_{ij} x).
  		
+	
 
 	Additional_Unnormalised_Probabilities_of_Swaping_Indeces <-
 			UPDATING_UNNORMALISED_PROBABILITIES_OF_PAIR_SWAPS(
@@ -354,10 +349,12 @@ SWAP_STEP 	<- 	function(
 		
 	Proposal_Swap_Index_Probabilities			<- 
 						Current_Unnormalised_Probabilities_of_Pair_Swaps
+	
 	Proposal_Swap_Index_Probabilities[ Cross_Lexic ] 	<- 
-						Additional_Unnormalised_Probabilities_of_Swaping_Indeces
+					Additional_Unnormalised_Probabilities_of_Swaping_Indeces
 
 		
+	
 		# This is in the nominator of the normalised probability after switch.
 		
 	Unnormalised_Probability_of_Swap_of_the_Drawn_Pair_of_Indeces <- 					
@@ -450,3 +447,18 @@ SWAP_STEP 	<- 	function(
 }
 
 ###############################################################################
+
+# AAABBB
+#	Cross_Lexic 	<-	
+#			apply(
+#				Cross,
+#				2,
+#				function(x) 
+#				{
+#					TRANSLATE_INTO_LEXICAL_ORDER(
+#						x,
+#						No_of_Chains
+#					)
+#				}	
+#			)	
+

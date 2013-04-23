@@ -51,7 +51,7 @@ dev.off()
 #############################################################
 #Simulation
 
-source("./Distributions_to_check/ploting.R")
+source("./Functions/ploting.R")
 ls()
 	# Original Metropolis-Hastings
 mh_simulation_plot <- METROPOLIS_HASTINGS_PLOT(10000, Liang_Tempered_Real_Values_for_ggplot2[[1]])
@@ -70,3 +70,21 @@ mh_simulation_plot <- METROPOLIS_HASTINGS_PLOT(1000, Liang_Tempered_Real_Values_
 png(filename="/home/matteo/Documents/Scienza/Laurea_di_Matematica/Biology_Group_Seminar/picts/MH_simululation_1000_steps_ex2.png", width=800,height=800)
 	mh_simulation_plot
 dev.off()
+
+	# Parallel Tempering	
+
+pt_simulation_plot <- LIANG_PARALLEL_TEMPERING_PLOT( 1000 )
+png(filename="/home/matteo/Documents/Scienza/Laurea_di_Matematica/Biology_Group_Seminar/picts/PT_simululation_1000_steps_1.png", width=800,height=800)
+	pt_simulation_plot
+dev.off()
+
+pt_simulation_plot <- LIANG_PARALLEL_TEMPERING_PLOT( 1000 )
+png(filename="/home/matteo/Documents/Scienza/Laurea_di_Matematica/Biology_Group_Seminar/picts/PT_simululation_1000_steps_2.png", width=800,height=800)
+	pt_simulation_plot
+dev.off()
+
+pt_simulation_plot <- LIANG_PARALLEL_TEMPERING_PLOT( 10000 )
+png(filename="/home/matteo/Documents/Scienza/Laurea_di_Matematica/Biology_Group_Seminar/picts/PT_simululation_10000_steps_1.png", width=800,height=800)
+	pt_simulation_plot
+dev.off()
+

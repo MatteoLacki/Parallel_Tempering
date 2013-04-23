@@ -226,6 +226,61 @@ LIANG_CONTOUR_PLOTS <- function()
 }
 
 
+LIANNG_SIMULATION_PARALLEL_TEMPERING <- function( Steps, Details )
+{
+	return(
+		SIMULATION(
+			Liang_No_of_Chains,
+			Steps,	
+			Liang_Problem_Dimension,
+			Liang_Initial_Points,
+			LIANG_TARGET_DENSITY,
+			STRATEGY_FOUR,
+			EASY_METRIC,
+			Liang_Proposals_Covariance_Choleskised_Enlisted,		
+			Liang_Inverse_Temperatures,
+			Details		
+		)
+	)	
+}
+
+LIANG_PARALLEL_TEMPERING_PLOT <- function( No_of_Steps )
+{
+	Parallel <- Simulation_Parallel_Tempering( No_of_Steps, FALSE)		
+	
+	Parallel <- PREPARE_DATA_FOR_2D_GGPLOT_CONTOUR( 
+				Parallel, 
+				Liang_No_of_Chains, 
+				Liang_Problem_Dimension 
+				)
+
+	Parallel <- PREPARE_FULL_DATA_FOR_2D_GGPLOT_CONTOUR(
+				Parallel,
+				Liang_No_of_Chains,
+				No_of_Steps,
+				Liang_Problem_Dimension ,
+				Liang_Temperatures
+				)
+
+	Parallel 	<- as.data.frame(Parallel)
+	names(Parallel) <- c("x", "y", "Temperature" ,"Progress")
+
+	Parallel$Temperature	<- 	
+			factor(
+				Parallel$Temperature,
+				levels 	= Liang_Temperatures,
+				ordered = TRUE
+			)
+	p <- 	qplot(x, y, data = Parallel, colour=Temperature) + 
+	geom_point() +
+	scale_colour_brewer(type="seq", palette=3) +
+	stat_contour(data=Liang_Tempered_Real_Values_for_ggplot2[[1]], aes(x, y, z =z ), bins=10, size=.5, colour="orange") +
+	ggtitle( "Parallel Tempering" ) +
+	labs(x = "", y = "")
+	
+	return( p )		
+}
+
 
 
 

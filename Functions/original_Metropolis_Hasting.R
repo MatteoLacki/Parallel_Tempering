@@ -135,3 +135,19 @@ RANDOM_WALK	<- 	function(
  	return(	Results_Enlisted )
 }
 
+
+################################################################################################
+
+MH <- function( Steps , Initial_Point)
+{
+	mh 	<-
+		MH_SIMULATION(
+			No_of_Steps		= Steps,	
+			Problem_Dimension 	= Liang_Problem_Dimension,
+			Initial_Point		= Initial_Point,
+			TARGET_DENSITY		= LIANG_TARGET_DENSITY,
+			Proposal_Covariance     = Liang_Proposals_Covariance_Choleskised_Enlisted[[1]]
+		)
+	return( mh )
+}
+
