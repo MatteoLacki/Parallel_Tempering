@@ -88,3 +88,27 @@ png(filename="/home/matteo/Documents/Scienza/Laurea_di_Matematica/Biology_Group_
 	pt_simulation_plot
 dev.off()
 
+png(filename="/home/matteo/Documents/Scienza/Laurea_di_Matematica/Biology_Group_Seminar/picts/PT_simululation_10000_steps_2.png", width=1200,height=1200)
+	pt_simulation_plot
+dev.off()
+
+	# Parallel Tempering - base temperature.
+
+Parallel <- LIANG_SIMULATION_PARALLEL_TEMPERING( 1000 , FALSE)
+Parallel <- LIANG_PARALLEL_TEMPERING_PREPARING_DATA( Parallel, 1000)
+LIANG_PARALLEL_TEMPERING_BASE_TEMPERATURE_PLOT(Parallel)
+
+
+png(filename="/home/matteo/Documents/Scienza/Laurea_di_Matematica/Biology_Group_Seminar/picts/PT_simululation_base_temperature_1000_steps_1.png", width=800,height=800)
+	LIANG_PARALLEL_TEMPERING_BASE_TEMPERATURE_PLOT(Parallel)
+dev.off()
+
+
+Parallel <- LIANG_SIMULATION_PARALLEL_TEMPERING( 10000 , FALSE)
+Parallel <- LIANG_PARALLEL_TEMPERING_PREPARING_DATA( Parallel, 10000)
+png(filename="/home/matteo/Documents/Scienza/Laurea_di_Matematica/Biology_Group_Seminar/picts/PT_simululation_base_temperature_10000_steps_1.png", width=800,height=800)
+	LIANG_PARALLEL_TEMPERING_BASE_TEMPERATURE_PLOT(Parallel)
+dev.off()
+
+
+

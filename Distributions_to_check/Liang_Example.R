@@ -226,7 +226,7 @@ LIANG_CONTOUR_PLOTS <- function()
 }
 
 
-LIANNG_SIMULATION_PARALLEL_TEMPERING <- function( Steps, Details )
+LIANG_SIMULATION_PARALLEL_TEMPERING <- function( Steps, Details )
 {
 	return(
 		SIMULATION(
@@ -244,10 +244,9 @@ LIANNG_SIMULATION_PARALLEL_TEMPERING <- function( Steps, Details )
 	)	
 }
 
-LIANG_PARALLEL_TEMPERING_PLOT <- function( No_of_Steps )
-{
-	Parallel <- Simulation_Parallel_Tempering( No_of_Steps, FALSE)		
-	
+
+LIANG_PARALLEL_TEMPERING_PREPARING_DATA <- function( Parallel, No_of_Steps)
+{	
 	Parallel <- PREPARE_DATA_FOR_2D_GGPLOT_CONTOUR( 
 				Parallel, 
 				Liang_No_of_Chains, 
@@ -262,6 +261,12 @@ LIANG_PARALLEL_TEMPERING_PLOT <- function( No_of_Steps )
 				Liang_Temperatures
 				)
 
+	return(	Parallel )	
+}
+
+
+LIANG_PARALLEL_TEMPERING_PLOT <- function( Parallel )
+{
 	Parallel 	<- as.data.frame(Parallel)
 	names(Parallel) <- c("x", "y", "Temperature" ,"Progress")
 
@@ -271,6 +276,7 @@ LIANG_PARALLEL_TEMPERING_PLOT <- function( No_of_Steps )
 				levels 	= Liang_Temperatures,
 				ordered = TRUE
 			)
+	
 	p <- 	qplot(x, y, data = Parallel, colour=Temperature) + 
 	geom_point() +
 	scale_colour_brewer(type="seq", palette=3) +
@@ -281,6 +287,25 @@ LIANG_PARALLEL_TEMPERING_PLOT <- function( No_of_Steps )
 	return( p )		
 }
 
+
+LIANG_PARALLEL_TEMPERING_BASE_TEMPERATURE_PLOT <- function( Parallel )
+{
+	
+	Parallel 	<- as.data.frame(Parallel)
+	names(Parallel) <- c("x", "y", "Temperature" ,"Progress")
+
+	Parallel 	<- Parallel[Parallel$Temperature==1,]
+	
+	p <- 	qplot(x, y, data = Parallel, colour=Progress) + 
+	geom_point() +
+	scale_colour_gradient(limits=c(0, 1), low="white", high="black") +
+stat_contour(data=Liang_Tempered_Real_Values_for_ggplot2[[1]], aes(x, y, z =z ), bins=5, size=.5, colour="red") +
+	ggtitle( "Parallel Tempering - Base Temperature" ) +
+	labs(x = "", y = "")
+
+	
+	return( p )		
+}
 
 
 
