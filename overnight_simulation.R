@@ -68,12 +68,12 @@ S4_10000 <- function()
 }
 
 
-S1_100000 <- function()
+S1_30000 <- function()
 {
 	return(
 		SIMULATION(
 				Liang_No_of_Chains,
-				100000,	# No of Steps of the algorithm
+				30000,	# No of Steps of the algorithm
 				Liang_Problem_Dimension,
 				Liang_Initial_Points,
 				LIANG_TARGET_DENSITY,
@@ -86,12 +86,12 @@ S1_100000 <- function()
 }
 
 
-S2_100000 <- function()
+S2_30000 <- function()
 {
 	return(
 		SIMULATION(
 				Liang_No_of_Chains,
-				100000,	# No of Steps of the algorithm
+				30000,	# No of Steps of the algorithm
 				Liang_Problem_Dimension,
 				Liang_Initial_Points,
 				LIANG_TARGET_DENSITY,
@@ -103,12 +103,12 @@ S2_100000 <- function()
 	)	
 }
 
-S3_100000 <- function()
+S3_30000 <- function()
 {
 	return(
 		SIMULATION(
 				Liang_No_of_Chains,
-				100000,	# No of Steps of the algorithm
+				30000,	# No of Steps of the algorithm
 				Liang_Problem_Dimension,
 				Liang_Initial_Points,
 				LIANG_TARGET_DENSITY,
@@ -120,12 +120,12 @@ S3_100000 <- function()
 	)	
 }
 
-S4_100000 <- function()
+S4_30000 <- function()
 {
 	return(
 		SIMULATION(
 				Liang_No_of_Chains,
-				100000,	# No of Steps of the algorithm
+				30000,	# No of Steps of the algorithm
 				Liang_Problem_Dimension,
 				Liang_Initial_Points,
 				LIANG_TARGET_DENSITY,
@@ -140,15 +140,23 @@ S4_100000 <- function()
 
 overnight_simulation <- function()
 {
-	write.csv2(S1_10000, "./Data/S1_10000.csv", row.names=FALSE, col.names=FALSE)
-	write.csv2(S2_10000, "./Data/S2_10000.csv", row.names=FALSE, col.names=FALSE)
-	write.csv2(S3_10000, "./Data/S3_10000.csv", row.names=FALSE, col.names=FALSE)
-	write.csv2(S4_10000, "./Data/S4_10000.csv", row.names=FALSE, col.names=FALSE)
+	write.csv2(S1_10000(), "./Data/S1_10000.csv", row.names=FALSE, col.names=FALSE)
+		print("after S1_10000")		
+	write.csv2(S2_10000(), "./Data/S2_10000.csv", row.names=FALSE, col.names=FALSE)
+		print("after S2_10000")
+	write.csv2(S3_10000(), "./Data/S3_10000.csv", row.names=FALSE, col.names=FALSE)
+		print("after S3_10000")
+	write.csv2(S4_10000(), "./Data/S4_10000.csv", row.names=FALSE, col.names=FALSE)
+		print("after S4_10000")
 
-	write.csv2(S1_100000, "./Data/S1_100000.csv", row.names=FALSE, col.names=FALSE)
-	write.csv2(S2_100000, "./Data/S2_100000.csv", row.names=FALSE, col.names=FALSE)
-	write.csv2(S3_100000, "./Data/S3_100000.csv", row.names=FALSE, col.names=FALSE)
-	write.csv2(S4_100000, "./Data/S4_100000.csv", row.names=FALSE, col.names=FALSE)
+	write.csv2(S1_30000(), "./Data/S1_30000.csv", row.names=FALSE, col.names=FALSE)
+		print("after S1_30000")
+	write.csv2(S2_30000(), "./Data/S2_30000.csv", row.names=FALSE, col.names=FALSE)
+		print("after S2_30000")
+	write.csv2(S3_30000(), "./Data/S3_30000.csv", row.names=FALSE, col.names=FALSE)
+		print("after S3_30000")
+	write.csv2(S4_30000(), "./Data/S4_30000.csv", row.names=FALSE, col.names=FALSE)
+		print("after S4_30000")
 }
 
 overnight_simulation()

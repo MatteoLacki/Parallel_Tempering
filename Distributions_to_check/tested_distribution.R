@@ -30,6 +30,8 @@ VALUE_ESTABLISHER <- function( 	grid, 	FUNCTION_INPUT	)
 	return(Z)		
 }
 
+
+#############################################################
 OTHER_VALUE_ESTABLISHER <- function( grid,   FUNCTION_INPUT )
 {
   tmp <- length(grid)

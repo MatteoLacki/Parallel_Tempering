@@ -230,6 +230,8 @@ G <- function()
 
 M <- G()
 
+system.time( M <- G() )
+
 M
 
 G <- function()
@@ -344,7 +346,7 @@ filled.contour(volcano, color = jet.colors, asp = 1)
 x <- colorRamp(c("red", "white", "blue"))
 
 library(ggplot2)
-library(reshape2)
+#library(reshape2)
 volcano3d <- melt(volcano)
 names(volcano3d) <- c("x", "y", "z")
 head(volcano3d)
@@ -365,11 +367,14 @@ head(Liang_Distribution_Values_2)
 
 data <-as.data.frame( OTHER_VALUE_ESTABLISHER(Grid, LIANG_TARGET_DENSITY) )
 
+
 names(data) <- c("x", "y", "z")
 write.csv2(data, "./Data/Liang_Density_Values_For_Contour_gg2plot.csv", row.names=FALSE, col.names=FALSE)
 
 
 data <- read.csv2("./Data/Liang_Density_Values_For_Contour_gg2plot.csv")
+head(data)
+
 
 d <- rnorm(100, mean=5, sd=1)
 
@@ -391,6 +396,7 @@ head(data)
 head(data2)
 d <- qplot(data=data2, aes(x, y))
 
+ggplot( data= Lian )
 
 p <- qplot(x,y, data = data2)
 
@@ -549,16 +555,71 @@ p + stat_contour(data=data,aes(x, y, z =z ), bins=10, size=.5, colour="grey50") 
 
 
 
+sum(Liang_Tempered_Real_Values_for_ggplot2[[1]][,3])
+
+	tmp	<- Liang_Tempered_Real_Values_for_ggplot2[[1]][,3]^Liang_Inverse_Temperatures[3]
+	tmp
+	Liang_Tempered_Real_Values_for_ggplot2[[2]][,3]
+<- tmp/sum(tmp)
+
+Colors <- heat.colors(5)
+Colors <- Colors[5:1]
+Colors <- colorRampPalette(c('blue','white','red'))(5)
+
+v <- 	ggplot(data = Liang_Tempered_Real_Values_for_ggplot2[[1]], aes(x,y,z=z)) +
+stat_contour(colour=Colors[1], size = 2) +
+stat_contour(data = Liang_Tempered_Real_Values_for_ggplot2[[2]], aes(x,y,z=z), colour=Colors[2], size = .5) +
+stat_contour(data = Liang_Tempered_Real_Values_for_ggplot2[[3]], aes(x,y,z=z), colour=Colors[3], size = .5) +
+stat_contour(data = Liang_Tempered_Real_Values_for_ggplot2[[4]], aes(x,y,z=z), colour=Colors[4], size = .5) +
+stat_contour(data = Liang_Tempered_Real_Values_for_ggplot2[[5]], aes(x,y,z=z), colour=Colors[5], size = .5) 
+
+v <- 
 
 
+v <- v + 
+v <- v + stat_contour(data = Liang_Tempered_Real_Values_for_ggplot2[[3]], aes(x,y,z=z), colour="blue")
+v <- v + stat_contour(data = Liang_Tempered_Real_Values_for_ggplot2[[4]], aes(x,y,z=z), colour="blue")
+v <- v + stat_contour(data = Liang_Tempered_Real_Values_for_ggplot2[[5]], aes(x,y,z=z), colour="blue")
+v
 
+library(RColorBrewer) 
+palette(YIOrRd(10))
 
+multiplot <- function(..., plotlist=NULL, file, cols=1, layout=NULL) {
+  require(grid)
 
+  # Make a list from the ... arguments and plotlist
+  plots <- c(list(...), plotlist)
 
+  numPlots = length(plots)
 
+  # If layout is NULL, then use 'cols' to determine layout
+  if (is.null(layout)) {
+    # Make the panel
+    # ncol: Number of columns of plots
+    # nrow: Number of rows needed, calculated from # of cols
+    layout <- matrix(seq(1, cols * ceiling(numPlots/cols)),
+                    ncol = cols, nrow = ceiling(numPlots/cols))
+  }
 
+ if (numPlots==1) {
+    print(plots[[1]])
 
+  } else {
+    # Set up the page
+    grid.newpage()
+    pushViewport(viewport(layout = grid.layout(nrow(layout), ncol(layout))))
 
+    # Make each plot, in the correct location
+    for (i in 1:numPlots) {
+      # Get the i,j matrix positions of the regions that contain this subplot
+      matchidx <- as.data.frame(which(layout == i, arr.ind = TRUE))
 
+      print(plots[[i]], vp = viewport(layout.pos.row = matchidx$row,
+                                      layout.pos.col = matchidx$col))
+    }
+  }
+}
 
-
+multiplot(v, v, v, v, cols=2)	
+LIANG_CONTOUR_PLOTS()

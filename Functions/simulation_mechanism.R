@@ -1,6 +1,4 @@
-
-
-	source("./Functions/additional_functions_for_simulation.R")
+source("./Functions/additional_functions_for_simulation.R")
 
 
 SIMULATION <- 		function(
