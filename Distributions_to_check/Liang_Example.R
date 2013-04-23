@@ -92,7 +92,8 @@ LIANG_PERSPECTIVE <- function(Theta, Phi)
 		xlab="x",
 		ylab="y",
 		zlab="z",
-		main=paste("Temperature", Liang_Temperatures[i] , sep=" ")
+		main=paste("Temperature = ", Liang_Temperatures[1] , sep=" "),
+		cex.main=4
 	)	
 }
 
@@ -113,7 +114,8 @@ LIANG_PERSPECTIVES <- function(Theta, Phi)
 				xlab="x",
 				ylab="y",
 				zlab="z",
-				main=paste("Temperature", Liang_Temperatures[i] , sep=" ")
+				main=paste("Temperature = ", Liang_Temperatures[i] , sep=" "),
+				cex.main=4
 			)	
 		}
 
@@ -180,7 +182,9 @@ LIANG_CONTOUR_PLOTS <- function()
 		colour=Colors[2],
 		bins =10
 	) + 
-	ggtitle( paste("Temperature = ", Liang_Temperatures[2] ,sep="") ) +
+	ggtitle( 
+		paste("Temperature = ", Liang_Temperatures[2] ,sep="")
+	) +
 	labs(x = "", y = "")
 
 	v3 <- ggplot(

@@ -17,6 +17,7 @@ source("./Distributions_to_check/tested_distribution.R")
 source("./Functions/simulation_mechanism.R")
 source("./Functions/additional_functions.R")
 source("./Strategies_to_check/tested_strategies.R")
+source("./Functions/original_Metropolis_Hasting.R")
 
 ls()
 
@@ -31,16 +32,41 @@ ls()
 
 
 	# Wanna see it? Why not !
-LIANG_PERSPECTIVE(30,40)
-LIANG_PERSPECTIVES(30,40)
+png(filename="/home/matteo/Documents/Scienza/Laurea_di_Matematica/Biology_Group_Seminar/picts/Liang_perspective.png", width=800,height=800)
+	LIANG_PERSPECTIVE(30,40)
+dev.off()
 
-LIANG_CONTOUR_PLOT()
-LIANG_CONTOUR_PLOTS()
-	# Idea: we could even draw the points that were drawn from different phases of the algorithm.
+png(filename="/home/matteo/Documents/Scienza/Laurea_di_Matematica/Biology_Group_Seminar/picts/Liang_perspectives.png", width=1600,height=1600)
+	LIANG_PERSPECTIVES(30,40)
+dev.off()
+
+png(filename="/home/matteo/Documents/Scienza/Laurea_di_Matematica/Biology_Group_Seminar/picts/Liang_Contour_plot.png", width=800,height=800)
+	LIANG_CONTOUR_PLOT()
+dev.off()
+
+png(filename="/home/matteo/Documents/Scienza/Laurea_di_Matematica/Biology_Group_Seminar/picts/Liang_Contour_plots.png", width=800,height=800)
+	LIANG_CONTOUR_PLOTS()
+dev.off()
 
 #############################################################
 #Simulation
 
+source("./Distributions_to_check/ploting.R")
+ls()
+	# Original Metropolis-Hastings
+mh_simulation_plot <- METROPOLIS_HASTINGS_PLOT(10000, Liang_Tempered_Real_Values_for_ggplot2[[1]])
 
-# Ideas
-# It would be instructive to show on a 2D map of our distribution to show how the algorithm behaves!
+png(filename="/home/matteo/Documents/Scienza/Laurea_di_Matematica/Biology_Group_Seminar/picts/MH_simululation_10000_steps.png", width=800,height=800)
+	mh_simulation_plot
+dev.off()
+
+
+mh_simulation_plot <- METROPOLIS_HASTINGS_PLOT(1000, Liang_Tempered_Real_Values_for_ggplot2[[1]])
+png(filename="/home/matteo/Documents/Scienza/Laurea_di_Matematica/Biology_Group_Seminar/picts/MH_simululation_1000_steps_ex1.png", width=800,height=800)
+	mh_simulation_plot
+dev.off()
+
+mh_simulation_plot <- METROPOLIS_HASTINGS_PLOT(1000, Liang_Tempered_Real_Values_for_ggplot2[[1]])
+png(filename="/home/matteo/Documents/Scienza/Laurea_di_Matematica/Biology_Group_Seminar/picts/MH_simululation_1000_steps_ex2.png", width=800,height=800)
+	mh_simulation_plot
+dev.off()

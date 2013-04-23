@@ -7,7 +7,14 @@ WEIGHTED_NORMAL_DISTRIBUTION <-
 			Weights, 
 			Means_and_Covariances_Enlisted)
 { 
-	return(sum(Weights * sapply( Means_and_Covariances_Enlisted, function(y) dmvnorm(x, mean=y[[1]], sigma=y[[2]]) )))
+	return(
+		sum(
+			Weights * sapply(
+					Means_and_Covariances_Enlisted, 
+					function(y) dmvnorm(x, mean=y[[1]], sigma=y[[2]]) 
+			)
+		)
+	)
 }
 
 
