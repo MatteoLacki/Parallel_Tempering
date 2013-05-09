@@ -226,7 +226,7 @@ LIANG_CONTOUR_PLOTS <- function()
 }
 
 
-LIANG_SIMULATION_PARALLEL_TEMPERING <- function( Steps, Details )
+LIANG_SIMULATION_PARALLEL_TEMPERING <- function( Steps, STRATEGY, Details )
 {
 	return(
 		SIMULATION(
@@ -235,7 +235,7 @@ LIANG_SIMULATION_PARALLEL_TEMPERING <- function( Steps, Details )
 			Liang_Problem_Dimension,
 			Liang_Initial_Points,
 			LIANG_TARGET_DENSITY,
-			STRATEGY_FOUR,
+			STRATEGY,
 			EASY_METRIC,
 			Liang_Proposals_Covariance_Choleskised_Enlisted,		
 			Liang_Inverse_Temperatures,
