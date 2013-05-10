@@ -6,11 +6,13 @@ setClass(
 	Class		= "Simulations",
 	representation	= representation(
 				No_of_Steps 	= "numeric",
+				Names_of_Slots_for_Table_in_Show_Method = "character",
 				"VIRTUAL"	
 			),
 
 	prototype	= prototype(
-				No_of_Steps 	= numeric(0)				
+				No_of_Steps 	= numeric(0),
+				Names_of_Slots_for_Table_in_Show_Method = c("Number of steps")
 			)
 )
 
@@ -57,7 +59,6 @@ setMethod(
 	f 		= "summary",
 	signature 	= "Simulations",
 	definition	= 
-
 	function( object, ... ) { # The really stupid thing - names of args as in non-overwritten versions.
 		print( "I summarise the simulation outcome." )	
 	}	
@@ -69,7 +70,6 @@ setMethod(
 	signature 	= "Simulations",
 
 	definition	= 
-	
 	function(simulation, ...){ 
 
 		Check_if_Initial_Data_was_provided()		
