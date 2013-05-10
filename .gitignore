@@ -15,6 +15,7 @@
 *.R~
 *.synctex.gz
 *.tex
+*.csv
 
 # Certain little shits #
 ###########

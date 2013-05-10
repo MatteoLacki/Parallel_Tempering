@@ -1,9 +1,7 @@
+source("./Functions/additional_functions_for_simulation.R")
 
 
-	source("./Functions/additional_functions_for_simulation.R")
-
-
-SIMULATION <- 		function(	
+SIMULATION <- 		function(
 				No_of_Chains,
 				No_of_Steps, 
 				Problem_Dimension,
@@ -12,7 +10,8 @@ SIMULATION <- 		function(
 				STRATEGY, 
 				QUASI_METRIC,
 				Proposals_Covariance_Choleskised_Enlisted,
-				Inverse_Temperatures
+				Inverse_Temperatures,
+				Show_Details = FALSE #boolean - details on screen.	
 				)
 {
 			# Preparing the dictionary from lexical ordering of
@@ -49,7 +48,7 @@ SIMULATION <- 		function(
 		 
 	Maximal_Lexic_No	<- No_of_Chains	* (	No_of_Chains -1   )/2
 	
-	print("Hello Simulation")		
+	if (Show_Details){ print("Hello Simulation") }		
 	
 			# This is needed for the first go of the Swap Kernel.	
 	
@@ -70,9 +69,10 @@ SIMULATION <- 		function(
 	for( i in (2* 1:No_of_Steps ))
 	{
 
-		print("===============================================================")
-		print(c("Random Walk No ", i/2))
-
+		if (Show_Details){ 
+			print("===============================================================")
+			print(c("Random Walk No ", i/2))
+		}
 	
 		New_Step_and_New_Log_Densities <- 
 				CHAIN_STEP(
@@ -82,16 +82,18 @@ SIMULATION <- 		function(
 						Problem_Dimension, 
 						Log_Densities_of_Current_States,
 						Proposals_Covariance_Choleskised_Enlisted,
-						Inverse_Temperatures
+						Inverse_Temperatures,
+						Show_Details
 				) 
 		
 			
 		Chains[[i]] 			<- New_Step_and_New_Log_Densities[[1]]
 		Log_Densities_of_Current_States	<- New_Step_and_New_Log_Densities[[2]]
 
-		print("Steps after Random Walk")
-		print(Chains[[i]])
-			
+		if (Show_Details){		
+			print("Steps after Random Walk")
+			print(Chains[[i]])
+		}			
 				# This is not needed as input with the first step.
 
 		Updated_Steps_in_Random_Walk	<- New_Step_and_New_Log_Densities[[3]] 	# Boolean vector
@@ -107,16 +109,18 @@ SIMULATION <- 		function(
 						Updated_Steps_in_Random_Walk,
 						Inverse_Temperatures, 
 						STRATEGY,
-						QUASI_METRIC
+						QUASI_METRIC,
+						Show_Details
 				)
 						
 		Permutation_of_Swap_Step			<- Swapping_Current_States[[1]]
 		Current_Unnormalised_Probabilities_of_Pair_Swaps<- Swapping_Current_States[[2]]	
 			
-		print(c("Random Swap No ", i/2))
-		print( Permutation_of_Swap_Step )	
-
-
+		if (Show_Details){ 
+			print(c("Random Swap No ", i/2))
+			print( Permutation_of_Swap_Step )	
+		}	
+	
 			
 				# Here we apply the swap to the chains and
 				# to the log_densities. 
@@ -124,9 +128,11 @@ SIMULATION <- 		function(
 			
 		Chains[[i+1]] 	<- Chains[[i]][, Permutation_of_Swap_Step ]
 		Log_Densities_of_Current_States <- Log_Densities_of_Current_States[ Permutation_of_Swap_Step ]
-		
-		print("Steps after Random Swap")
-		print(Chains[[i+1]])
+	
+		if (Show_Details){ 
+			print("Steps after Random Swap")
+			print(Chains[[i+1]])
+		}
 			
 	}
 	
@@ -144,7 +150,8 @@ CHAIN_STEP	<- 	function(
 				Problem_Dimension, 				#int
 				Previous_Log_Densities,				#vector
 				Proposals_Covariance_Choleskised_Enlisted, 	#ListOfMatrices
-				Inverse_Temperatures 				#vector
+				Inverse_Temperatures, 				#vector
+				Show_Details					#boolean
 				)
 {
 	Proposal_Step_for_all_chains	<- Current_States + 
@@ -153,8 +160,7 @@ CHAIN_STEP	<- 	function(
 						function(x) {x%*% rnorm(Problem_Dimension)}
 					)
 	
-	
-	print("Hello CHAIN_STEP")
+	if (Show_Details){ print("Hello CHAIN_STEP") }
 		
 			# Logs of uniform distribution
 			
@@ -176,11 +182,12 @@ CHAIN_STEP	<- 	function(
 #					)
 #				)
 
-	print("Previous Log Densities")
-	print(Previous_Log_Densities)
-	print("Proposal Log Densities")
-	print(Proposal_Log_Densities)	
-	
+	if (Show_Details){ 
+		print("Previous Log Densities")
+		print(Previous_Log_Densities)
+		print("Proposal Log Densities")
+		print(Proposal_Log_Densities)	
+	}
 
 	
 	Quantities_to_be_Compared_with_Log_Uniform_RV <-
@@ -189,20 +196,22 @@ CHAIN_STEP	<- 	function(
 		2,
 		function( triple ) triple[1]*(triple[2] - triple[3])
 	)
-	
-	print("Quantities to be Compared with Log Uniform RV")
-	print(Quantities_to_be_Compared_with_Log_Uniform_RV)
-	print("Ulog")
-	print(Ulog)	
+
+	if (Show_Details){ 	
+		print("Quantities to be Compared with Log Uniform RV")
+		print(Quantities_to_be_Compared_with_Log_Uniform_RV)
+		print("Ulog")
+		print(Ulog)	
+	}
 
 		# It's Ulog < ... because then we must accept the proposals. 
 		
 	Updated_Steps <- Ulog < Quantities_to_be_Compared_with_Log_Uniform_RV 
 
-
-	print("Updated Steps")
-	print(Updated_Steps)
-
+	if (Show_Details){ 
+		print("Updated Steps")
+		print(Updated_Steps)
+	}
 		### ERROR: Erreur dans 
 		### Proposal_Step_for_all_chains[, Updated_Steps ] <- 
 		### Current_States[, Updated_Steps ]	
@@ -240,45 +249,51 @@ CHAIN_STEP	<- 	function(
 		# hidden under the appropriate Chain[[i]].
 		
 SWAP_STEP 	<- 	function(
-				No_of_Chains,				#int
-				Maximal_Lexic_No,			#int
-				Current_States, 			#matrix
-				From_Lexic_Matrix, 			#matrix
-				Current_States_Log_Densities, 		#vector
-				Current_Unnormalised_Probabilities_of_Pair_Swaps,	#vector
-				Updated_Steps_with_Last_Random_Walk,	#boolean vector.
-				Inverse_Temperatures, 			#vector
-				STRATEGY, 				#function
-				QUASI_METRIC				#function
+				No_of_Chains,					#int
+				Maximal_Lexic_No,				#int
+				Current_States, 				#matrix
+				From_Lexic_Matrix, 				#matrix
+				Current_States_Log_Densities, 			#vector
+				Current_Unnormalised_Probabilities_of_Pair_Swaps,#vector
+				Updated_Steps_with_Last_Random_Walk,		#boolean vector.
+				Inverse_Temperatures, 				#vector
+				STRATEGY, 					#function
+				QUASI_METRIC,					#function
+				Show_Details					#boolean
 				)
 {
 		# Preparing the pairs of indeces that have to be updated.
 	
-	Pairs_in_Lexical_Order_Needing_Update_of_Unnormalised_Probability_of_Swap <-
-			 
-			 PAIRS_IN_LEXICAL_ORDER_NEEDING_UPDATE_OF_UNNORMALISED_PROBABILITY_OF_SWAP(
-			 	Updated_Steps_with_Last_Random_Walk,
-			 	No_of_Chains	
-			 )
+	Anything_changed_last_iteration <- any(Updated_Steps_with_Last_Random_Walk)
+
+	if (Anything_changed_last_iteration) {  
+
+		Pairs_in_Lexical_Order_Needing_Update_of_Unnormalised_Probability_of_Swap <-
+				 
+				 PAIRS_IN_LEXICAL_ORDER_NEEDING_UPDATE_OF_UNNORMALISED_PROBABILITY_OF_SWAP(
+				 	Updated_Steps_with_Last_Random_Walk,
+				 	No_of_Chains	
+				 )
 	
 	
-		# Here we calculate swap index probabilities in places where something 
-		# did change in the last Random Walk
+			# Here we calculate swap index probabilities in places where something 
+			# did change in the last Random Walk
 
-	Current_Unnormalised_Probabilities_of_Pair_Swaps[
-		Pairs_in_Lexical_Order_Needing_Update_of_Unnormalised_Probability_of_Swap
-			] <- 
-			UPDATING_UNNORMALISED_PROBABILITIES_OF_PAIR_SWAPS(
-				FALSE,
-				Pairs_in_Lexical_Order_Needing_Update_of_Unnormalised_Probability_of_Swap,
-				Current_States,
-				From_Lexic_Matrix,
-				Current_States_Log_Densities,
-				Inverse_Temperatures,
-				STRATEGY,
-				QUASI_METRIC
-			)
-
+		Current_Unnormalised_Probabilities_of_Pair_Swaps[
+			Pairs_in_Lexical_Order_Needing_Update_of_Unnormalised_Probability_of_Swap
+				] <- 
+				UPDATING_UNNORMALISED_PROBABILITIES_OF_PAIR_SWAPS(
+					FALSE,
+					Pairs_in_Lexical_Order_Needing_Update_of_Unnormalised_Probability_of_Swap,
+					Current_States,
+					From_Lexic_Matrix,
+					Current_States_Log_Densities,
+					Inverse_Temperatures,
+					STRATEGY,
+					QUASI_METRIC
+				)
+	}
+		
 				
 		# Drawing a random pair of indeces (i,j) = m from given strategy
 	
@@ -300,19 +315,8 @@ SWAP_STEP 	<- 	function(
 				Proposal_Swap,
 				No_of_Chains
 			)
-		
-#	Cross_Lexic 	<-	
-#			apply(
-#				Cross,
-#				2,
-#				function(x) 
-#				{
-#					TRANSLATE_INTO_LEXICAL_ORDER(
-#						x,
-#						No_of_Chains
-#					)
-#				}	
-#			)	
+
+# AAABBB		
 
 	Cross_Lexic	<- 	TRANSLATE_INTO_LEXICAL_ORDER_MANY_PAIRS_OF_INDECES(
 					Cross,
@@ -323,6 +327,7 @@ SWAP_STEP 	<- 	function(
  		# Here we calculate the additional terms that must appear in the 
  		# statistical sum of p_{ij}( S_{ij} x).
  		
+	
 
 	Additional_Unnormalised_Probabilities_of_Swaping_Indeces <-
 			UPDATING_UNNORMALISED_PROBABILITIES_OF_PAIR_SWAPS(
@@ -344,10 +349,12 @@ SWAP_STEP 	<- 	function(
 		
 	Proposal_Swap_Index_Probabilities			<- 
 						Current_Unnormalised_Probabilities_of_Pair_Swaps
+	
 	Proposal_Swap_Index_Probabilities[ Cross_Lexic ] 	<- 
-						Additional_Unnormalised_Probabilities_of_Swaping_Indeces
+					Additional_Unnormalised_Probabilities_of_Swaping_Indeces
 
 		
+	
 		# This is in the nominator of the normalised probability after switch.
 		
 	Unnormalised_Probability_of_Swap_of_the_Drawn_Pair_of_Indeces <- 					
@@ -440,3 +447,18 @@ SWAP_STEP 	<- 	function(
 }
 
 ###############################################################################
+
+# AAABBB
+#	Cross_Lexic 	<-	
+#			apply(
+#				Cross,
+#				2,
+#				function(x) 
+#				{
+#					TRANSLATE_INTO_LEXICAL_ORDER(
+#						x,
+#						No_of_Chains
+#					)
+#				}	
+#			)	
+

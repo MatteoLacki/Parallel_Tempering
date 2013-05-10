@@ -1,0 +1,164 @@
+S1_10000 <- function()
+{
+	return(
+		SIMULATION(
+				Liang_No_of_Chains,
+				10000,	# No of Steps of the algorithm
+				Liang_Problem_Dimension,
+				Liang_Initial_Points,
+				LIANG_TARGET_DENSITY,
+				STRATEGY_ONE,
+				EASY_METRIC,
+				Liang_Proposals_Covariance_Choleskised_Enlisted,		
+				Liang_Inverse_Temperatures		
+		)
+	)	
+}
+
+
+S2_10000 <- function()
+{
+	return(
+		SIMULATION(
+				Liang_No_of_Chains,
+				10000,	# No of Steps of the algorithm
+				Liang_Problem_Dimension,
+				Liang_Initial_Points,
+				LIANG_TARGET_DENSITY,
+				STRATEGY_TWO,
+				EASY_METRIC,
+				Liang_Proposals_Covariance_Choleskised_Enlisted,		
+				Liang_Inverse_Temperatures		
+		)
+	)	
+}
+
+S3_10000 <- function()
+{
+	return(
+		SIMULATION(
+				Liang_No_of_Chains,
+				10000,	# No of Steps of the algorithm
+				Liang_Problem_Dimension,
+				Liang_Initial_Points,
+				LIANG_TARGET_DENSITY,
+				STRATEGY_THREE,
+				EASY_METRIC,
+				Liang_Proposals_Covariance_Choleskised_Enlisted,		
+				Liang_Inverse_Temperatures		
+		)
+	)	
+}
+
+S4_10000 <- function()
+{
+	return(
+		SIMULATION(
+				Liang_No_of_Chains,
+				10000,	# No of Steps of the algorithm
+				Liang_Problem_Dimension,
+				Liang_Initial_Points,
+				LIANG_TARGET_DENSITY,
+				STRATEGY_FOUR,
+				EASY_METRIC,
+				Liang_Proposals_Covariance_Choleskised_Enlisted,		
+				Liang_Inverse_Temperatures		
+		)
+	)	
+}
+
+
+S1_30000 <- function()
+{
+	return(
+		SIMULATION(
+				Liang_No_of_Chains,
+				30000,	# No of Steps of the algorithm
+				Liang_Problem_Dimension,
+				Liang_Initial_Points,
+				LIANG_TARGET_DENSITY,
+				STRATEGY_ONE,
+				EASY_METRIC,
+				Liang_Proposals_Covariance_Choleskised_Enlisted,		
+				Liang_Inverse_Temperatures		
+		)
+	)	
+}
+
+
+S2_30000 <- function()
+{
+	return(
+		SIMULATION(
+				Liang_No_of_Chains,
+				30000,	# No of Steps of the algorithm
+				Liang_Problem_Dimension,
+				Liang_Initial_Points,
+				LIANG_TARGET_DENSITY,
+				STRATEGY_TWO,
+				EASY_METRIC,
+				Liang_Proposals_Covariance_Choleskised_Enlisted,		
+				Liang_Inverse_Temperatures		
+		)
+	)	
+}
+
+S3_30000 <- function()
+{
+	return(
+		SIMULATION(
+				Liang_No_of_Chains,
+				30000,	# No of Steps of the algorithm
+				Liang_Problem_Dimension,
+				Liang_Initial_Points,
+				LIANG_TARGET_DENSITY,
+				STRATEGY_THREE,
+				EASY_METRIC,
+				Liang_Proposals_Covariance_Choleskised_Enlisted,		
+				Liang_Inverse_Temperatures		
+		)
+	)	
+}
+
+S4_30000 <- function()
+{
+	return(
+		SIMULATION(
+				Liang_No_of_Chains,
+				30000,	# No of Steps of the algorithm
+				Liang_Problem_Dimension,
+				Liang_Initial_Points,
+				LIANG_TARGET_DENSITY,
+				STRATEGY_FOUR,
+				EASY_METRIC,
+				Liang_Proposals_Covariance_Choleskised_Enlisted,		
+				Liang_Inverse_Temperatures		
+		)
+	)	
+}
+
+
+overnight_simulation <- function()
+{
+	write.csv2(S1_10000(), "./Data/S1_10000.csv", row.names=FALSE, col.names=FALSE)
+		print("after S1_10000")		
+	write.csv2(S2_10000(), "./Data/S2_10000.csv", row.names=FALSE, col.names=FALSE)
+		print("after S2_10000")
+	write.csv2(S3_10000(), "./Data/S3_10000.csv", row.names=FALSE, col.names=FALSE)
+		print("after S3_10000")
+	write.csv2(S4_10000(), "./Data/S4_10000.csv", row.names=FALSE, col.names=FALSE)
+		print("after S4_10000")
+
+	write.csv2(S1_30000(), "./Data/S1_30000.csv", row.names=FALSE, col.names=FALSE)
+		print("after S1_30000")
+	write.csv2(S2_30000(), "./Data/S2_30000.csv", row.names=FALSE, col.names=FALSE)
+		print("after S2_30000")
+	write.csv2(S3_30000(), "./Data/S3_30000.csv", row.names=FALSE, col.names=FALSE)
+		print("after S3_30000")
+	write.csv2(S4_30000(), "./Data/S4_30000.csv", row.names=FALSE, col.names=FALSE)
+		print("after S4_30000")
+}
+
+overnight_simulation()
+
+

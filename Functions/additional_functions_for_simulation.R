@@ -81,6 +81,7 @@ UPDATING_UNNORMALISED_PROBABILITIES_OF_PAIR_SWAPS <-
 }
 
 ###############################################################################
+	# For Parallel-Tempering	
 
 UPDATING_LOGS_OF_UNNORMALISED_DENSITIES_IN_CURRENT_STATES 	<-
 			function( 
@@ -96,6 +97,20 @@ UPDATING_LOGS_OF_UNNORMALISED_DENSITIES_IN_CURRENT_STATES 	<-
 				TARGET_DENSITY 
 			)
 		)
+	)		
+}
+
+###############################################################################
+	# For Metropolis-Hastings	
+
+UPDATING_LOG_OF_UNNORMALISED_DENSITY_IN_CURRENT_STATE 		<-
+			function( 
+				Current_State, 
+				TARGET_DENSITY 
+			)
+{			
+	return(	
+		log( TARGET_DENSITY(Current_State) )
 	)		
 }
 

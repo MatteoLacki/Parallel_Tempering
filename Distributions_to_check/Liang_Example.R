@@ -64,4 +64,251 @@ LIANG_TARGET_DENSITY <- function(x)
 	return(WEIGHTED_NORMAL_DISTRIBUTION(x, Liang_Clusters_Weights, Liang_Means_and_Covariances_Enlisted))
 }
 
-#system.time(LIANG_TARGET_DENSITY(1:2))
+#############################################################
+	# For purposes of perspective plotting.
+
+#Liang_Distribution_Values 	<- VALUE_ESTABLISHER(Grid, LIANG_TARGET_DENSITY)
+#write.csv2(Liang_Distribution_Values, "./Data/Liang_Density_Values.csv", row.names=FALSE, col.names=FALSE)
+
+Grid 				<- seq(-2, 12, by=.2)
+Liang_Tempered_Real_Values	<- vector("list", 5)
+Liang_Tempered_Real_Values[[1]] <- as.matrix( read.csv2("./Data/Liang_Density_Values.csv") )	
+
+for (i in 2:5) 
+{	
+	tmp 				<- Liang_Tempered_Real_Values[[1]]^Liang_Inverse_Temperatures[i]
+	Liang_Tempered_Real_Values[[i]] <- tmp/sum(tmp)
+}
+rm(i)
+
+LIANG_PERSPECTIVE <- function(Theta, Phi)
+{
+	persp(
+		x=Grid,
+		y=Grid, 
+		z=Liang_Tempered_Real_Values[[1]], 
+		theta = Theta, 
+		phi = Phi,
+		xlab="x",
+		ylab="y",
+		zlab="z",
+		main=paste("Temperature = ", Liang_Temperatures[1] , sep=" "),
+		cex.main=4
+	)	
+}
+
+
+
+LIANG_PERSPECTIVES <- function(Theta, Phi)
+{
+	layout(matrix(1:4, 2, 2, byrow = TRUE))
+	
+		for (i in 2:5)
+		{
+			persp(
+				x=Grid,
+				y=Grid, 
+				z=Liang_Tempered_Real_Values[[i]], 
+				theta = Theta, 
+				phi = Phi,
+				xlab="x",
+				ylab="y",
+				zlab="z",
+				main=paste("Temperature = ", Liang_Temperatures[i] , sep=" "),
+				cex.main=4
+			)	
+		}
+
+
+
+	layout(matrix(c(1), 1, 1, byrow = TRUE))
+}
+
+#############################################################
+	# For purposes of contour plotting.
+
+#write.csv2(	
+#		as.data.frame( OTHER_VALUE_ESTABLISHER(Grid, LIANG_TARGET_DENSITY) ), 
+#		"./Data/Liang_Density_Values_For_Contour_gg2plot.csv", 
+#		row.names=FALSE, 
+#		col.names=FALSE
+#)
+
+
+Liang_Tempered_Real_Values_for_ggplot2		<- vector("list", 5)
+Liang_Tempered_Real_Values_for_ggplot2[[1]] 	<- 
+						as.data.frame(read.csv2("./Data/Liang_Density_Values_For_Contour_gg2plot.csv"))
+
+
+for (i in 2:5)
+{
+	Liang_Tempered_Real_Values_for_ggplot2[[i]] <- Liang_Tempered_Real_Values_for_ggplot2[[1]]
+}
+
+for (i in 2:5) 
+{	
+	tmp	<- Liang_Tempered_Real_Values_for_ggplot2[[1]][,3]^Liang_Inverse_Temperatures[i]
+	Liang_Tempered_Real_Values_for_ggplot2[[i]][,3] <- tmp/sum(tmp)
+}
+rm(i)
+
+LIANG_CONTOUR_PLOT <- function()
+{
+	library(ggplot2) 	
+
+	v1 <- ggplot(
+		data = Liang_Tempered_Real_Values_for_ggplot2[[1]], 
+		aes(x,y,z=z)
+	) +
+	stat_contour(bins =10) + 
+	ggtitle( paste("Temperature = ", Liang_Temperatures[1] ,sep="") )
+
+	plot(v1)
+
+}
+
+LIANG_CONTOUR_PLOTS <- function()
+{
+	library(ggplot2) 	
+
+	Colors <- heat.colors(5)
+	Colors <- Colors[5:1]
+	
+	v2 <- ggplot(
+		data = Liang_Tempered_Real_Values_for_ggplot2[[2]], 
+		aes(x,y,z=z)
+	) +
+	stat_contour(
+		colour=Colors[2],
+		bins =10
+	) + 
+	ggtitle( 
+		paste("Temperature = ", Liang_Temperatures[2] ,sep="")
+	) +
+	labs(x = "", y = "")
+
+	v3 <- ggplot(
+		data = Liang_Tempered_Real_Values_for_ggplot2[[3]], 
+		aes(x,y,z=z)
+	) +
+	stat_contour(
+		colour=Colors[3],
+		bins =10
+	) + 
+	ggtitle( paste("Temperature =", Liang_Temperatures[3] ,sep="") ) +
+	labs(x = "", y = "")
+ 
+	v4 <- ggplot(
+		data = Liang_Tempered_Real_Values_for_ggplot2[[4]],
+		aes(x,y,z=z)
+	) +
+	stat_contour(
+		colour=Colors[4],
+		bins =10
+	) + 
+	ggtitle( paste("Temperature = ", Liang_Temperatures[4] ,sep="") ) +
+	labs(x = "", y = "")
+
+	v5 <- ggplot(
+		data = Liang_Tempered_Real_Values_for_ggplot2[[5]], 	
+		aes(x,y,z=z)
+	) +
+	stat_contour(
+		colour=Colors[5],
+		bins =10
+	) + 
+	ggtitle( paste("Temperature = ", Liang_Temperatures[5] ,sep="") ) +
+	labs(x = "", y = "")
+
+
+	MULTIPLOT(v2, v4, v3, v5, cols=2)	
+
+}
+
+
+LIANG_SIMULATION_PARALLEL_TEMPERING <- function( Steps, STRATEGY, Details )
+{
+	return(
+		SIMULATION(
+			Liang_No_of_Chains,
+			Steps,	
+			Liang_Problem_Dimension,
+			Liang_Initial_Points,
+			LIANG_TARGET_DENSITY,
+			STRATEGY,
+			EASY_METRIC,
+			Liang_Proposals_Covariance_Choleskised_Enlisted,		
+			Liang_Inverse_Temperatures,
+			Details		
+		)
+	)	
+}
+
+
+LIANG_PARALLEL_TEMPERING_PREPARING_DATA <- function( Parallel, No_of_Steps)
+{	
+	Parallel <- PREPARE_DATA_FOR_2D_GGPLOT_CONTOUR( 
+				Parallel, 
+				Liang_No_of_Chains, 
+				Liang_Problem_Dimension 
+				)
+
+	Parallel <- PREPARE_FULL_DATA_FOR_2D_GGPLOT_CONTOUR(
+				Parallel,
+				Liang_No_of_Chains,
+				No_of_Steps,
+				Liang_Problem_Dimension ,
+				Liang_Temperatures
+				)
+
+	return(	Parallel )	
+}
+
+
+LIANG_PARALLEL_TEMPERING_PLOT <- function( Parallel )
+{
+	Parallel 	<- as.data.frame(Parallel)
+	names(Parallel) <- c("x", "y", "Temperature" ,"Progress")
+
+	Parallel$Temperature	<- 	
+			factor(
+				Parallel$Temperature,
+				levels 	= Liang_Temperatures,
+				ordered = TRUE
+			)
+	
+	p <- 	qplot(x, y, data = Parallel, colour=Temperature) + 
+	geom_point() +
+	scale_colour_brewer(type="seq", palette=3) +
+	stat_contour(data=Liang_Tempered_Real_Values_for_ggplot2[[1]], aes(x, y, z =z ), bins=10, size=.5, colour="orange") +
+	ggtitle( "Parallel Tempering" ) +
+	labs(x = "", y = "")
+	
+	return( p )		
+}
+
+
+LIANG_PARALLEL_TEMPERING_BASE_TEMPERATURE_PLOT <- function( Parallel )
+{
+	
+	Parallel 	<- as.data.frame(Parallel)
+	names(Parallel) <- c("x", "y", "Temperature" ,"Progress")
+
+	Parallel 	<- Parallel[Parallel$Temperature==1,]
+	
+	p <- 	qplot(x, y, data = Parallel, colour=Progress) + 
+	geom_point() +
+	scale_colour_gradient(limits=c(0, 1), low="white", high="black") +
+stat_contour(data=Liang_Tempered_Real_Values_for_ggplot2[[1]], aes(x, y, z =z ), bins=5, size=.5, colour="red") +
+	ggtitle( "Parallel Tempering - Base Temperature" ) +
+	labs(x = "", y = "")
+
+	
+	return( p )		
+}
+
+
+
+
+
+

@@ -230,6 +230,8 @@ G <- function()
 
 M <- G()
 
+system.time( M <- G() )
+
 M
 
 G <- function()
@@ -251,6 +253,8 @@ G <- function()
 
 M <- G()
 
+M
+
 system.time(G())
 Liang_Distribution_Values
 
@@ -260,6 +264,7 @@ library(graphics)
 
 
 good_levels <- pretty(range(Liang_Distribution_Values, finite=TRUE), 20)
+colorRampPalette(c('dark red','white','dark blue'))
 
 filled.contour(x = Grid,
                y = Grid,
@@ -269,18 +274,323 @@ filled.contour(x = Grid,
                col=terrain.colors(length(good_levels)-1)
                )
 
-length(levels)-1
+filled.contour(x = Grid,
+               y = Grid,
+               z = Liang_Distribution_Values,
+               color.palette = cm.colors,
+               levels = good_levels,
+               col=colorRampPalette(c("white", "blue"), space = "Lab")(length(good_levels)-1)
+              )
+
+nlevels = 20
+filled.contour(x = Grid,
+               y = Grid,
+               z = Liang_Distribution_Values,
+               color.palette = cm.colors,
+               levels = pretty(nlevels), nlevels = 20, 
+               col=color.palette(length(nlevels)-1)
+)
+
+
+nlevels = 15
+contour( 
+          x = Grid,
+          y = Grid,
+          z = Liang_Distribution_Values,
+          xlim = range(Grid, finite = TRUE),   
+          ylim = range(Grid, finite = TRUE),   
+          zlim = range(Liang_Distribution_Values, finite = TRUE),
+          levels = pretty( range(Liang_Distribution_Values, finite = TRUE), nlevels)
+      ) 
+
+range(Grid, finite = TRUE)[1]
+
+
+
+length(M)
+help(points)
+
+
+points(c(4,8)+c(range(Grid, finite = TRUE)[1]
+,range(Grid, finite = TRUE)[1]
+))
+
+points(c(0,0))
+
+matrix(nrow=2, ncol=2)
+
+ls()
+
+
+range(Liang_Distribution_Values, finite = TRUE),
+help(pretty)
+help(contour)
+
+filled.contour(volcano,
+               color.palette =
+                 colorRampPalette(c("red", "white", "blue")),
+               asp = 1)
+
+filled.contour(volcano,
+               color.palette =
+                 colorRampPalette(c("red", "white", "blue"),
+                                  space = "Lab"),
+               asp = 1)
+
+
+jet.colors <-
+  colorRampPalette(c("#00007F", "blue", "#007FFF", "cyan",
+                     "#7FFF7F", "yellow", "#FF7F00", "red", "#7F0000"))
+filled.contour(volcano, color = jet.colors, asp = 1)
+
+x <- colorRamp(c("red", "white", "blue"))
+
+library(ggplot2)
+#library(reshape2)
+volcano3d <- melt(volcano)
+names(volcano3d) <- c("x", "y", "z")
+head(volcano3d)
+
+dim(Liang_Distribution_Values)
+
+Liang_Distribution_Values_2   <- OTHER_VALUE_ESTABLISHER(Grid, LIANG_TARGET_DENSITY)
+
+data <-as.data.frame( OTHER_VALUE_ESTABLISHER(Grid[1:5], LIANG_TARGET_DENSITY) )
+
+names(data) <- c("x", "y", "z")
+head(data)
+v <- ggplot(data, aes(x, y, z =z )) 
+v + stat_contour()
+
+head(Liang_Distribution_Values_2)
+
+
+data <-as.data.frame( OTHER_VALUE_ESTABLISHER(Grid, LIANG_TARGET_DENSITY) )
+
+
+names(data) <- c("x", "y", "z")
+write.csv2(data, "./Data/Liang_Density_Values_For_Contour_gg2plot.csv", row.names=FALSE, col.names=FALSE)
+
+
+data <- read.csv2("./Data/Liang_Density_Values_For_Contour_gg2plot.csv")
+head(data)
+
+
+d <- rnorm(100, mean=5, sd=1)
+
+d <- d[d >=0 && d <= 10 ]
+length(d)
+data2 <- as.data.frame( 
+                        matrix( d, 
+                                nrow=50,
+                                ncol=2
+                        )  
+                      )
+
+data2 <- as.data.frame(matrix(c(5,5,2.5,7.5), nrow=2, ncol=2))
+
+names(data2) <- c("x", "y")
+
+
+head(data)
+head(data2)
+d <- qplot(data=data2, aes(x, y))
+
+ggplot( data= Lian )
+
+p <- qplot(x,y, data = data2)
+
+p <- ggplot(data = data2, aes(x=x, y=y))
+p + stat_contour(data=data,aes(x, y, z =z ), bins=10, size=.5, colour="grey50") + geom_point()
+p + stat_contour(data=data,aes(x, y, z =z ), bins=10, size=.5, colour="grey50") + geom_point() + theme_bw() 
+p + stat_contour(data=data,aes(x, y, z =z ), size=.5, colour="grey50") + geom_point()
+
+p + stat_contour(data=data,aes(x, y, z =z ), bins=5, size=1) + stat_contour(data=data,aes(x, y, z =z ), bins=10, size=.5, colour="grey50") 
+p + stat_contour(data=data,aes(x, y, z =z ), bins=20, size=.5, colour="grey50") 
+p + stat_contour(data=data,aes(x, y, z =z ), bins=20, size=.5, colour=aes(fill=..level..), geom="polygon")
+
+v <- ggplot(data, aes(x, y, z =z )) 
+v + stat_contour() + theme_bw() 
+
++ geom_point(data = data2, aes(x=x, y=y))
+length(M)
+M
+min(W)
+max(W)
+
+W <- 
+t(	
+	sapply(	M, 
+		function(x){ 
+			k <- numeric(10)
+			k[(2*0:4 + 1)] <- x[1, 1:5]
+			k[2*1:5] <- x[2,1:5]
+			return(k)		
+			} 
+		)
+)
+
+M
+
+t(	
+	sapply(	M, 
+		function(x){ 
+
+			for (i in 1:5)
+				{		}
+
+				k[(2*0:4 + 1)] <- x[1, 1:5]
+				k[2*1:5] <- x[2,1:5]
+			return(k)		
+			} 
+		)
+)
+
+
+W
+
+No_of_Steps <- 100
+No_of_Chains <- 5
+Temperatures <- Liang_Temperatures
+
+Z <- 
+	sapply(
+		1:No_of_Chains,
+		function(x)
+		{
+			rbind( 
+				1:(2*No_of_Steps + 1),
+				rep.int( 
+					Temperatures[x], 
+					times=( 2*No_of_Steps + 1) 
+					),
+				W[(2*x-1):(2*x),]
+			)	
+		}
+	)
+
+
+
+dim(Z)
+
+
+v<-
+rbind( 
+	1:(2*No_of_Steps + 1),
+	rep.int( 
+		Temperatures[3], 
+		times=( 2*No_of_Steps + 1) 
+		),
+	W[(2*3-1):(2*3),]
+)
+v
+
+X <- c()
+
+for (i in 1:No_of_Chains) 
+{
+	X 	<- 	cbind(
+				X, 
+				rbind( 
+					1:(2*No_of_Steps + 1),
+					rep.int( 
+						Temperatures[i], 
+						times=( 2*No_of_Steps + 1) 
+						),
+					W[(2*i-1):(2*i),]
+				)
+	
+			)
+}
+
+dim(X)
+
+t(X[,199:204])
+
+dim(v)
+head(t(v))
 
 
 
 
 
 
+k <- numeric(10)
+k[(2*0:4 + 1)] <- z[1, 1:5]
+k[2*1:5] <- z[2,1:5]
+
+
+for (i in 1:5)
+{
+	cbind( t(z[,i]) , Liang_Temperatures[i], 
+}
+cbind(t(z[,1]), 3)
+
+sapply(
+	z,
+	function(x)	
+	{
+		
+	}
+)
+
+for (i in 1:5) 
 
 
 
+W <- PREPARE_DATA_FOR_2D_GGPLOT_CONTOUR( M, Liang_No_of_Chains, Liang_Problem_Dimension )
+
+Main_Chain 		<- as.data.frame(W[,1:2])
+names(Main_Chain) 	<- c("x", "y")
+
+Second_Chain		<- as.data.frame(W[,3:4])
+names(Second_Chain) 	<- c("x", "y")
+
+replicate(5, c("x", "y"))
+
+p <- ggplot(data = Main_Chain, aes(x=x, y=y))
+p + stat_contour(data=data,aes(x, y, z =z ), bins=10, size=.5, colour="grey50") + geom_point(colour="red") + geom_point(data=Second_Chain,  colour="blue")
+
+p + stat_contour(data=data,aes(x, y, z =z ), bins=10, size=.5, colour="grey50") + geom_point() + theme_bw() 
 
 
 
+sum(Liang_Tempered_Real_Values_for_ggplot2[[1]][,3])
 
+	tmp	<- Liang_Tempered_Real_Values_for_ggplot2[[1]][,3]^Liang_Inverse_Temperatures[3]
+	tmp
+	Liang_Tempered_Real_Values_for_ggplot2[[2]][,3]
+<- tmp/sum(tmp)
+
+Colors <- heat.colors(5)
+Colors <- Colors[5:1]
+Colors <- colorRampPalette(c('blue','white','red'))(5)
+
+v <- 	ggplot(data = Liang_Tempered_Real_Values_for_ggplot2[[1]], aes(x,y,z=z)) +
+stat_contour(colour=Colors[1], size = 2) +
+stat_contour(data = Liang_Tempered_Real_Values_for_ggplot2[[2]], aes(x,y,z=z), colour=Colors[2], size = .5) +
+stat_contour(data = Liang_Tempered_Real_Values_for_ggplot2[[3]], aes(x,y,z=z), colour=Colors[3], size = .5) +
+stat_contour(data = Liang_Tempered_Real_Values_for_ggplot2[[4]], aes(x,y,z=z), colour=Colors[4], size = .5) +
+stat_contour(data = Liang_Tempered_Real_Values_for_ggplot2[[5]], aes(x,y,z=z), colour=Colors[5], size = .5) 
+
+v <- 
+
+
+v <- v + 
+v <- v + stat_contour(data = Liang_Tempered_Real_Values_for_ggplot2[[3]], aes(x,y,z=z), colour="blue")
+v <- v + stat_contour(data = Liang_Tempered_Real_Values_for_ggplot2[[4]], aes(x,y,z=z), colour="blue")
+v <- v + stat_contour(data = Liang_Tempered_Real_Values_for_ggplot2[[5]], aes(x,y,z=z), colour="blue")
+v
+
+library(RColorBrewer) 
+palette(YIOrRd(10))
+
+
+library(xtable)
+
+print(xtable(Liang_Targetted_Means_of_Mixtures[,1:10]), include.rownames=FALSE)
+tmp <- Liang_Targetted_Means_of_Mixtures[,11:20]
+colnames(tmp) <- 11:20
+
+print(xtable(tmp), include.rownames=FALSE)
 

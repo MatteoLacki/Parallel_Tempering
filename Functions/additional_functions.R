@@ -131,6 +131,4 @@ CRUCIFIX 	<- function( Pair_of_Drawn_Indices,  No_of_Chains )
 }
 
 
-####################################################
-
 
