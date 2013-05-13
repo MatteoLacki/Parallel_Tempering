@@ -22,27 +22,13 @@ SIMULATION <- 		function(
 	Chains 	 	<- vector(	"list", 	2 * No_of_Steps	+ 1 )
 	Chains[[1]]	<- Initial_Points
 	
-		
-		# That's copy-paste really - need a function that does precisely that.
-		# Because it's also done in the PROPOSED_STEP function. The code will 
-		# get nicer.
-		
+	
 	Log_Densities_of_Current_States	<- 
 			UPDATING_LOGS_OF_UNNORMALISED_DENSITIES_IN_CURRENT_STATES(
 				Initial_Points,
 				TARGET_DENSITY
 			)	
 			
-#			log(
-#				apply( 
-#					Initial_Points, 
-#					2, 
-#					TARGET_DENSITY 
-#				)
-#			)
-
-
-	
 			# The maximal number in lexicographic ordering of 
 			# the upper-triangular matrix of indices.
 		 
