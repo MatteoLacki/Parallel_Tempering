@@ -58,6 +58,7 @@ z <- new(
 	)
 
 Make_a_Step_of_the_Algorithm(z)
+new("Parallel_Tempering_Simulations", No_of_Steps=3, Initial_Points= 5)
 
 zw <- new("Metropolis_Hastings_Simulations", No_of_Steps=3, Initial_Point= 5)
 Make_a_Step_of_the_Algorithm(zw)
