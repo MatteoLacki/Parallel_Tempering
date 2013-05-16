@@ -18,6 +18,3 @@ setMethod(
 			}	
 )
 
-	# Class specific methods
-
-# To do : many things.
