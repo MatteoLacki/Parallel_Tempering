@@ -431,20 +431,3 @@ SWAP_STEP 	<- 	function(
 		
 	return( Swap_Step_Results )
 }
-
-###############################################################################
-
-# AAABBB
-#	Cross_Lexic 	<-	
-#			apply(
-#				Cross,
-#				2,
-#				function(x) 
-#				{
-#					TRANSLATE_INTO_LEXICAL_ORDER(
-#						x,
-#						No_of_Chains
-#					)
-#				}	
-#			)	
-

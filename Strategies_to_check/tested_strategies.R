@@ -73,6 +73,8 @@ STRATEGY_FOUR <-
 
 }
 
+
+
 EASY_METRIC 	<- function(x, y)
 {
 	return( 
