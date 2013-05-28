@@ -101,7 +101,7 @@ SIMULATION <- 		function(
 						
 		Permutation_of_Swap_Step			<- Swapping_Current_States[[1]]
 		Current_Unnormalised_Probabilities_of_Pair_Swaps<- Swapping_Current_States[[2]]	
-			
+	 		
 		if (Show_Details){ 
 			print(c("Random Swap No ", i/2))
 			print( Permutation_of_Swap_Step )	
