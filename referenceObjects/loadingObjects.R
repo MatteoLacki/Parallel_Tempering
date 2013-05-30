@@ -9,16 +9,14 @@ source("./referenceObjects/parallelTempering.R")
 Aha <- function(x){ return(dnorm(x)) }
 
 z <- parallelTemperingSimulation$new(
-	noOfSteps	=10000,
-	targetDensity	=Aha, 
-	problemDimension=2, 
-	temperatures	= c(1.4, 5.4, 6.9, 10) 
+	noOfIterations	=10,	
+	temperatures	= c(1.4, 5.4, 6.9, 10),
+	strategyNumber	=2,
+	problemDimension=2,
+	targetDensity	=Aha
 )
+z
 
-
-
-length(NA)
-length(c(NA,NA)) # to jest problem..
-
-
-length(c())
+z$stateSpaceStructure$quasiMetric
+z$stateSpaceStructure$targetDensity
+z$stateSpaceStructure

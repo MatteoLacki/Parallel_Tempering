@@ -1,4 +1,4 @@
-#source("./objects/.R")
+source("./referenceObjects/stateSpaceStructure.R")
 
 Simulation <- setRefClass(
 	Class		= "Simulations",
@@ -8,8 +8,11 @@ Simulation <- setRefClass(
 								# Fields
 	fields		= list(
 
-		noOfSteps   		= "integer",
-		stateSpaceSphere	= "stateSpaceStructure"	
+			## Number of iterations of the algorithm.
+		noOfIterations  	= "integer",
+
+			## The data container with methods that act on it.
+		stateSpaceStructure	= "stateSpaceStructure"	
 	),
 
 ###########################################################################
@@ -21,29 +24,26 @@ Simulation <- setRefClass(
 				# Initialisation
 
 		simulationInitializator	= function(
-			noOfSteps 			= 0L
-			...
+			noOfIterations 	= 0L
 			)
 		{
-			tmpNoOfSteps 	<- as.integer(noOfSteps)
+			tmpNoOfIterations 	<- as.integer(noOfIterations)
 			
-			if ( is.na(tmpNoOfSteps) || (noOfSteps < 0) ) 
+			if ( is.na(tmpNoOfIterations) || (noOfIterations < 0) ) 
 			{
 				stop("Inappropriate number of steps. Please enter an integer value.")
 			} else
 			{	
-				noOfSteps 		<<- tmpNoOfSteps
+				noOfIterations 	<<- tmpNoOfIterations
 			}
 		},	
 
-		initialize 				= function(
-			noOfSteps 			= 0L
-			...
+		initialize = function(
+			noOfIterations 	= 0L
 			)
 		{
 			simulationInitializator(
-				noOfSteps 		=noOfSteps, 
-				...
+				noOfIterations 	= noOfIterations			
 			)
 		},
 
@@ -54,13 +54,13 @@ Simulation <- setRefClass(
 		simulationShow = function()
 		{
 			cat('\n Welcome to our simulation! \n')
-			cat('Number of steps: ', noOfSteps, '\n')
+			cat('Number of steps: ', noOfIterations, '\n')
 		},	
 
-		show	= function()
+		show = function()
 		{
 			simulationShow()
-		}
+		},
 
 		############################################################
 				# Algorithmic Methods
@@ -69,11 +69,11 @@ Simulation <- setRefClass(
 		makeStepOfTheAlgorithm	= function()
 		{
 			cat('I shall make it all happen.')
-		}
+		},
 
 		simulate = function()
 		{
-			for ( iteration in 1:noOfSteps ) makeStepOfTheAlgorithm() 
+			for ( iteration in 1:noOfIterations ) makeStepOfTheAlgorithm() 
 		}	
 
 ###########################################################################

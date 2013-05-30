@@ -5,8 +5,9 @@ stateSpaceStructure <- setRefClass(
 ###########################################################################
 								# Fields
 	fields		= list(
-		noOfChains			= "integer",		
-		currentIteration	= "integer"
+
+			## Number of iterations of the parallel tempering algorithm.	
+		noOfIterations 		= "integer"
 	),
 
 ###########################################################################
@@ -18,27 +19,25 @@ stateSpaceStructure <- setRefClass(
 				# Initialisation
 
 		initializeStateSpaceStructure = function(
-			noOfSteps 			= 0L,
+			noOfIterations 	= 0L
 		)
 		{
-			tmpNoOfSteps <- as.integer( noOfSteps )
-			if ( is.na(tmpNoOfSteps) || (tmpNoOfSteps < 0) ) 
+			tmpNoOfIterations <- as.integer( noOfIterations )
+			if ( is.na(tmpNoOfIterations) || (tmpNoOfIterations < 0) ) 
 			{
 				stop("Inappropriate no of steps. Please enter an integer value.")
 			} else
 			{	
-				noOfSteps 		<<- tmpNoOfSteps
+				noOfIterations 		<<- tmpNoOfIterations
 			}
-
-			currentIteration 	<<- 0
-		}
+		},
 
 		initialize 	= function(
-			noOfSteps 			= 0L
+			noOfIterations 	= 0L
 		)
 		{
 			initializeStateSpaceStructure(
-				noOfSteps 			= noOfSteps
+				noOfIterations 			= noOfIterations
 			)
 		}
 
@@ -46,7 +45,9 @@ stateSpaceStructure <- setRefClass(
 				# Visualisation
 
 
-		############################################################
+####################################################################
 				# Finis Structurae		
 	)
 )
+
+source("./referenceObjects/realFiniteDimensionalStateSpaceStructure.R")
