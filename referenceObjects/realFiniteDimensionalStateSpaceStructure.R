@@ -11,6 +11,9 @@ realFiniteDimensionalStateSpaceStructure <- setRefClass(
 			## Dimension of the original state space of interest.
 		problemDimension	= "integer",	
 
+			## Temperature levels for the parallel tempering algorithm.
+		temperatures		= "numeric",
+
 			## Number of temperature levels.
 		noOfTemperatures	= "integer",
 
@@ -30,11 +33,13 @@ realFiniteDimensionalStateSpaceStructure <- setRefClass(
 		freeSlotNo 			= "integer",
 
 			## Number of cell complexes in the data structure
-		noOfSlots 			= "integer"
+		noOfSlots 			= "integer",
 
 			## Matrix containing covariances for the proposal kernel.
-		#proposalsCovarianceCholeskised 	= "matrix"
+		proposalCovariancesCholeskised 	= "matrix",
 
+			## Boolean: says whether proposal covariances are the same on different temperature levels.
+		simpleCovariance	= "logical"	
 	),	
 	
 ###########################################################################
@@ -48,15 +53,17 @@ realFiniteDimensionalStateSpaceStructure <- setRefClass(
 
 
 		initializeRealFiniteDimensionalStateSpaceStructure = function(
+			temperatures 		= numeric(0),
 			noOfTemperatures 	= 0L,
 			problemDimension	= 0L,
-			targetDensity 		= NULL,
+			targetDensity 		= function(){},
 			initialStates 		= matrix(ncol=0, nrow=0),
-			quasiMetric 		= function(){}
+			quasiMetric 		= function(){},
+			...
 		)
 		{
 				# Checked already by the Simulation.
-			#noOfTemperatures		<<- noOfTemperatures
+			temperatures 	<<- temperatures
 
 			initialStatesDimension 	<- nrow(initialStates)
 			initialStatesnoOfTemperatures	<- ncol(initialStates)
@@ -129,15 +136,87 @@ realFiniteDimensionalStateSpaceStructure <- setRefClass(
 
 			targetDensity	<<- targetDensity	
 			quasiMetric 	<<- quasiMetric
+
+			enlistedAdditionalInfo	<- list(...)
+
+			ifelse(
+				'proposalCovariances' %in% names(enlistedAdditionalInfo),
+				{
+					tmpProposalCovariances <- 
+						enlistedAdditionalInfo$proposalCovariances
+
+					ifelse(
+						( 	
+							class(tmpProposalCovariances) == 'matrix' 	
+						),
+						{
+							proposalCovariancesCholeskised <<- 
+								chol( tmpProposalCovariances )
+							
+							simpleCovariance 	<<- TRUE
+						},
+						ifelse(
+							(
+								class(tmpProposalCovariances) == 'list' &
+								length(tmpProposalCovariances)==noOfTemperatures
+							),
+							ifelse(
+								all(
+									sapply(
+										tmpProposalCovariances,
+										function(x) 
+											ifelse( 
+												(class(x) == 'matrix'), 
+												nrow(x)==2 & ncol(x)==2, 
+												FALSE
+											) 
+									)
+								),	
+								{
+										### Could use completely different method here. Maybe create a specialise subobject.
+									proposalCovariancesCholeskised <<-
+										do.call( 
+											cbind, 
+											lapply( 
+												tmpProposalCovariances, 
+												chol 
+											) 
+										)
+
+									simpleCovariance 	<<- FALSE
+								},
+								stop('Your covariances are either not matrices or their size do not conform to problem dimension.')
+							),
+							stop('\nProposal covariances are not enlisted or are enlisted but the number of covariance matrices is other than the number of temperatures.\n')
+						)
+					)
+
+					rm(	tmpProposalCovariances )
+				},
+				{
+					cat('\nYou did not submit any proposal covariances. Proceeding with identity matrix for all temperatures.\n')
+
+					proposalCovariancesCholeskised <<- 
+						diag(
+							rep.int(1, times=problemDimension)
+						)
+
+					simpleCovariance <<- TRUE
+				}
+			)
+
+			rm( enlistedAdditionalInfo )
 		},
 
 		initialize	= function(
+			temperatures 		= numeric(0),
 			noOfIterations 		= 0L,  
 			noOfTemperatures 	= 0L,
 			problemDimension	= 0L,
-			targetDensity 		= NULL,
+			targetDensity 		= function(){},
 			initialStates 		= matrix(ncol=0, nrow=0),
-			quasiMetric 		= function(){}
+			quasiMetric 		= function(){},
+			...
 		)
 		{
 			initializeStateSpaceStructure(
@@ -146,17 +225,14 @@ realFiniteDimensionalStateSpaceStructure <- setRefClass(
 
 			initializeRealFiniteDimensionalStateSpaceStructure(
 				noOfTemperatures = noOfTemperatures,
+				temperatures 	 = temperatures,
 				problemDimension = problemDimension,
 				targetDensity 	 = targetDensity,
 				initialStates 	 = initialStates,
-				quasiMetric 	 = quasiMetric 
+				quasiMetric 	 = quasiMetric,
+				... 
 			)
 		},
-
-		############################################################
-				# Visualisation
-
-
 
 
 		############################################################
@@ -225,12 +301,33 @@ realFiniteDimensionalStateSpaceStructure <- setRefClass(
 					)			
 				},
 				{
-					cat('Simulation not yet terminated. Here are the initial states.\n')
+					cat('Simulation not yet terminated - here are the initial states:\n\n')
 					result 	<- getStates(1L) 
 				}
 			)
 			return( result )
 		},
+
+
+		############################################################
+				# Visualisation
+
+
+		showState = function( 
+			iteration 	= 0L,
+			type 		= 'initial states'
+		)
+		{
+			tmpStates <- 
+				as.data.frame( 
+					getIteration( iteration, type ) 
+				)
+
+			colnames(tmpStates) <- temperatures
+			rownames(tmpStates) <- 1:problemDimension
+
+			return(tmpStates)
+		},		
 
 
 		############################################################

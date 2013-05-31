@@ -46,9 +46,10 @@ parallelTemperingSimulation <- setRefClass(
 			temperatures 		= numeric(0),
 			strategyNumber		= 1L,
 			problemDimension	= 0L,
-			targetDensity 		= NULL, 
+			targetDensity 		= function(){}, 
 			initialStates		= matrix(nrow=0, ncol=0),
-			quasiMetric 		= function(){}
+			quasiMetric 		= function(){},
+			...
 			)
 		{
 			ifelse( 
@@ -112,12 +113,14 @@ parallelTemperingSimulation <- setRefClass(
 
 			stateSpaceStructure	<<- 
 				realFiniteDimensionalStateSpaceStructure$new(
-					noOfIterations 	= noOfIterations,
-					noOfTemperatures= noOfTemperatures,
-					problemDimension= problemDimension,
-					targetDensity 	= targetDensity,
-					initialStates 	= initialStates,
-					quasiMetric 	= quasiMetric  
+					temperatures 		= .self$temperatures,
+					noOfIterations 		= noOfIterations,
+					noOfTemperatures	= .self$noOfTemperatures,
+					problemDimension	= problemDimension,
+					targetDensity 		= targetDensity,
+					initialStates 		= initialStates,
+					quasiMetric 		= quasiMetric,
+					...  
 				)
 		},
 
@@ -126,9 +129,10 @@ parallelTemperingSimulation <- setRefClass(
 			temperatures 		= numeric(0),
 			strategyNumber		= 1L,
 			problemDimension	= 0L,
-			targetDensity 		= NULL, 
+			targetDensity 		= function(){}, 
 			initialStates		= matrix(nrow=0, ncol=0),
-			quasiMetric 		= function(){}
+			quasiMetric 		= function(){},
+			...
 			)
 		{
 			simulationInitializator(
@@ -141,7 +145,8 @@ parallelTemperingSimulation <- setRefClass(
 				problemDimension	= problemDimension,
 				targetDensity 		= targetDensity, 
 				initialStates		= initialStates,
-				quasiMetric 		= quasiMetric
+				quasiMetric 		= quasiMetric,
+				...
 			)
 		},
 
@@ -155,12 +160,10 @@ parallelTemperingSimulation <- setRefClass(
 			cat('\nThe Parallel Tempering inputs are here: \n')
 			cat('Temperatures: ', temperatures, '\n')
 			cat('Number of chains: ', noOfTemperatures, '\n')	
-			cat('Chosen strategy number: ', strategyNumber, '\n')	
-			cat('Initial Points:\n')		
+			cat('Chosen swap-strategy number: ', strategyNumber, '\n\n')	
+					
 
-			initialStates 			<- as.data.frame( simulatedStates[numeration(),] )
-			names( initialStates ) 	<- temperatures
-			print(initialStates)	
+			print( stateSpaceStructure$showState() )	
 		},
 
 	
