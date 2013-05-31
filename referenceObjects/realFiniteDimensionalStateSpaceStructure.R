@@ -139,11 +139,21 @@ realFiniteDimensionalStateSpaceStructure <- setRefClass(
 
 			enlistedAdditionalInfo	<- list(...)
 
+			cat('\nWhat is hidden in ...\n',names(enlistedAdditionalInfo),'\n')
+			print('proposalCovariances' %in% names(enlistedAdditionalInfo))
+
 			ifelse(
-				'proposalCovariances' %in% names(enlistedAdditionalInfo),
+				(
+					'proposalCovariances' %in% names(enlistedAdditionalInfo)
+				),
 				{
+					print(length(enlistedAdditionalInfo$proposalCovariances))	
 					tmpProposalCovariances <- 
 						enlistedAdditionalInfo$proposalCovariances
+
+
+					print(tmpProposalCovariances)
+					print(class(tmpProposalCovariances))
 
 					ifelse(
 						( 	
@@ -153,7 +163,9 @@ realFiniteDimensionalStateSpaceStructure <- setRefClass(
 							proposalCovariancesCholeskised <<- 
 								chol( tmpProposalCovariances )
 							
+							print(proposalCovariancesCholeskised)
 							simpleCovariance 	<<- TRUE
+							print(simpleCovariance)
 						},
 						ifelse(
 							(
@@ -190,11 +202,11 @@ realFiniteDimensionalStateSpaceStructure <- setRefClass(
 							stop('\nProposal covariances are not enlisted or are enlisted but the number of covariance matrices is other than the number of temperatures.\n')
 						)
 					)
-
-					rm(	tmpProposalCovariances )
+					cat('asd')
+					#rm(	tmpProposalCovariances )
 				},
 				{
-					cat('\nYou did not submit any proposal covariances. Proceeding with identity matrix for all temperatures.\n')
+					cat('\nYou did not submit any proposal covariances or misspelled the name (should be proposalCovariances=..). \nProceeding with identity matrix for all temperatures.\n')
 
 					proposalCovariancesCholeskised <<- 
 						diag(
@@ -204,7 +216,8 @@ realFiniteDimensionalStateSpaceStructure <- setRefClass(
 					simpleCovariance <<- TRUE
 				}
 			)
-
+	
+			cat('sdfs')
 			rm( enlistedAdditionalInfo )
 		},
 

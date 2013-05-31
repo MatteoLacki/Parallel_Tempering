@@ -18,11 +18,20 @@ z <- parallelTemperingSimulation$new(
 z
 z$stateSpaceStructure
 
-z$stateSpaceStructure$quasiMetric
-z$stateSpaceStructure$targetDensity
-z$stateSpaceStructure
 
-z$translatorFromLexicOrderToTranspositions
+source("./referenceObjects/simulations.R")
+y <- parallelTemperingSimulation$new(
+	noOfIterations	=2,	
+	temperatures	= c(1.4, 5.4, 6.9, 10),
+	strategyNumber	=2,
+	problemDimension=2,
+	targetDensity	=Aha,
+	proposalCovariances = matrix(c(4,0,0,2),2,2)
+)
+y
+y$stateSpaceStructure
+rm(y)
+
 
 system.time(
 	parallelTemperingSimulation$new(
