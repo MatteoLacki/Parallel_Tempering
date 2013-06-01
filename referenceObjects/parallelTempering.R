@@ -28,8 +28,17 @@ parallelTemperingSimulation <- setRefClass(
 		currentPairSwapsProbabilities 			= "numeric",
 		#Current_Unnormalised_Probabilities_of_Pair_Swaps 
 	
-			## Vector with logs of unnormalised densities evaluated in current states.
-		currentStatesLogUnnormalisedDensities	= "matrix"
+			## Vector with logs of unnormalised densities evaluated in current states. They are not yet multiplied by the inverse temperatures!
+		currentStatesLogUnnormalisedDensities	= "numeric",
+
+			## Vector with boolean values. TRUE when a state did get updated in the Random Walk phase of the algorithm.
+		indicesOfStatesUpdatedInRandomWalk	= "logical",	
+
+			## An integer value describing the number of swap in the lexicographical order. -1 corresponds to swap rejection.
+		noOfLastPermutation	= "integer",
+
+			## A vector of integers : all permutations enlisted. As long as the provided number of iterations to be executed.
+		permutationHistory	= "integer"
 	),
 
 ###########################################################################
@@ -49,7 +58,7 @@ parallelTemperingSimulation <- setRefClass(
 			targetDensity 		= function(){}, 
 			initialStates		= matrix(nrow=0, ncol=0),
 			quasiMetric 		= function(){},
-			...
+			proposalCovariances = matrix(ncol=0, nrow=0)
 			)
 		{
 			ifelse( 
@@ -120,8 +129,16 @@ parallelTemperingSimulation <- setRefClass(
 					targetDensity 		= targetDensity,
 					initialStates 		= initialStates,
 					quasiMetric 		= quasiMetric,
-					...  
+					proposalCovariances = proposalCovariances
 				)
+
+				# Initially everything is new.
+			indicesOfStatesUpdatedInRandomWalk 		<<- rep( TRUE, noOfTemperatures)
+			currentStatesLogUnnormalisedDensities 	<<- numeric( noOfTemperatures )
+			updateStatesLogUnnormalisedDensities()
+
+			noOfLastPermutation <<- 0L
+			permutationHistory	<<-	integer(noOfIterations)
 		},
 
 		initialize 				= function(
@@ -132,7 +149,7 @@ parallelTemperingSimulation <- setRefClass(
 			targetDensity 		= function(){}, 
 			initialStates		= matrix(nrow=0, ncol=0),
 			quasiMetric 		= function(){},
-			...
+			proposalCovariances = matrix(ncol=0, nrow=0)
 			)
 		{
 			simulationInitializator(
@@ -146,7 +163,7 @@ parallelTemperingSimulation <- setRefClass(
 				targetDensity 		= targetDensity, 
 				initialStates		= initialStates,
 				quasiMetric 		= quasiMetric,
-				...
+				proposalCovariances = proposalCovariances
 			)
 		},
 
@@ -186,7 +203,7 @@ parallelTemperingSimulation <- setRefClass(
 				###### swap sphere ######
 
 		swapStrategy = function(
-			chosenIndices 	,
+			chosenIndices,
 			strategyNumber 	=1
 		)	
 		{
@@ -198,7 +215,7 @@ parallelTemperingSimulation <- setRefClass(
 
 			tmp <- 
 				exp(
-					ifelse( s==2, -tmp, -abs(tmp) )*
+					-ifelse( s==2, tmp, abs(tmp) )*
 					ifelse( s==3|s==4 , inverseTemperatures[i] - inverseTemperatures[j], 1)*
 					ifelse( s ==4,
 						1/(1 + quasiMetric( 	currentStates[,i],
@@ -246,7 +263,27 @@ parallelTemperingSimulation <- setRefClass(
 				stop('A problem of type in generation.')
 			}				
 			return(	do.call(cbind, result) )
+		},
+
+		translateLexicToTranspositions = function( lexicNumber )
+		{
+			return( translatorFromLexicOrderToTranspositions[,lexicNumber] )
+		},
+
+		updateStatesLogUnnormalisedDensities = function()
+		{
+			currentStatesLogUnnormalisedDensities[indicesOfStatesUpdatedInRandomWalk] <<-
+				stateSpaceStructure$updateLogsOfUnnormalisedDensities(
+					(1:noOfTemperatures)[indicesOfStatesUpdatedInRandomWalk]
+				)	
 		}
+
+		# permute = function(
+		# 	lexicNumber = -1L
+		# )
+		# {
+
+		# }
 
 ####################################################################
 				# Finis Structurae

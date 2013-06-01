@@ -59,7 +59,7 @@ realFiniteDimensionalStateSpaceStructure <- setRefClass(
 			targetDensity 		= function(){},
 			initialStates 		= matrix(ncol=0, nrow=0),
 			quasiMetric 		= function(){},
-			...
+			proposalCovariances = matrix(ncol=0, nrow=0)
 		)
 		{
 				# Checked already by the Simulation.
@@ -137,88 +137,77 @@ realFiniteDimensionalStateSpaceStructure <- setRefClass(
 			targetDensity	<<- targetDensity	
 			quasiMetric 	<<- quasiMetric
 
-			enlistedAdditionalInfo	<- list(...)
-
-			cat('\nWhat is hidden in ...\n',names(enlistedAdditionalInfo),'\n')
-			print('proposalCovariances' %in% names(enlistedAdditionalInfo))
-
 			ifelse(
-				(
-					'proposalCovariances' %in% names(enlistedAdditionalInfo)
+				(	class(proposalCovariances) == 'matrix' ),
+				ifelse(
+					( 
+						nrow(proposalCovariances)==problemDimension &
+						ncol(proposalCovariances)==problemDimension
+					),
+					{
+						proposalCovariancesCholeskised <<- 
+							chol( proposalCovariances )			
+						simpleCovariance 	<<- TRUE
+					},
+					{
+						cat('You supplied a covariance matrix that does not conform to our state space dimension or did not care to supply it at all.\n Proceeding with identity covariances.\n')
+						
+						proposalCovariancesCholeskised <<- 
+							diag(
+								rep.int(1, times=problemDimension)
+							)
+						simpleCovariance <<- TRUE
+					}
 				),
-				{
-					print(length(enlistedAdditionalInfo$proposalCovariances))	
-					tmpProposalCovariances <- 
-						enlistedAdditionalInfo$proposalCovariances
-
-
-					print(tmpProposalCovariances)
-					print(class(tmpProposalCovariances))
-
+				ifelse(
+					(
+						class(proposalCovariances) == 'list' &
+						length(proposalCovariances)==noOfTemperatures
+					),
 					ifelse(
-						( 	
-							class(tmpProposalCovariances) == 'matrix' 	
-						),
+						all(
+							sapply(
+								proposalCovariances,
+								function(x) 
+									ifelse( 
+										(class(x) == 'matrix'), 
+										nrow(x)==2 & ncol(x)==2, 
+										FALSE
+									) 
+							)
+						),	
 						{
-							proposalCovariancesCholeskised <<- 
-								chol( tmpProposalCovariances )
-							
-							print(proposalCovariancesCholeskised)
-							simpleCovariance 	<<- TRUE
-							print(simpleCovariance)
+							proposalCovariancesCholeskised <<-
+								do.call( 
+									cbind, 
+									lapply( 
+										proposalCovariances, 
+										chol 
+									) 
+								)
+							simpleCovariance 	<<- FALSE
 						},
-						ifelse(
-							(
-								class(tmpProposalCovariances) == 'list' &
-								length(tmpProposalCovariances)==noOfTemperatures
-							),
-							ifelse(
-								all(
-									sapply(
-										tmpProposalCovariances,
-										function(x) 
-											ifelse( 
-												(class(x) == 'matrix'), 
-												nrow(x)==2 & ncol(x)==2, 
-												FALSE
-											) 
-									)
-								),	
-								{
-										### Could use completely different method here. Maybe create a specialise subobject.
-									proposalCovariancesCholeskised <<-
-										do.call( 
-											cbind, 
-											lapply( 
-												tmpProposalCovariances, 
-												chol 
-											) 
-										)
+						{
+							cat('Your covariances are either not matrices or their size do not conform to problem dimension.\n Proceeding with identity covariances.\n')
 
-									simpleCovariance 	<<- FALSE
-								},
-								stop('Your covariances are either not matrices or their size do not conform to problem dimension.')
-							),
-							stop('\nProposal covariances are not enlisted or are enlisted but the number of covariance matrices is other than the number of temperatures.\n')
-						)
-					)
-					cat('asd')
-					#rm(	tmpProposalCovariances )
-				},
-				{
-					cat('\nYou did not submit any proposal covariances or misspelled the name (should be proposalCovariances=..). \nProceeding with identity matrix for all temperatures.\n')
+							proposalCovariancesCholeskised <<- 
+								diag(
+									rep.int(1, times=problemDimension)
+								)
+							simpleCovariance <<- TRUE	
+						}
+					),
+					{
+						cat('\nProposal covariances are not enlisted or are enlisted but the number of covariance matrices is other than the number of temperatures.\n Proceeding with identity covariances.\n')
 
-					proposalCovariancesCholeskised <<- 
-						diag(
-							rep.int(1, times=problemDimension)
-						)
-
-					simpleCovariance <<- TRUE
-				}
+						proposalCovariancesCholeskised <<- 
+							diag(
+								rep.int(1, times=problemDimension)
+							)
+						simpleCovariance <<- TRUE	
+					}
+				)
 			)
-	
-			cat('sdfs')
-			rm( enlistedAdditionalInfo )
 		},
 
 		initialize	= function(
@@ -229,7 +218,7 @@ realFiniteDimensionalStateSpaceStructure <- setRefClass(
 			targetDensity 		= function(){},
 			initialStates 		= matrix(ncol=0, nrow=0),
 			quasiMetric 		= function(){},
-			...
+			proposalCovariances = matrix(ncol=0, nrow=0)
 		)
 		{
 			initializeStateSpaceStructure(
@@ -243,7 +232,7 @@ realFiniteDimensionalStateSpaceStructure <- setRefClass(
 				targetDensity 	 = targetDensity,
 				initialStates 	 = initialStates,
 				quasiMetric 	 = quasiMetric,
-				... 
+				proposalCovariances = proposalCovariances
 			)
 		},
 
@@ -354,7 +343,7 @@ realFiniteDimensionalStateSpaceStructure <- setRefClass(
 			return(
 				log(
 					apply( 
-						Current_States[,indicesOfStatesToUpdate], 
+						currentStates[,indicesOfStatesToUpdate], 
 						2, 
 						targetDensity 
 					)
