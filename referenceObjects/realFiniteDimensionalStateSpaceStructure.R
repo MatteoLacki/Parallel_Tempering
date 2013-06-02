@@ -23,7 +23,10 @@ realFiniteDimensionalStateSpaceStructure <- setRefClass(
 			## Matrix containing all simulated points.
 		simulatedStates		= "matrix",
 
-			## Matrix containing points simulated in the last step of the algorithm.
+			## Matrix containing proposals of the random walk.
+		proposedStates 		= "matrix",
+
+			## Matrix containing points simulated in the last step of the algorithm: after random walk phase it is composed of previous current states with updates being the accepted proposals.
 		currentStates 		= "matrix",
 
 			## Quasi metric between two points from the state space.
@@ -93,7 +96,7 @@ realFiniteDimensionalStateSpaceStructure <- setRefClass(
 					ifelse(
 						( 	
 							tmpProblemDimension == initialStatesDimension & 
-							tmpNoOfTemperatures 		== initialStatesnoOfTemperatures
+							tmpNoOfTemperatures == initialStatesnoOfTemperatures
 						),
 						{	
 							currentStates	<<- initialStates
@@ -120,6 +123,8 @@ realFiniteDimensionalStateSpaceStructure <- setRefClass(
 					)
 				}
 			)	
+				# These are the same as current because we want updateLogsOfUnnormalisedDensities to update the correct inital log densities.
+			proposedStates 	<<- currentStates
 
 			simulatedStates	<<- 
 				matrix(
@@ -130,7 +135,7 @@ realFiniteDimensionalStateSpaceStructure <- setRefClass(
 			freeSlotNo 		<<- 1L
 			noOfSlots 		<<- noOfIterations*2L + 1L
 
-			insertStates( currentStates )
+			insertStates()
 
 			rm( tmpProblemDimension, tmpNoOfTemperatures )
 
@@ -242,13 +247,13 @@ realFiniteDimensionalStateSpaceStructure <- setRefClass(
 
 
 		simulationTerminated = function()
+			#### Checks whether simulation is terminated.
 		{
 			return( freeSlotNo == noOfSlots + 1L )
 		},
 
-		insertStates	= function(
-			inputMatrix
-		)
+		insertStates	= function() 
+			#### Inserts current states to the data history (field: simulatedStates).
 		{
 			ifelse( 
 				freeSlotNo <= noOfSlots,
@@ -256,7 +261,7 @@ realFiniteDimensionalStateSpaceStructure <- setRefClass(
 					simulatedStates[
 						((freeSlotNo-1)*problemDimension+1):
 						(freeSlotNo*problemDimension),
-					] 	<<- inputMatrix
+					] 	<<- currentStates
 
 					freeSlotNo 	<<- freeSlotNo + 1L
 				},
@@ -267,6 +272,7 @@ realFiniteDimensionalStateSpaceStructure <- setRefClass(
 		getStates 	= function(
 			whichSlotNo
 		)
+			#### Extracts the given slot from data history (field: simulatedStates).
 		{
 				# It's ok to return this: this is not a pointer, but a copied submatrix
 			return(
@@ -282,6 +288,7 @@ realFiniteDimensionalStateSpaceStructure <- setRefClass(
 			iteration 	= 0L,
 			type		= 'initial states' 
 		)
+			#### Extracts for a given iteration results of the given step type.
 		{
 			ifelse( 
 				simulationTerminated(),
@@ -310,6 +317,14 @@ realFiniteDimensionalStateSpaceStructure <- setRefClass(
 			return( result )
 		},
 
+		updateCurrentStates = function(
+			indicesOfStatesUpdatedInRandomWalk = NA	
+		)
+		{
+			if(!is.na(indicesOfStatesUpdatedInRandomWalk))
+				currentStates[,indicesOfStatesUpdatedInRandomWalk] <<- proposedStates[,indicesOfStatesUpdatedInRandomWalk] 
+				
+		},
 
 		############################################################
 				# Visualisation
@@ -336,21 +351,55 @@ realFiniteDimensionalStateSpaceStructure <- setRefClass(
 				# Algorithmic Methods
 
 
-		updateLogsOfUnnormalisedDensities = function(
-			indicesOfStatesToUpdate
-		)
+		getProposalLogsOfUnnormalisedDensities = function()
+			#### Calculates logs of unnormalised densities in all the proposed states. 
 		{
 			return(
 				log(
 					apply( 
-						currentStates[,indicesOfStatesToUpdate], 
+						proposedStates, 
 						2, 
 						targetDensity 
 					)
 				)	
 			)
-		}
+		},
 
+		randomWalkProposal = function()
+			#### Generates new current states.
+		{
+			proposedStates <<-	
+				currentStates +
+				ifelse(
+					simpleCovariance,
+					{
+						proposalCovariancesCholeskised %*% 
+						matrix( 
+							rnorm( 
+								n = problemDimension*noOfTemperatures 
+							),
+							nrow = problemDimension,
+							ncol = noOfTemperatures
+						)
+					},
+					sapply(
+						1:noOfTemperatures,
+						function( covarianceMatrixNo )
+						{
+							proposalCovariancesCholeskised[, 
+								((covarianceMatrixNo-1)*problemDimension+1):
+								(covarianceMatrixNo*problemDimension)
+							] %*%
+							rnorm(problemDimension)
+						}
+					)
+				)
+
+				# Now it will return proposed states log densities.
+			return(	
+				getProposalLogsOfUnnormalisedDensities()
+			)
+		}
 ###########################################################################
 				# Finis Structurae
 	)

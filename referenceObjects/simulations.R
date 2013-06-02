@@ -66,14 +66,26 @@ Simulation <- setRefClass(
 				# Algorithmic Methods
 
 
-		makeStepOfTheAlgorithm	= function()
+		makeStepOfTheAlgorithm	= function( 
+			iteration 
+		)
 		{
 			cat('I shall make it all happen.')
 		},
 
 		simulate = function()
 		{
-			for ( iteration in 1:noOfIterations ) makeStepOfTheAlgorithm() 
+			# for ( iteration in 1:noOfIterations ) makeStepOfTheAlgorithm( iteration ) 
+			tmp <- sapply( 
+				1:noOfIterations, 
+				function( iteration ) 
+				{
+					makeStepOfTheAlgorithm( iteration )
+				},
+				USE.NAMES = FALSE
+			)
+
+			rm(tmp)
 		}	
 
 ###########################################################################
