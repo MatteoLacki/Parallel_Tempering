@@ -27,7 +27,7 @@ realFiniteDimensionalStateSpaceStructure <- setRefClass(
 		proposedStates 		= "matrix",
 
 			## Matrix containing points simulated in the last step of the algorithm: after random walk phase it is composed of previous current states with updates being the accepted proposals.
-		currentStates 		= "matrix",
+		lastStates 		= "matrix",
 
 			## Quasi metric between two points from the state space.
 		quasiMetric  		= "function",
@@ -79,7 +79,7 @@ realFiniteDimensionalStateSpaceStructure <- setRefClass(
 				ifelse( 
 					(initialStatesDimension > 0L & initialStatesnoOfTemperatures > 0L), 
 					{
-						currentStates	<<- initialStates
+						lastStates	<<- initialStates
 
 							# Consider input data representative.
 						problemDimension<<- initialStatesDimension
@@ -99,7 +99,7 @@ realFiniteDimensionalStateSpaceStructure <- setRefClass(
 							tmpNoOfTemperatures == initialStatesnoOfTemperatures
 						),
 						{	
-							currentStates	<<- initialStates
+							lastStates	<<- initialStates
 						},
 						ifelse(
 							( 
@@ -107,7 +107,7 @@ realFiniteDimensionalStateSpaceStructure <- setRefClass(
 								initialStatesnoOfTemperatures==0
 							),
 							{		# No initial states supplied. Enough info to generate them.
-								currentStates <<- 
+								lastStates <<- 
 									replicate( 
 										n 	= noOfTemperatures, 
 										expr= runif( 
@@ -124,7 +124,7 @@ realFiniteDimensionalStateSpaceStructure <- setRefClass(
 				}
 			)	
 				# These are the same as current because we want updateLogsOfUnnormalisedDensities to update the correct inital log densities.
-			proposedStates 	<<- currentStates
+			proposedStates 	<<- lastStates
 
 			simulatedStates	<<- 
 				matrix(
@@ -261,7 +261,7 @@ realFiniteDimensionalStateSpaceStructure <- setRefClass(
 					simulatedStates[
 						((freeSlotNo-1)*problemDimension+1):
 						(freeSlotNo*problemDimension),
-					] 	<<- currentStates
+					] 	<<- lastStates
 
 					freeSlotNo 	<<- freeSlotNo + 1L
 				},
@@ -317,12 +317,12 @@ realFiniteDimensionalStateSpaceStructure <- setRefClass(
 			return( result )
 		},
 
-		updateCurrentStates = function(
+		updatelastStates = function(
 			indicesOfStatesUpdatedInRandomWalk = NA	
 		)
 		{
 			if(!is.na(indicesOfStatesUpdatedInRandomWalk))
-				currentStates[,indicesOfStatesUpdatedInRandomWalk] <<- proposedStates[,indicesOfStatesUpdatedInRandomWalk] 
+				lastStates[,indicesOfStatesUpdatedInRandomWalk] <<- proposedStates[,indicesOfStatesUpdatedInRandomWalk] 
 				
 		},
 
@@ -369,7 +369,7 @@ realFiniteDimensionalStateSpaceStructure <- setRefClass(
 			#### Generates new current states.
 		{
 			proposedStates <<-	
-				currentStates +
+				lastStates +
 				ifelse(
 					simpleCovariance,
 					{
@@ -398,6 +398,19 @@ realFiniteDimensionalStateSpaceStructure <- setRefClass(
 				# Now it will return proposed states log densities.
 			return(	
 				getProposalLogsOfUnnormalisedDensities()
+			)
+		},
+
+		measureQuasiDistance = function(
+			iState,
+			jState
+		)
+		{
+			return(
+				quasiMetric(
+					lastStates[,iState],
+					lastStates[,jState]
+				)
 			)
 		}
 ###########################################################################

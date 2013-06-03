@@ -24,24 +24,31 @@ parallelTemperingSimulation <- setRefClass(
 			## Matrix with two rows with pairs of possible pairs in columns.
 		translatorFromLexicOrderToTranspositions = "matrix",
 
-			## Vector with probabilities of current pair swaps.
-		currentPairSwapsProbabilities 			= "numeric",
-		#Current_Unnormalised_Probabilities_of_Pair_Swaps 
-	
-			## Vector with logs of unnormalised densities evaluated at current states. They are not yet multiplied by the inverse temperatures: this vector does not correspond to evaluation of the tensorised target measure.
-		currentStatesLogUnnormalisedDensities	= "numeric",
+			## Number of transpositions in the lexicographic order.
+		noOfTranspositions	= "integer",
 
-			## Vector with logs of unnormalised densities evaluated at current proposal. They are not yet multiplied by the inverse temperatures: this vector does not correspond to evaluation of the tensorised target measure.
-		currentProposalsLogUnnormalisedDensities	= "numeric",
+			## Vector with probabilities of current pair swaps.
+		lastSwapUProbabilities	= "numeric",
+	
+			## Vector with probabilities of current pair swaps.
+		lastProposalSwapProbabilities	= "numeric",
+
+			## Vector with logs of unnormalised densities evaluated at current states. They are not yet multiplied by the inverse temperatures: this vector does not correspond to evaluation of the tensorised target measure.
+		lastStatesLogUnDensities	= "numeric",
+
+			## Vector with logs of unnormalised densities evaluated at current proposal. They are not yet multiplied by the inverse temperatures: this vector does not correspond to evaluation of the tensorised target measure. 
+
+			#This can be turned into a local variable.
+		lastProposalLogUnDensities	= "numeric",
 
 			## Vector with boolean values. TRUE when a state did get updated in the Random Walk phase of the algorithm.
-		indicesOfStatesUpdatedInRandomWalk	= "logical",	
+		statesUpdatedByRandomWalk	= "logical",	
 
 			## An integer value describing the number of swap in the lexicographical order. -1 corresponds to swap rejection.
-		noOfLastPermutation	= "integer",
+		noOfLastTransposition	= "integer",
 
-			## A vector of integers : all permutations enlisted. As long as the provided number of iterations to be executed.
-		permutationHistory	= "integer",
+			## A vector of integers : all transpositions enlisted. As long as the provided number of iterations to be executed.
+		transpositionHistory	= "integer",
 
 			## Triggers detailed output during the simulation.
 		detailedOutput		= "logical"
@@ -109,12 +116,12 @@ parallelTemperingSimulation <- setRefClass(
 				}
 			)
 
-
+				# MAYBE UNNECESARY
 			ifelse(
 				(noOfTemperatures >= 1),
 				{
 					translatorFromLexicOrderToTranspositions <<- 
-				 		generateTranslatorFromLexicalOrderToTranspositions( 
+				 		generateTranspositions( 
 				 			1:noOfTemperatures 
 				 		)
 				},
@@ -127,8 +134,12 @@ parallelTemperingSimulation <- setRefClass(
 				}
 			)
 
-			stateSpaceStructure	<<- 
-				realFiniteDimensionalStateSpaceStructure$new(
+			#noOfTranspositions <<- noOfTemperatures*(noOfTemperatures-1)/2
+			noOfTranspositions 	<<- 
+				length( translatorFromLexicOrderToTranspositions )
+
+			stateSpace	<<- 
+				realFiniteDimensionalstateSpace$new(
 					temperatures 		= .self$temperatures,
 					noOfIterations 		= noOfIterations,
 					noOfTemperatures	= .self$noOfTemperatures,
@@ -140,14 +151,14 @@ parallelTemperingSimulation <- setRefClass(
 				)
 
 				# Initially everything is new.
-			indicesOfStatesUpdatedInRandomWalk 		<<- rep( TRUE, noOfTemperatures)
+			statesUpdatedByRandomWalk 		<<- rep( TRUE, noOfTemperatures)
 
 				# Current states must get at least once calculated all without any updates.
-			currentStatesLogUnnormalisedDensities 	<<-  
-				stateSpaceStructure$getProposalLogsOfUnnormalisedDensities()
+			lastStatesLogUnDensities 	<<-  
+				stateSpace$getProposalLogsOfUnnormalisedDensities()
 
-			noOfLastPermutation <<- -1L
-			permutationHistory	<<-	integer(noOfIterations)
+			noOfLastTransposition <<- -1L
+			transpositionHistory	<<-	integer(noOfIterations)
 
 			detailedOutput		<<- detailedOutput
 		},
@@ -193,7 +204,7 @@ parallelTemperingSimulation <- setRefClass(
 			cat('Chosen swap-strategy number: ', strategyNumber, '\n\n')	
 					
 
-			print( stateSpaceStructure$showState() )	
+			print( stateSpace$showState() )	
 		},
 
 	
@@ -231,21 +242,20 @@ parallelTemperingSimulation <- setRefClass(
 
 		randomWalk = function()
 		{
-			currentProposalsLogUnnormalisedDensities <<- 		
-				stateSpaceStructure$randomWalkProposal()
+			lastProposalLogUnDensities <<- 		
+				stateSpace$randomWalkProposal()
 
 			if ( detailedOutput ) 
 				cat(
 					"\nPrevious Log Densities:\n",
-					currentStatesLogUnnormalisedDensities,
+					lastStatesLogUnDensities,
 					"\nProposal Log Densities:\n",
-					currentProposalsLogUnnormalisedDensities,
+					lastProposalLogUnDensities,
 					"\n"
 				)
 			
 			rejection()
 			updateAfterRandomWalk() # both logdensities and current states.
-
 		},
 
 
@@ -260,8 +270,8 @@ parallelTemperingSimulation <- setRefClass(
 					{
 						inverseTemperatures[k]*
 						(
-							currentProposalsLogUnnormalisedDensities[k] -
-							currentStatesLogUnnormalisedDensities[k]
+							lastProposalLogUnDensities[k] -
+							lastStatesLogUnDensities[k]
 						)
 
 					}
@@ -276,103 +286,162 @@ parallelTemperingSimulation <- setRefClass(
 					"\n"
 				)	
 
-			indicesOfStatesUpdatedInRandomWalk <<- 
+			statesUpdatedByRandomWalk <<- 
 				Ulog < toCompareWithLogU
 
 
 			if ( detailedOutput ) 
 				cat(
 					"\nUpdated Steps:\n",
-					indicesOfStatesUpdatedInRandomWalk,
+					statesUpdatedByRandomWalk,
 					"\n"
 				)
 		},
 
 		updateAfterRandomWalk = function()
 		{
-			currentStatesLogUnnormalisedDensities[indicesOfStatesUpdatedInRandomWalk
-			] <<-	
-				currentProposalsLogUnnormalisedDensities[indicesOfStatesUpdatedInRandomWalk
-				]
+			lastStatesLogUnDensities[ statesUpdatedByRandomWalk ] <<-	
+				lastProposalLogUnDensities[ statesUpdatedByRandomWalk ]
 
-			stateSpaceStructure$updateCurrentStates( indicesOfStatesUpdatedInRandomWalk 
-			)
-		} 
+			stateSpace$updateCurrentStates(statesUpdatedByRandomWalk )
+		}, 
 
 				###### swap sphere ######
 
 		swap = function()
+			#### The swap step of the algorithm.
 		{
+			if ( any( statesUpdatedByRandomWalk ) ) 
+			{
+				transpositionsForUpdate <- findTranspositionsForUpdateAfterRandomWalk() 		
+
+				lastSwapUProbabilities[ transpositionsForUpdate ] <<- 
+					updateSwapUProbabilities( 
+						swapIwithJ 				= FALSE,
+						transpositionsForUpdate 	= transpositionsForUpdate
+ 					)	
+			}
 
 		},
 
 
+		findTranspositionsForUpdateAfterRandomWalk = function()
+			#### Finds numbers of transpositions in the lexical ordering whose probabilities must be updated after the random walk phase. 
+		{
+			return(
+				ifelse( 
+					all(statesUpdatedByRandomWalk),
+					1:noOfTranspositions, 
+					{
+						setdiff(
+							1:noOfTranspositions,
+							translateTranspositionsToLexical(
+								generateTranspositions(
+									(1:noOfTemperatures)[
+										!statesUpdatedByRandomWalk
+									]
+								)							
+							)			
+						)		
+					}
+				)
+			)
+		},
+
+
+		generateTranspositions = function(
+			lexicals
+		)
+			#### Creates a matrix that enlists all possible transpositions of the supplied integers. 
+		{
+			noOfLexicals 	<- length(lexicals)				
+							
+			return(		# do.call will apply cbind recursively to all enlisted objects.
+				do.call(
+					cbind, 
+					lapply( 
+						1:(noOfLexicals -1),
+						function( number )
+						{
+							noOfCols	<- noOfLexicals-number
+							return( 
+								matrix( 
+									c( 
+										rep.int(x=lexicals[number], times=noOfCols), 
+										lexicals[ (number+1):noOfLexicals] 
+									), 
+									ncol = noOfCols,
+									nrow = 2,
+									byrow= TRUE 		
+								)
+							)							
+						}
+					)
+				) 
+			)
+		},
+
+
+		translateLexicalToTranspositions = function( 
+			lexicals 
+		)
+		{
+			return( translatorFromLexicOrderToTranspositions[, lexicals ] )
+		},
+
+		translateTranspositionsToLexical = function(
+			transpositions 	# Stored in a matrix.
+		)
+		{
+			return(
+				apply(
+					transpositions,
+					2,
+					function( transposition )
+					{
+						i <- transposition[1]
+						j <- transposition[2]
+
+						return(
+							(i-1)*(No_of_Chains-i/2) + j - i
+						)
+					}
+				)
+			)
+		},
+
+
 		swapStrategy = function(
-			chosenIndices,
-			strategyNumber 	=1
+			transposition
 		)	
 		{
-			i <- chosenIndices[1]
-			j <- chosenIndices[2] 	
+			i <- transposition[1]
+			j <- transposition[2] 	
 			s <- strategyNumber
 
 			tmp <- currentStatesLogDensities[i] - currentStatesLogDensities[j]
 
 			tmp <- 
 				exp(
-					-ifelse( s==2, tmp, abs(tmp) )*
-					ifelse( s==3|s==4 , inverseTemperatures[i] - inverseTemperatures[j], 1)*
-					ifelse( s ==4,
-						1/(1 + quasiMetric( 	currentStates[,i],
-												currentStates[,j] ) ),
-						1 
-					)
+					-ifelse( 
+						s==2, 
+						tmp, 
+						abs(tmp) 
+					)*
+					ifelse( 
+						s==3|s==4, 
+						inverseTemperatures[i] - inverseTemperatures[j], 1)*
+						ifelse( 
+							s ==4,
+							1/{1 + stateSpace$measureQuasiDistance(i,j) },
+							1 
+						)
+
 				) 
 
 			tmp <- ifelse( s==2 & tmp >1, 1, tmp )
 			
 			return( tmp )	
-		},
-
-		generateTranslatorFromLexicalOrderToTranspositions = function(
-			inputIndices
-		)
-		{
-			noOfIndices 	<- length(inputIndices)
-			
-			if ( noOfIndices > 0)
-			{
-				if (noOfIndices > 1)
-				{
-					result<-lapply( 
-						1:(noOfIndices -1),
-						function( number )
-						{
-							noOfCols	<- noOfIndices-number
-							return( 
-								matrix( 
-									c( 
-										rep.int(x=inputIndices[number], times=noOfCols), 
-										inputIndices[ (number+1):noOfIndices] 
-									), 
-									ncol = noOfCols,
-									nrow = 2,
-									byrow= TRUE 
-								)
-							)							
-						}
-					)				
-				}
-			} else
-			{	
-				stop('A problem of type in generation.')
-			}				
-			return(	do.call(cbind, result) )
-		},
-
-		translateLexicToTranspositions = function( lexicNumber )
-		{
-			return( translatorFromLexicOrderToTranspositions[,lexicNumber] )
 		}
 
 ####################################################################
