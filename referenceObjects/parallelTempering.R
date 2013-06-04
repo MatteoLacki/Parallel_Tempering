@@ -323,22 +323,113 @@ parallelTemperingSimulation <- setRefClass(
  					)	
 			}
 			
-			proposalSwap <- 
-				translateLexicalToTranspositions(
-					sample(
+
+			proposalSwapLexic <-
+				sample(
 						1:noOfTranspositions,  
 						size = 1,
 						prob = lastSwapUProbabilities
-					)
+				) 
+
+			proposalSwap <- 
+				translateLexicalToTranspositions(
+					proposalSwapLexic
 				)
 			
 			
-			cross <- translateTranspositionsToLexical(
+			crossLexic <- translateTranspositionsToLexical(
 					generateTranspostionsForStatisticalSum(	proposalSwap )	
 				)	
-			
-			=TO=DO= 
 
+			additionalSwapsUProbabilities <- 
+				updateSwapUProbabilities(
+					swapIwithJ 				= TRUE,
+					transpositionsForUpdate = crossLexic
+				)
+			
+			proposalSwapUProbabilities <- lastSwapUProbabilities
+			proposalSwapUProbabilities[ crossLexic ] <- additionalSwapsUProbabilities
+
+			drawnSwapUProbability <- additionalSwapsUProbabilities[1]
+
+				# No U. 
+			proposalSwapLogProbability 	<- 
+				log( drawnSwapUProbability ) - 
+				log( sum( proposalSwapUProbabilities ) )
+
+			lastSwapLogProbability 		<- 
+				log( lastSwapUProbabilities[ proposalSwapLexic ] ) - 
+				log( sum( lastSwapUProbabilities ) )
+
+			proposalInverseTemperatures <- inverseTemperatures[ proposalSwap ]
+
+			targetLogDensities	<- lastStatesLogUnDensities[ proposalSwap ]
+
+			logAlpha <- 
+				(
+					proposalInverseTemperatures[1] -
+					proposalInverseTemperatures[2]				
+				)*
+				(
+					targetLogDensities[2] - 
+					targetLogDensities[1]
+				)+
+				proposalSwapLogProbability -
+				lastSwapLogProbability
+
+			logU 	<- log( runif(1) )			
+
+			ifelse(
+				logU < logAlpha,
+				{
+					=TO=DO=
+				},
+				{
+					=TO=DO=
+				}		
+			)					
+
+		},
+
+			# =TO=DO= : rationalize after speed tests.
+		updateSwapUProbabilities = function(
+			swapIwithJ,		# boolean. If yes, then the first 
+						# pair in the next variable is the one.
+			transpositionsForUpdate,
+		)
+		{
+			return(
+				sapply(
+					transpositionsForUpdate,
+			
+						# Here we reevaluate probabilities.	
+					
+					function( transposition ) 	
+					{
+						transposition <- translateLexicalToTranspositions( transposition )
+						
+						if( swapIwithJ ) 	
+						{
+								# Swapped pair is the first one.
+								# Observe that i_and_j is not a local variable
+								# in the if statement.
+								
+							i_and_j <- From_Lexic_Matrix[,1]				
+							if( transposition[1] == i_and_j[1] ) 
+							{
+								transposition[1] <- i_and_j[2]
+							}
+							
+							if( transposition[2] == i_and_j[2] )
+							{
+								transposition[2] <- i_and_j[1]
+							}
+						}
+							
+						swapStrategy( transposition )
+					}	  
+				)
+			)
 		},
 
 
@@ -423,7 +514,7 @@ parallelTemperingSimulation <- setRefClass(
 					 	byrow 	= TRUE
 					 ),
 					 
-					 matrix(
+					matrix(
 					 	c(
 					 		setdiff(  1:(j-1), i),
 					 		rep.int(  j, times = j - 1 - 1)	
@@ -432,7 +523,7 @@ parallelTemperingSimulation <- setRefClass(
 					 	ncol 	= j - 2,
 					 	nrow	= 2,
 					 	byrow	= TRUE
-	)																																																																																																																																																																																																																																																																																																																																																																																																																																																										
+					)								
 				)
 	
 			colnames(result)	<- c()
