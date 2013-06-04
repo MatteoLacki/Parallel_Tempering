@@ -1,3 +1,5 @@
+library(mvtnorm)
+
 Liang_No_of_Clusters	<- 	20;
 
 Liang_Clusters_Weights	<- 	rep(	1/Liang_No_of_Clusters, Liang_No_of_Clusters )
@@ -58,6 +60,22 @@ rm(i)
 
 #############################################################
 		# Revise this. It's surely wrong, not being vectorised.
+WEIGHTED_NORMAL_DISTRIBUTION <- 
+		function(
+			x, 
+			Weights, 
+			Means_and_Covariances_Enlisted)
+{ 
+	return(
+		sum(
+			Weights * sapply(
+					Means_and_Covariances_Enlisted, 
+					function(y) dmvnorm(x, mean=y[[1]], sigma=y[[2]]) 
+			)
+		)
+	)
+}
+
 
 LIANG_TARGET_DENSITY <- function(x)
 {

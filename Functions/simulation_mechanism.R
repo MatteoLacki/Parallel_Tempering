@@ -22,27 +22,13 @@ SIMULATION <- 		function(
 	Chains 	 	<- vector(	"list", 	2 * No_of_Steps	+ 1 )
 	Chains[[1]]	<- Initial_Points
 	
-		
-		# That's copy-paste really - need a function that does precisely that.
-		# Because it's also done in the PROPOSED_STEP function. The code will 
-		# get nicer.
-		
+	
 	Log_Densities_of_Current_States	<- 
 			UPDATING_LOGS_OF_UNNORMALISED_DENSITIES_IN_CURRENT_STATES(
 				Initial_Points,
 				TARGET_DENSITY
 			)	
 			
-#			log(
-#				apply( 
-#					Initial_Points, 
-#					2, 
-#					TARGET_DENSITY 
-#				)
-#			)
-
-
-	
 			# The maximal number in lexicographic ordering of 
 			# the upper-triangular matrix of indices.
 		 
@@ -115,7 +101,7 @@ SIMULATION <- 		function(
 						
 		Permutation_of_Swap_Step			<- Swapping_Current_States[[1]]
 		Current_Unnormalised_Probabilities_of_Pair_Swaps<- Swapping_Current_States[[2]]	
-			
+	 		
 		if (Show_Details){ 
 			print(c("Random Swap No ", i/2))
 			print( Permutation_of_Swap_Step )	
@@ -445,20 +431,3 @@ SWAP_STEP 	<- 	function(
 		
 	return( Swap_Step_Results )
 }
-
-###############################################################################
-
-# AAABBB
-#	Cross_Lexic 	<-	
-#			apply(
-#				Cross,
-#				2,
-#				function(x) 
-#				{
-#					TRANSLATE_INTO_LEXICAL_ORDER(
-#						x,
-#						No_of_Chains
-#					)
-#				}	
-#			)	
-

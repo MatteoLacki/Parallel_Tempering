@@ -43,7 +43,7 @@ TRANSLATE_INTO_LEXICAL_ORDER_MANY_PAIRS_OF_INDECES	<-
 }
 
 ####################################################
-
+	# Rendered better.
 
 MATRIX_OF_PAIRS_GENERATED_BY_GIVEN_INDECES 	<- 
 			function(	
@@ -122,7 +122,7 @@ CRUCIFIX 	<- function( Pair_of_Drawn_Indices,  No_of_Chains )
 			 	ncol 	= j - 2,
 			 	nrow	= 2,
 			 	byrow	= TRUE
-			 )
+			 )																																																																																																																																																																																																																																																																																																																																																																																																																																																										
 		)
 	
 	colnames(result)	<- c()
