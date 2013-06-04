@@ -44,7 +44,7 @@ parallelTemperingSimulation <- setRefClass(
 			## Vector with boolean values. TRUE when a state did get updated in the Random Walk phase of the algorithm.
 		statesUpdatedByRandomWalk	= "logical",	
 
-			## An integer value describing the number of swap in the lexicographical order. -1 corresponds to swap rejection.
+			## An integer value describing the number of swap in the lexicographical order. -1 corresponds to swap randomWalkRejection.
 		noOfLastTransposition	= "integer",
 
 			## A vector of integers : all transpositions enlisted. As long as the provided number of iterations to be executed.
@@ -254,12 +254,13 @@ parallelTemperingSimulation <- setRefClass(
 					"\n"
 				)
 			
-			rejection()
+			randomWalkRejection()
+			
 			updateAfterRandomWalk() # both logdensities and current states.
 		},
 
 
-		rejection = function()
+		randomWalkRejection = function()
 		{
 			Ulog <- log( runif( noOfTemperatures ) )
 
@@ -321,6 +322,22 @@ parallelTemperingSimulation <- setRefClass(
 						transpositionsForUpdate 	= transpositionsForUpdate
  					)	
 			}
+			
+			proposalSwap <- 
+				translateLexicalToTranspositions(
+					sample(
+						1:noOfTranspositions,  
+						size = 1,
+						prob = lastSwapUProbabilities
+					)
+				)
+			
+			
+			cross <- translateTranspositionsToLexical(
+					generateTranspostionsForStatisticalSum(	proposalSwap )	
+				)	
+			
+			=TO=DO= 
 
 		},
 
@@ -382,6 +399,48 @@ parallelTemperingSimulation <- setRefClass(
 		},
 
 
+		generateTranspostionsForStatisticalSum = function(
+			transposition
+		)
+		{
+			i 	<- transposition[1]
+			j 	<- transposition[2]
+	
+			# not necessary - implied by data storage format.
+			# if (i >= j) stop("I can't get no Satisfaction.", call. = FALSE)
+	
+			result 	<-
+				cbind(
+					transposition,
+			
+					matrix( 
+						c(	
+							rep.int(i, times = noOfTemperatures - i - 1),
+							setdiff(  (i+1):noOfTemperatures,  j )
+						),		
+						ncol	= noOfTemperatures - i - 1,
+						nrow 	= 2,		
+					 	byrow 	= TRUE
+					 ),
+					 
+					 matrix(
+					 	c(
+					 		setdiff(  1:(j-1), i),
+					 		rep.int(  j, times = j - 1 - 1)	
+					 	),
+					 	
+					 	ncol 	= j - 2,
+					 	nrow	= 2,
+					 	byrow	= TRUE
+	)																																																																																																																																																																																																																																																																																																																																																																																																																																																										
+				)
+	
+			colnames(result)	<- c()
+			return( result )			
+		},
+		
+		
+
 		translateLexicalToTranspositions = function( 
 			lexicals 
 		)
@@ -403,7 +462,7 @@ parallelTemperingSimulation <- setRefClass(
 						j <- transposition[2]
 
 						return(
-							(i-1)*(No_of_Chains-i/2) + j - i
+							(i-1)*(noOfTemperatures-i/2) + j - i
 						)
 					}
 				)
