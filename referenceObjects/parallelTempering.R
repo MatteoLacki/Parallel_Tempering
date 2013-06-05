@@ -323,7 +323,6 @@ parallelTemperingSimulation <- setRefClass(
  					)	
 			}
 			
-
 			proposalSwapLexic <-
 				sample(
 						1:noOfTranspositions,  
@@ -335,7 +334,6 @@ parallelTemperingSimulation <- setRefClass(
 				translateLexicalToTranspositions(
 					proposalSwapLexic
 				)
-			
 			
 			crossLexic <- translateTranspositionsToLexical(
 					generateTranspostionsForStatisticalSum(	proposalSwap )	
