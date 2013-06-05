@@ -1,4 +1,4 @@
-source("./referenceObjects/stateSpaceStructure.R")
+source("./referenceObjects/stateSpace.R")
 
 Simulation <- setRefClass(
 	Class		= "Simulations",
@@ -9,10 +9,10 @@ Simulation <- setRefClass(
 	fields		= list(
 
 			## Number of iterations of the algorithm.
-		noOfIterations  	= "integer",
+		noOfIterations  = "integer",
 
 			## The data container with methods that act on it.
-		stateSpaceStructure	= "stateSpaceStructure"	
+		stateSpace		= "stateSpace"	
 	),
 
 ###########################################################################

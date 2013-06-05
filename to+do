@@ -20,3 +20,6 @@ Zaimplementować wybór modelu liniowego, jak u Byrne i Pierre'a Jacoba.
 	Matti Vihola: 			adaptive ...
 	Moulines, Andrieu:		Zbieżność 			
 	Moulines, Fort:			Law of large numbers for adapive and interactive algorithms.
+
+
+Proposal states can be a local variable.
