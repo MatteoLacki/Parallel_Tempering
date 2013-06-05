@@ -27,7 +27,7 @@ ParallelTempering <- setRefClass(
 		noOfTranspositions	= "integer",
 
 			## Vector with probabilities of current pair swaps.
-		lastSwapUProbs	= "numeric",
+		lastSwapUProbs		= "numeric",
 	
 		# 	## Vector with probabilities of current pair swaps.
 		# lastProposalSwapProbabilities	= "numeric",
@@ -115,30 +115,19 @@ ParallelTempering <- setRefClass(
 				}
 			)
 
-				# MAYBE UNNECESARY
-			ifelse(
-				(noOfTemperatures >= 1),
-				{
-					translatorFromLexicOrderToTranspositions <<- 
-				 		generateTranspositions( 
-				 			1:noOfTemperatures 
-				 		)
-				},
-				{
-					translatorFromLexicOrderToTranspositions <<- 
-						matrix(
-							ncol=0,
-							nrow=0
-						)
-				}
-			)
+
+			translatorFromLexicOrderToTranspositions <<- 
+		 		generateTranspositions( 
+		 			1:noOfTemperatures 
+		 		)
+				
 
 			#noOfTranspositions <<- noOfTemperatures*(noOfTemperatures-1)/2
 			noOfTranspositions 	<<- 
 				length( translatorFromLexicOrderToTranspositions )
 
 			stateSpace	<<- 
-				realFiniteDimensionalstateSpace$new(
+				realStateSpace$new(
 					temperatures 		= .self$temperatures,
 					noOfIterations 		= noOfIterations,
 					noOfTemperatures	= .self$noOfTemperatures,
@@ -161,12 +150,8 @@ ParallelTempering <- setRefClass(
 
 			detailedOutput			<<- detailedOutput
 
-			lastSwapUProbs			<<- 
-				updateSwapUProbs(
-					translateLexicToTranspositions(
-						1:noOfTranspositions
-					)
-				)
+			lastSwapUProbs			<<- updateSwapUProbs( translatorFromLexicOrderToTranspositions )
+				
 		},
 
 		initialize 				= function(
@@ -320,7 +305,11 @@ ParallelTempering <- setRefClass(
 				transpositionsForUpdate <- findTranspositionsForUpdate() 
 
 				lastSwapUProbs[ transpositionsForUpdate ] <<- 
-					updateSwapUProbs( transpositionsForUpdate )	
+					updateSwapUProbs( 
+						translateLexicToTranspositions(
+							transpositionsForUpdate
+						) 
+					)	
 			}
 		}, 
 
@@ -361,7 +350,11 @@ ParallelTempering <- setRefClass(
 
 
 			proposalUProbs[ transpositionsUpdateForProposal ] <- 
-				updateSwapUProbs( transpositionsUpdateForProposal )
+				updateSwapUProbs( 
+					translateLexicToTranspositions(
+						transpositionsUpdateForProposal
+					) 
+				)
 			
 
 			proposalLogProb	<- 
@@ -405,12 +398,15 @@ ParallelTempering <- setRefClass(
 				Ulog < logAlpha,
 				{
 					lastSwapUProbs <<- proposalUProbs 
+
 					stateSpace$swapStates( proposal )
-					transpositionHistory[ iteration ] <- proposalLexic
+
+					transpositionHistory[ iteration ] <<- proposalLexic
 				},
 				{
 					stateSpace$swapStates()	
-					transpositionHistory[ iteration ] <- -1L
+
+					transpositionHistory[ iteration ] <<- -1L
 				}		
 			)	
 
@@ -423,14 +419,14 @@ ParallelTempering <- setRefClass(
 
 			# =TO=DO= : rationalize after speed tests: maybe can vectorize swapStrategy.
 		updateSwapUProbs = function(
-			transpositionsForUpdate,
+			transpositionsForUpdate
 		)
 		{
 			return(
-				sapply(
+				apply(
 					transpositionsForUpdate,
-					swapStrategy
-					}	  
+					2,
+					function( transposition ) swapStrategy( transposition )	  
 				)
 			)
 		},
@@ -530,7 +526,7 @@ ParallelTempering <- setRefClass(
 			j <- transposition[2] 	
 			s <- strategyNumber
 
-			tmp <- currentStatesLogDensities[i] - currentStatesLogDensities[j]
+			tmp <- lastStatesLogUDensities[i] - lastStatesLogUDensities[j]
 
 			tmp <- 
 				exp(

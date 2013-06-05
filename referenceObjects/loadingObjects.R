@@ -5,10 +5,10 @@ source("./referenceObjects/parallelTempering.R")
 
 
 ########################################################### TESTS
-ls()
+
 source("./Distributions_to_check/Liang_Example.R")
 
-LiangWangExample <- parallelTemperingSimulation$new(
+LiangWangExample <- ParallelTempering$new(
 	noOfIterations	= 2,
 	temperatures 	= c(2.8, 7.7, 21.6, 60),	
 	strategyNumber  = 2,
@@ -17,6 +17,10 @@ LiangWangExample <- parallelTemperingSimulation$new(
 	detailedOutput	= TRUE
 )
 
+
+
 LiangWangExample
-LiangWangExample$stateSpaceStructure
+LiangWangExample$stateSpace
 LiangWangExample$simulate()
+
+ParallelTempering$methods()
