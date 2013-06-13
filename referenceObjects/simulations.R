@@ -75,7 +75,6 @@ Simulation <- setRefClass(
 
 		simulate = function()
 		{
-			# for ( iteration in 1:noOfIterations ) makeStepOfTheAlgorithm( iteration ) 
 			tmp <- sapply( 
 				1:noOfIterations, 
 				function( iteration ) 

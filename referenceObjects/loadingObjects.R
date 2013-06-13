@@ -8,17 +8,24 @@ source("./referenceObjects/parallelTempering.R")
 ########################################################### TESTS
 
 source("./Distributions_to_check/Liang_Example.R")
+ls()
 
 LiangWangExample <- ParallelTempering$new(
-	noOfIterations	= 2,
+	noOfIterations	= 1000,
 	temperatures 	= c(2.8, 7.7, 21.6, 60),	
 	strategyNumber  = 2,
 	problemDimension= 2,
 	targetDensity	= LIANG_TARGET_DENSITY,
-	detailedOutput	= TRUE
+	detailedOutput	= FALSE,
+	proposalCovariances = list(matrix(c(4,0,0,2), ncol=2,nrow=2),matrix(c(4,0,0,2), ncol=2,nrow=2),matrix(c(100,0,0,2), ncol=2,nrow=2),matrix(c(4,0,0,2), ncol=2,nrow=2),matrix(c(6,0,0,2), ncol=2,nrow=2))
 )
 
 
 LiangWangExample
+LiangWangExample$stateSpace
 
 LiangWangExample$simulate()
+
+LiangWangExample$stateSpace$simulatedStates
+
+

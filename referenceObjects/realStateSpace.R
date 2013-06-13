@@ -161,7 +161,7 @@ realStateSpace <- setRefClass(
 						all(
 							sapply(
 								proposalCovariances,
-								function( covarianceMatrix ) 
+								function( x ) 
 									ifelse( 
 										(class(x) == 'matrix'), 
 										nrow(x)==2 & ncol(x)==2, 
@@ -351,6 +351,47 @@ realStateSpace <- setRefClass(
 			return(tmpStates)
 		},		
 
+
+		prepareData = function()
+		{
+			data  	<- vector(	"list", noOfSlots )
+			tmp2 	<- sapply( 
+				1:noOfSlots, 
+				function( slotNo ) 
+				{
+					data[[ slotNo ]] <-
+						cbind(
+							t( getStates( slotNo ) ),
+							temperatures,
+							rep.int( slotNo %/% 2, noOfTemperatures ),	
+						)
+				},
+				USE.NAMES = FALSE
+			)
+
+			data <- 	as.data.frame( do.call( rbind, data ) )
+
+			tmp3 <- 
+				factor(
+					c( 
+						rep.int(0, noOfTemperatures),
+						rep.int( 
+							c(
+								rep.int(1, noOfTemperatures),
+								rep.int(2, noOfTemperatures)
+							),
+							noOfSlots - 1 	
+						)	
+					)
+				)
+
+			levels( tmp3 ) <- c("Initial State", "Random Walk", "Swap")	
+			
+			data[,4] <- tmp3
+			names( data )<- c("x","y", "Temperature", "Phase")
+
+			return( data )		
+		}, 
 
 		############################################################
 				# Algorithmic Methods

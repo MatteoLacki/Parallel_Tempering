@@ -39,10 +39,28 @@ stateSpace <- setRefClass(
 			initializeStateSpace(
 				noOfIterations 			= noOfIterations
 			)
-		}
+		},
 
 		############################################################
 				# Visualisation
+
+		showState	= function()
+		{},		
+
+		############################################################
+				# Algorithmic Methods				
+
+		getProposalLogsOfUnnormalisedDensities = function()
+		{},
+
+		randomWalkProposal 			= function()
+		{},
+
+		updateStatesAfterRandomWalk = function()
+		{},
+
+		updateStatesAfterSwap 		= function()
+		{}
 
 
 ####################################################################
