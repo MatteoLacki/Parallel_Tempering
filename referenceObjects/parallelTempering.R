@@ -74,29 +74,25 @@ ParallelTempering <- setRefClass(
 			detailedOutput		= FALSE
 			)
 		{
-			ifelse( 
-				(length(temperatures) == 0), 
-				{
-					cat(
-						'I did not receive any temperatures. I shall therefore proceed with rather arbitrary choice of 5 temperature levels 1<2<3<4<5.'
-					)
-	
-					tmpTemp <- 1:5	# Can add here some global constant.
-	
-				},
-				{
-					if (any( temperatures <= 1 )) cat('Do you really want to cool down the distribution? That does not make sense, does it? Try avoiding such things.')
-					
-					tmpTemp						<- temperatures
-					tmpTemp[length(tmpTemp)+1] 	<- 1
-					tmpTemp	<- 
-						sort(
-							tmpTemp, 
-							decreasing=FALSE
-						) 
-				}
-			)
-
+			if (length(temperatures) == 0)
+			{
+				cat(
+					'I did not receive any temperatures. I shall therefore proceed with rather arbitrary choice of 5 temperature levels 1<2<3<4<5.'
+				)
+				tmpTemp <- 1:5	# Can add here some global constant.
+			} else 
+			{
+				if (any( temperatures <= 1 )) cat('Do you really want to cool down the distribution? That does not make sense, does it? Try avoiding such things.')
+				
+				tmpTemp						<- temperatures
+				tmpTemp[length(tmpTemp)+1] 	<- 1
+				tmpTemp	<- 
+					sort(
+						tmpTemp, 
+						decreasing=FALSE
+					) 
+			}
+		
 			temperatures 		<<- tmpTemp
 			inverseTemperatures <<- 1/tmpTemp
 			noOfTemperatures 	<<- length(tmpTemp)
@@ -104,16 +100,16 @@ ParallelTempering <- setRefClass(
 						
 			tmpStrategyNumber	<- as.integer(strategyNumber)
 
-			ifelse( 
-				( is.na(tmpStrategyNumber) || tmpStrategyNumber < 0 ),		 
+			if ( is.na(tmpStrategyNumber) || tmpStrategyNumber < 0 )
+			{		 
 				stop(
 					"Inappropriate stregy number. Please enter an integer value."
 				)
-				,
-				{	
-					strategyNumber	<<- tmpStrategyNumber
-				}
-			)
+			} else
+			{	
+				strategyNumber	<<- tmpStrategyNumber
+			}
+			
 
 
 			translatorFromLexicOrderToTranspositions <<- 
@@ -124,7 +120,7 @@ ParallelTempering <- setRefClass(
 
 			#noOfTranspositions <<- noOfTemperatures*(noOfTemperatures-1)/2
 			noOfTranspositions 	<<- 
-				length( translatorFromLexicOrderToTranspositions )
+				ncol( translatorFromLexicOrderToTranspositions )
 
 			stateSpace	<<- 
 				realStateSpace$new(
@@ -191,9 +187,15 @@ ParallelTempering <- setRefClass(
 		{
 			cat('\nThe Parallel Tempering inputs are here: \n')
 			cat('Temperatures: ', temperatures, '\n')
-			cat('Number of chains: ', noOfTemperatures, '\n')	
-			cat('Chosen swap-strategy number: ', strategyNumber, '\n\n')	
-					
+			cat('Number of chains/temperatures: ', noOfTemperatures, '\n')	
+			cat('Chosen swap-strategy number: ', strategyNumber, '\n')
+			cat('Number of transpositions: ', noOfTranspositions, '\n')	
+			cat('Logs of unnormalised densities in last states:\n', lastStatesLogUDensities, '\n')
+			cat('Initial need for update: ', updatedStates, '\n')
+			
+			cat('Initial swap U probabilities:\n', lastSwapUProbs, '\n')
+
+							
 
 			print( stateSpace$showState() )	
 		},
@@ -292,16 +294,16 @@ ParallelTempering <- setRefClass(
 
 		updateAfterRandomWalk = function()
 		{
-				# Updating state space..
-			lastStatesLogUDensities[ updatedStates ] <<-	
-				proposalLogUDensities[ updatedStates ]
-
-			stateSpace$updateStatesAfterRandomWalk( updatedStates )
-
-
-				# .. and updating unnormalised probabilities of swaps caused by random walk changes.
 			if ( any( updatedStates ) ) 
-			{
+			{		
+						# Updating state space..
+				lastStatesLogUDensities[ updatedStates ] <<-	
+					proposalLogUDensities[ updatedStates ]
+
+				stateSpace$updateStatesAfterRandomWalk( updatedStates )
+
+
+						# .. and updating unnormalised probabilities of swaps caused by random walk changes.
 				transpositionsForUpdate <- findTranspositionsForUpdate() 
 
 				lastSwapUProbs[ transpositionsForUpdate ] <<- 
@@ -394,21 +396,20 @@ ParallelTempering <- setRefClass(
 				"\n"
 			)
 				
-			ifelse(
-				Ulog < logAlpha,
-				{
-					lastSwapUProbs <<- proposalUProbs 
+			if ( Ulog < logAlpha )
+			{
+				lastSwapUProbs <<- proposalUProbs 
 
-					stateSpace$swapStates( proposal )
+				stateSpace$swapStates( proposal )
 
-					transpositionHistory[ iteration ] <<- proposalLexic
-				},
-				{
-					stateSpace$swapStates()	
+				transpositionHistory[ iteration ] <<- proposalLexic
+			} else
+			{
+				stateSpace$swapStates()	
 
-					transpositionHistory[ iteration ] <<- -1L
-				}		
-			)	
+				transpositionHistory[ iteration ] <<- -1L
+			}		
+				
 
 			if ( detailedOutput ) 
 			cat(
@@ -436,22 +437,22 @@ ParallelTempering <- setRefClass(
 			#### Finds numbers of transpositions in the lexical ordering whose probabilities must be updated after the random walk phase. 
 		{
 			return(
-				ifelse( 
-					all( updatedStates ),
-					1:noOfTranspositions, 
-					{
-						setdiff(
-							1:noOfTranspositions,
-							translateTranspositionsToLexic(
-								generateTranspositions(
-									(1:noOfTemperatures)[
-										!updatedStates
-									]
-								)							
-							)			
-						)		
-					}
-				)
+				if( all( updatedStates ) )
+				{
+					1:noOfTranspositions
+				} else  
+				{
+					setdiff(
+						1:noOfTranspositions,
+						translateTranspositionsToLexic(
+							generateTranspositions(
+								(1:noOfTemperatures)[
+									!updatedStates
+								]
+							)							
+						)			
+					)		
+				}
 			)
 		},
 
@@ -542,8 +543,7 @@ ParallelTempering <- setRefClass(
 							s ==4,
 							1/{1 + stateSpace$measureQuasiDistance(i,j) },
 							1 
-						)
-
+					)
 				) 
 
 			tmp <- ifelse( s==2 & tmp >1, 1, tmp )

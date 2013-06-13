@@ -18,9 +18,11 @@ LiangWangExample <- ParallelTempering$new(
 )
 
 
-
 LiangWangExample
 LiangWangExample$stateSpace
+
 LiangWangExample$simulate()
 
 ParallelTempering$methods()
+
+rm(list =ls())
