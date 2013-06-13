@@ -294,16 +294,14 @@ ParallelTempering <- setRefClass(
 
 		updateAfterRandomWalk = function()
 		{
-			if ( any( updatedStates ) ) 
-			{		
-						# Updating state space..
+			anyUpdate <- any( updatedStates )
+
+			if ( anyUpdate ) 
+			{				# Updating state space..
 				lastStatesLogUDensities[ updatedStates ] <<-	
 					proposalLogUDensities[ updatedStates ]
 
-				stateSpace$updateStatesAfterRandomWalk( updatedStates )
-
-
-						# .. and updating unnormalised probabilities of swaps caused by random walk changes.
+# updating unnormalised probabilities of swaps caused by random walk changes.
 				transpositionsForUpdate <- findTranspositionsForUpdate() 
 
 				lastSwapUProbs[ transpositionsForUpdate ] <<- 
@@ -313,6 +311,7 @@ ParallelTempering <- setRefClass(
 						) 
 					)	
 			}
+			stateSpace$updateStatesAfterRandomWalk( anyUpdate, updatedStates )
 		}, 
 
 				###### swap sphere ######
@@ -322,8 +321,7 @@ ParallelTempering <- setRefClass(
 			iteration
 		)
 			#### The swap step of the algorithm.
-		{
-			
+		{			
 			proposalLexic <-
 				sample(
 						1:noOfTranspositions,  
@@ -334,7 +332,6 @@ ParallelTempering <- setRefClass(
 			proposal <- 
 				translateLexicToTranspositions( proposalLexic	)
 			
-
 				# Here rather than updating states we update information about states.
 			tmpUpdatedStates 			<- rep(FALSE, noOfTemperatures)
 			tmpUpdatedStates[proposal] 	<- TRUE
@@ -342,14 +339,10 @@ ParallelTempering <- setRefClass(
 			updatedStates <<- tmpUpdatedStates
 			rm( tmpUpdatedStates )
 
-
 			transpositionsUpdateForProposal <- 
-				translateTranspositionsToLexic( 
-					findTranspositionsForUpdate()	
-				)	
-
+				findTranspositionsForUpdate()	
+					
 			proposalUProbs 	<- lastSwapUProbs
-
 
 			proposalUProbs[ transpositionsUpdateForProposal ] <- 
 				updateSwapUProbs( 
@@ -358,11 +351,9 @@ ParallelTempering <- setRefClass(
 					) 
 				)
 			
-
 			proposalLogProb	<- 
 				log( proposalUProbs[ proposalLexic ] ) - 
 				log( sum( proposalUProbs ) )
-
 
 			lastLogProb		<- 
 				log( lastSwapUProbs[ proposalLexic ] ) - 
@@ -384,7 +375,6 @@ ParallelTempering <- setRefClass(
 				proposalLogProb -
 				lastLogProb
 
-
 			Ulog <- log( runif(1) )
 				
 			if ( detailedOutput ) 
@@ -395,27 +385,27 @@ ParallelTempering <- setRefClass(
 				Ulog,
 				"\n"
 			)
-				
-			if ( Ulog < logAlpha )
+			
+			proposalAccepted <- Ulog < logAlpha	
+
+			if ( proposalAccepted )
 			{
 				lastSwapUProbs <<- proposalUProbs 
-
-				stateSpace$swapStates( proposal )
 
 				transpositionHistory[ iteration ] <<- proposalLexic
 			} else
 			{
-				stateSpace$swapStates()	
-
 				transpositionHistory[ iteration ] <<- -1L
 			}		
-				
+			
+			stateSpace$updateStatesAfterSwap( proposalAccepted, proposal )
 
 			if ( detailedOutput ) 
-			cat(
-				"\nSteps after Random Swap:\n", 
-				stateSpace$lastStates
-			)
+			{	
+				cat( "\nStates after Random Swap:\n" ) 
+				print( stateSpace$lastStates )
+				cat( "\n\n" )	
+			}
 		},
 
 			# =TO=DO= : rationalize after speed tests: maybe can vectorize swapStrategy.
@@ -436,8 +426,17 @@ ParallelTempering <- setRefClass(
 		findTranspositionsForUpdate = function()
 			#### Finds numbers of transpositions in the lexical ordering whose probabilities must be updated after the random walk phase. 
 		{
+				# Changes on all chains or on all chains but one require complete reevaluation of everything. Hence the criterion.
 			return(
-				if( all( updatedStates ) )
+				if( 
+					ifelse( 
+						sum(
+							ifelse( updatedStates, 0, 1 )
+						) %in% 0:1,
+						TRUE,
+						FALSE
+					)	
+				)
 				{
 					1:noOfTranspositions
 				} else  
@@ -460,11 +459,11 @@ ParallelTempering <- setRefClass(
 		generateTranspositions = function(
 			chainNumbers
 		)
-			#### Creates a matrix that enlists all possible transpositions of the supplied integers that parametrize temperatures and are to be used. 
+			#### Creates a matrix that enlists all possible transpositions of supplied indices of the temperature vector. 
 		{
 			noOfChainNumbers 	<- length(chainNumbers)				
 							
-			return(		# do.call will apply cbind recursively to all enlisted objects.
+			return(		
 				do.call(
 					cbind, 
 					lapply( 
