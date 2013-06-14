@@ -11,7 +11,7 @@ source("./Distributions_to_check/Liang_Example.R")
 ls()
 
 LiangWangExample <- ParallelTempering$new(
-	noOfIterations	= 1000,
+	noOfIterations	= 10,
 	temperatures 	= c(2.8, 7.7, 21.6, 60),	
 	strategyNumber  = 2,
 	problemDimension= 2,
@@ -21,4 +21,6 @@ LiangWangExample <- ParallelTempering$new(
 )
 
 LiangWangExample$simulate()
+LiangWangExample$transpositionHistory
+
 LiangWangExample$stateSpace$plotBaseTemperature()

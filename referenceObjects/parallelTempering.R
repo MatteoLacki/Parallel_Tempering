@@ -6,8 +6,7 @@ ParallelTempering <- setRefClass(
 								# Fields
 
 	fields		= list(
-									# User provided		
-
+	
 			## Temperature levels for the parallel tempering algorithm.
 		temperatures		= "numeric",
 
@@ -28,10 +27,13 @@ ParallelTempering <- setRefClass(
 
 			## Vector with probabilities of current pair swaps.
 		lastSwapUProbs		= "numeric",
-	
-		# 	## Vector with probabilities of current pair swaps.
-		# lastProposalSwapProbabilities	= "numeric",
 
+			## Swap proposal in the lexicographic ordering.
+		swapProposalLexic	= "integer",
+
+			## Swap proposal as a transposition pair.
+		swapProposal 		= "integer", 
+	
 			## Vector with logs of unnormalised densities evaluated at current states. They are not yet multiplied by the inverse temperatures: this vector does not correspond to evaluation of the tensorised target measure.
 		lastStatesLogUDensities	= "numeric",
 
@@ -46,7 +48,7 @@ ParallelTempering <- setRefClass(
 			## An integer value describing the number of swap in the lexicographical order. -1 corresponds to swap randomWalkRejection.
 		noOfLastTransposition	= "integer",
 
-			## A vector of integers : all accepted transpositions enlisted. As long as the provided number of iterations to be executed. When rejected, we put -1.
+			## A vector of integers : all accepted transpositions enlisted. As long as the provided number of iterations to be executed. When rejected, we put 0. It is also filled with zeros at the beginning.
 		transpositionHistory	= "integer",
 
 			## Triggers detailed output during the simulation.
@@ -73,6 +75,7 @@ ParallelTempering <- setRefClass(
 			proposalCovariances = matrix(ncol=0, nrow=0),
 			detailedOutput		= FALSE
 			)
+			#### Initializes the parallel-tempering-specific fields.
 		{
 			if (length(temperatures) == 0)
 			{
@@ -84,8 +87,12 @@ ParallelTempering <- setRefClass(
 			{
 				if (any( temperatures <= 1 )) cat('Do you really want to cool down the distribution? That does not make sense, does it? Try avoiding such things.')
 				
-				tmpTemp						<- temperatures
-				tmpTemp[length(tmpTemp)+1] 	<- 1
+				if ( !(1 %in% temperatures) )
+				{	#Adding base temperature.
+					tmpTemp						<- temperatures
+					tmpTemp[length(tmpTemp)+1] 	<- 1
+				}
+
 				tmpTemp	<- 
 					sort(
 						tmpTemp, 
@@ -96,33 +103,26 @@ ParallelTempering <- setRefClass(
 			temperatures 		<<- tmpTemp
 			inverseTemperatures <<- 1/tmpTemp
 			noOfTemperatures 	<<- length(tmpTemp)
-
-						
+			
 			tmpStrategyNumber	<- as.integer(strategyNumber)
 
 			if ( is.na(tmpStrategyNumber) || tmpStrategyNumber < 0 )
 			{		 
 				stop(
-					"Inappropriate stregy number. Please enter an integer value."
+					"Inappropriate stregy number. Please enter an integer value and submit $1000 to the author of this script."
 				)
 			} else
 			{	
 				strategyNumber	<<- tmpStrategyNumber
 			}
 			
-
-
 			translatorFromLexicOrderToTranspositions <<- 
-		 		generateTranspositions( 
-		 			1:noOfTemperatures 
-		 		)
+		 		generateTranspositions( 1:noOfTemperatures )
 				
-
-			#noOfTranspositions <<- noOfTemperatures*(noOfTemperatures-1)/2
 			noOfTranspositions 	<<- 
 				ncol( translatorFromLexicOrderToTranspositions )
 
-			stateSpace	<<- 
+			stateSpace 	<<- 
 				realStateSpace$new(
 					temperatures 		= .self$temperatures,
 					noOfIterations 		= noOfIterations,
@@ -135,7 +135,7 @@ ParallelTempering <- setRefClass(
 				)
 
 				# Initially everything is new.
-			updatedStates <<- rep( TRUE, noOfTemperatures)
+			updatedStates 	<<- rep( TRUE, noOfTemperatures)
 
 				# Current states must get at least once calculated all without any updates.
 			lastStatesLogUDensities <<-  
@@ -146,9 +146,9 @@ ParallelTempering <- setRefClass(
 
 			detailedOutput			<<- detailedOutput
 
-			lastSwapUProbs			<<- updateSwapUProbs( translatorFromLexicOrderToTranspositions )
-				
+			lastSwapUProbs			<<- updateSwapUProbs( translatorFromLexicOrderToTranspositions )		
 		},
+
 
 		initialize 				= function(
 			noOfIterations 		= 0L,
@@ -161,9 +161,10 @@ ParallelTempering <- setRefClass(
 			proposalCovariances = matrix(ncol=0, nrow=0),
 			detailedOutput		= FALSE
 			)
+			#### Splits the initialization to general Simulations initialization and parallel-tempering-specific initialization.
 		{
 			simulationInitializator(
-				noOfIterations 			= noOfIterations 
+				noOfIterations 		= noOfIterations 
 			)
 
 			parallelTemperingInitializator( 
@@ -184,6 +185,7 @@ ParallelTempering <- setRefClass(
 
 
 		parallelTemperingShow	= function()
+			#### Shows the initialised fields before the simulation.
 		{
 			cat('\nThe Parallel Tempering inputs are here: \n')
 			cat('Temperatures: ', temperatures, '\n')
@@ -192,16 +194,13 @@ ParallelTempering <- setRefClass(
 			cat('Number of transpositions: ', noOfTranspositions, '\n')	
 			cat('Logs of unnormalised densities in last states:\n', lastStatesLogUDensities, '\n')
 			cat('Initial need for update: ', updatedStates, '\n')
-			
 			cat('Initial swap U probabilities:\n', lastSwapUProbs, '\n')
-
-							
-
 			print( stateSpace$showState() )	
 		},
 
 	
 		show	= function()
+			#### Calls the father-class show method followed by its own show method.
 		{
 			simulationShow()
 			parallelTemperingShow()			
@@ -215,6 +214,7 @@ ParallelTempering <- setRefClass(
 		makeStepOfTheAlgorithm	= function( 
 			iteration 
 		)
+			#### Makes one step of random walk followed by one swap step.
 		{
 			if( detailedOutput ) 
 				cat("===============================================================\n",
@@ -229,11 +229,10 @@ ParallelTempering <- setRefClass(
 			swap( iteration )	
 
 		},
-
-
 				###### random walk sphere ######
 
 		randomWalk = function()
+			#### Performs the random walk step: it asks the state-space to generate the logs of unnormalised probabilities evaluated in the proposed points and then performs the usual rejection part. All this could be done parallely if it was needed - this feature will be shipped with version 2.0.
 		{
 			proposalLogUDensities <<- 		
 				stateSpace$randomWalkProposal()
@@ -254,6 +253,7 @@ ParallelTempering <- setRefClass(
 
 
 		randomWalkRejection = function()
+			#### Here the Hastings quotients get compared with randomly generated values from the unit interval. All values are taken in logs for numerical stability.
 		{
 			Ulog <- log( runif( noOfTemperatures ) )
 
@@ -283,7 +283,6 @@ ParallelTempering <- setRefClass(
 			updatedStates <<- 
 				Ulog < logAlpha
 
-
 			if ( detailedOutput ) 
 				cat(
 					"\nUpdated Steps:\n",
@@ -292,7 +291,9 @@ ParallelTempering <- setRefClass(
 				)
 		},
 
+
 		updateAfterRandomWalk = function()
+			#### This procedure updates the state space after an operation consisting of accepting any new proposal in the random-walk phase of the algorithm. Updates are also needed in the probabilities of the last states stored in a field in the parallel-tempering object.
 		{
 			anyUpdate <- any( updatedStates )
 
@@ -311,30 +312,51 @@ ParallelTempering <- setRefClass(
 						) 
 					)	
 			}
+
 			stateSpace$updateStatesAfterRandomWalk( anyUpdate, updatedStates )
 		}, 
 
 				###### swap sphere ######
 
-
 		swap = function(
 			iteration
 		)
-			#### The swap step of the algorithm.
+			#### This procedure performs the swap phase of an iteration of the algorithm.
 		{			
-			proposalLexic <-
+			swapProposalGeneration()
+			swapRejectionAndUpdate( iteration )
+
+			if ( detailedOutput ) 
+				{	
+					cat( "\nStates after Random Swap:\n" ) 
+					print( stateSpace$lastStates )
+					cat( "\n\n" )	
+				}
+		},
+
+
+		swapProposalGeneration = function()
+			#### Generates a random swap based on the last step swap  unnormalised probabilities.
+		{
+			swapProposalLexic <<-
 				sample(
 						1:noOfTranspositions,  
 						size = 1,
 						prob = lastSwapUProbs
 				) 
 
-			proposal <- 
-				translateLexicToTranspositions( proposalLexic	)
-			
-				# Here rather than updating states we update information about states.
+			swapProposal <<- 
+				translateLexicToTranspositions( swapProposalLexic )
+		},
+
+
+		swapRejectionAndUpdate = function(
+			iteration
+		)
+			#### Performs the rejection in the swap step and the resulting  update. 
+		{
 			tmpUpdatedStates 			<- rep(FALSE, noOfTemperatures)
-			tmpUpdatedStates[proposal] 	<- TRUE
+			tmpUpdatedStates[swapProposal] 	<- TRUE
 			
 			updatedStates <<- tmpUpdatedStates
 			rm( tmpUpdatedStates )
@@ -352,16 +374,16 @@ ParallelTempering <- setRefClass(
 				)
 			
 			proposalLogProb	<- 
-				log( proposalUProbs[ proposalLexic ] ) - 
+				log( proposalUProbs[ swapProposalLexic ] ) - 
 				log( sum( proposalUProbs ) )
 
 			lastLogProb		<- 
-				log( lastSwapUProbs[ proposalLexic ] ) - 
+				log( lastSwapUProbs[ swapProposalLexic ] ) - 
 				log( sum( lastSwapUProbs ) )
 
-			proposalInverseTemperatures <- inverseTemperatures[ proposal ]
+			proposalInverseTemperatures <- inverseTemperatures[ swapProposal ]
 
-			targetLogDensities		<- lastStatesLogUDensities[ proposal ]
+			targetLogDensities		<- lastStatesLogUDensities[ swapProposal ]
 
 			logAlpha <- 
 				(
@@ -386,32 +408,22 @@ ParallelTempering <- setRefClass(
 				"\n"
 			)
 			
-			proposalAccepted <- Ulog < logAlpha	
+			proposalAccepted <- Ulog < logAlpha 
 
 			if ( proposalAccepted )
 			{
 				lastSwapUProbs <<- proposalUProbs 
-
-				transpositionHistory[ iteration ] <<- proposalLexic
-			} else
-			{
-				transpositionHistory[ iteration ] <<- -1L
-			}		
+				transpositionHistory[ iteration ] <<- swapProposalLexic
+			} 		
 			
-			stateSpace$updateStatesAfterSwap( proposalAccepted, proposal )
-
-			if ( detailedOutput ) 
-			{	
-				cat( "\nStates after Random Swap:\n" ) 
-				print( stateSpace$lastStates )
-				cat( "\n\n" )	
-			}
+			stateSpace$updateStatesAfterSwap( proposalAccepted, swapProposal )
 		},
 
 			# =TO=DO= : rationalize after speed tests: maybe can vectorize swapStrategy.
 		updateSwapUProbs = function(
 			transpositionsForUpdate
 		)
+			#### Update values of unnormalised probabilities of swap.
 		{
 			return(
 				apply(
@@ -492,13 +504,16 @@ ParallelTempering <- setRefClass(
 		translateLexicToTranspositions = function( 
 			lexics 
 		)
+			#### Translates transpositions ennumbered lexicographically into pairs of corresponding numbers. 
 		{
 			return( translatorFromLexicOrderToTranspositions[, lexics ] )
 		},
 
+
 		translateTranspositionsToLexic = function(
-			transpositions 	# Stored in a matrix.
+			transpositions 	
 		)
+			#### Lexicographically orderes given pairs of transpositions.
 		{
 			return(
 				apply(
@@ -521,6 +536,7 @@ ParallelTempering <- setRefClass(
 		swapStrategy = function(
 			transposition
 		)	
+			#### A function that calculates the unnormalised probabilities of swaps, based on the preinserted strategy number.
 		{
 			i <- transposition[1]
 			j <- transposition[2] 	

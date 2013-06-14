@@ -65,6 +65,7 @@ realStateSpace <- setRefClass(
 			quasiMetric 		= function(){},
 			proposalCovariances = matrix(ncol=0, nrow=0)
 		)
+			#### Initializes the real-state-space-specific fields.
 		{
 				# Checked already by the Simulation.
 			temperatures 	<<- temperatures
@@ -215,6 +216,7 @@ realStateSpace <- setRefClass(
 			quasiMetric 		= function(){},
 			proposalCovariances = matrix(ncol=0, nrow=0)
 		)
+			#### Splits the initialization to general state-space initialization and real-state-space-specific initialization.
 		{
 			initializeStateSpace(
 				noOfIterations 		= noOfIterations
@@ -271,12 +273,12 @@ realStateSpace <- setRefClass(
 			)
 		},
 
-			# Type: either 'initial states', 'random walk', 'swap'. 
+
 		getIteration	= function(
 			iteration 	= 0L,
 			type		= 'initial states' 
 		)
-			#### Extracts for a given iteration results of the given step type.
+			#### For a given iteration extracts results of a given step type, to choose among 'initial states', 'random walk', and 'swap'.
 		{
 			if ( simulationTerminated() )
 			{
@@ -304,11 +306,11 @@ realStateSpace <- setRefClass(
 		},
 
 
-			# TO DO ===> It seems that it is phoney control...
 		updateStatesAfterRandomWalk = function(
 			anyUpdate,
 			indicesOfStatesUpdatedInRandomWalk	
 		)
+			#### Performs an update to the most recent values of the state space after the rejection step of the random walk phase.
 		{
 			if( anyUpdate )
 			{
@@ -323,6 +325,7 @@ realStateSpace <- setRefClass(
 			proposalAccepted,
 			transposition	
 		)
+			#### Performs an update to the most recent values of the state space after the rejection step of the random swap phase.
 		{
 			if( proposalAccepted )	
 			{
@@ -341,6 +344,7 @@ realStateSpace <- setRefClass(
 			iteration 	= 0L,
 			type 		= 'initial states'
 		)
+			#### Shows in a nice way a given iteration of the algorithm.
 		{
 			tmpStates <- 
 				as.data.frame( 
@@ -355,6 +359,7 @@ realStateSpace <- setRefClass(
 
 
 		prepareDataForPlot = function()
+			#### Reshuffles the entire history of states so that the entire result conforms to the data frame templates of ggplot2.
 		{
 			if (problemDimension == 2)	
 			{			
@@ -404,7 +409,9 @@ realStateSpace <- setRefClass(
 			}
 		}, 
 
+
 		plotAllChains = function()
+			#### Performs a plot of all simulated chains with an overlayed map of the real density from the Liang example.
 		{
 			if ( problemDimension == 2 )
 			{
@@ -440,7 +447,10 @@ realStateSpace <- setRefClass(
 				cat( "\n It is highly non-trivial to plot a non-2D example \n.")
 		},
 
+
 		plotBaseTemperature = function()
+			#### Performs a plot of the base level temperature chain of main interest with an overlayed map of the real density from the Liang example.
+
 		{
 			if ( problemDimension == 2 )
 			{
@@ -535,6 +545,7 @@ realStateSpace <- setRefClass(
 			iState,
 			jState
 		)
+			#### Measure the quasi distance between states.
 		{
 			return(
 				quasiMetric(
