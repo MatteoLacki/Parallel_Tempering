@@ -20,12 +20,5 @@ LiangWangExample <- ParallelTempering$new(
 	proposalCovariances = list(matrix(c(4,0,0,2), ncol=2,nrow=2),matrix(c(4,0,0,2), ncol=2,nrow=2),matrix(c(100,0,0,2), ncol=2,nrow=2),matrix(c(4,0,0,2), ncol=2,nrow=2),matrix(c(6,0,0,2), ncol=2,nrow=2))
 )
 
-
-LiangWangExample
-LiangWangExample$stateSpace
-
 LiangWangExample$simulate()
-
-LiangWangExample$stateSpace$simulatedStates
-
-
+LiangWangExample$stateSpace$plotBaseTemperature()

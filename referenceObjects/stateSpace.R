@@ -47,6 +47,9 @@ stateSpace <- setRefClass(
 		showState	= function()
 		{},		
 
+		prepareDataForPlot = function()
+		{},
+
 		############################################################
 				# Algorithmic Methods				
 

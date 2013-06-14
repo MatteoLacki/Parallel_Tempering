@@ -50,7 +50,6 @@ Simulation <- setRefClass(
 		############################################################
 				# Visualisation
 
-
 		simulationShow = function()
 		{
 			cat('\n Welcome to our simulation! \n')
@@ -62,9 +61,13 @@ Simulation <- setRefClass(
 			simulationShow()
 		},
 
+		getDataForVisualisation = function()
+		{
+			stateSpace$prepareDataForPlot()
+		},
+
 		############################################################
 				# Algorithmic Methods
-
 
 		makeStepOfTheAlgorithm	= function( 
 			iteration 
@@ -85,6 +88,8 @@ Simulation <- setRefClass(
 			)
 
 			rm(tmp)
+
+			getDataForVisualisation()
 		}	
 
 ###########################################################################

@@ -41,7 +41,9 @@ realStateSpace <- setRefClass(
 		proposalCovariancesCholeskised 	= "matrix",
 
 			## Boolean: says whether proposal covariances are the same on different temperature levels.
-		simpleCovariance	= "logical"	
+		simpleCovariance	= "logical",
+
+		dataForPlot 			= "data.frame"	
 	),	
 	
 ###########################################################################
@@ -352,46 +354,128 @@ realStateSpace <- setRefClass(
 		},		
 
 
-		prepareData = function()
+		prepareDataForPlot = function()
 		{
-			data  	<- vector(	"list", noOfSlots )
-			tmp2 	<- sapply( 
-				1:noOfSlots, 
-				function( slotNo ) 
+			if (problemDimension == 2)	
+			{			
+				data  	<- vector(	"list", noOfSlots )
+
+				for( slotNo in 1:noOfSlots )
 				{
 					data[[ slotNo ]] <-
 						cbind(
 							t( getStates( slotNo ) ),
 							temperatures,
-							rep.int( slotNo %/% 2, noOfTemperatures ),	
+							rep.int( slotNo %/% 2, noOfTemperatures ),
+							rep.int( 
+								ifelse(
+									slotNo == 1, 
+									0,
+									ifelse(
+										slotNo %% 2 == 0,
+										1,
+										2
+									)	
+								), 
+								noOfTemperatures 
+							)
 						)
-				},
-				USE.NAMES = FALSE
-			)
+				}
 
-			data <- 	as.data.frame( do.call( rbind, data ) )
+				data 	<- as.data.frame( do.call( rbind, data ) )
 
-			tmp3 <- 
-				factor(
-					c( 
-						rep.int(0, noOfTemperatures),
-						rep.int( 
-							c(
-								rep.int(1, noOfTemperatures),
-								rep.int(2, noOfTemperatures)
-							),
-							noOfSlots - 1 	
-						)	
+				names( data )	<- 
+					c("x","y","Temperature","Progress","Phase")
+
+				data$Progress 	<- data$Progress/noOfIterations
+
+				data$Phase 	<- factor( data$Phase )
+
+				levels( data$Phase ) <- c("Initial State","Random Walk","Swap")
+
+				data$Temperature<- 
+					factor( 
+						data$Temperature,
+						levels 	= temperatures,
+						ordered	= TRUE  
 					)
-				)
 
-			levels( tmp3 ) <- c("Initial State", "Random Walk", "Swap")	
-			
-			data[,4] <- tmp3
-			names( data )<- c("x","y", "Temperature", "Phase")
-
-			return( data )		
+				dataForPlot <<- data 
+			}
 		}, 
+
+		plotAllChains = function()
+		{
+			if ( problemDimension == 2 )
+			{
+				require( ggplot2 )
+
+				return( 
+					qplot(
+						x, 
+						y, 
+						data 	= dataForPlot,
+						colour 	= Temperature
+					) + 
+					geom_point() +
+					scale_colour_brewer(
+						type 	= "seq", 
+						palette = 3
+					) +
+					stat_contour(
+						data = as.data.frame(
+							read.csv2(
+								"./Data/Liang_Density_Values_For_Contour_gg2plot.csv"
+							)
+						), 
+						aes(x, y, z =z ), 
+						bins	= 10, 
+						size	= .5, 
+						colour 	= "orange"
+					) +
+					ggtitle( "Parallel Tempering" ) +
+					labs( x="", y="" )
+				)		
+			} else 
+				cat( "\n It is highly non-trivial to plot a non-2D example \n.")
+		},
+
+		plotBaseTemperature = function()
+		{
+			if ( problemDimension == 2 )
+			{
+				require( ggplot2 )
+
+				return(
+					qplot(
+						x, 
+						y, 
+						data 	= dataForPlot[dataForPlot$Temperature==1,],
+						colour 	= Progress
+					) + 
+					geom_point() +
+					scale_colour_gradient(
+						limits 	= c(0, 1),
+						low		= "white",
+						high 	= "black"
+					) +
+					stat_contour(
+						data 	= as.data.frame(
+							read.csv2(
+								"./Data/Liang_Density_Values_For_Contour_gg2plot.csv"
+							)
+						), 
+						aes( x, y, z =z ), 
+						bins 	= 5, 
+						size 	= .5, 
+						colour 	= "red"
+					) +
+					ggtitle( "Parallel Tempering - Base Temperature" ) +
+					labs( x="", y="" )
+				)
+			} else 
+				cat( "\n It is highly non-trivial to plot a non-2D example \n.")
+		},
 
 		############################################################
 				# Algorithmic Methods
