@@ -1,5 +1,5 @@
 stateSpace <- setRefClass(
-	Class		= "stateSpace",
+	Class		= "StateSpaces",
 	contains	= "VIRTUAL",
 
 ###########################################################################
@@ -70,5 +70,3 @@ stateSpace <- setRefClass(
 				# Finis Structurae		
 	)
 )
-
-source("./referenceObjects/realStateSpace.R")

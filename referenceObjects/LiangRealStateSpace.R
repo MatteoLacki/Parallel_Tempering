@@ -1,5 +1,5 @@
 LiangRealStateSpace <- setRefClass(
-	Class		= "LiangRealStateSpace",
+	Class		= "LiangRealStateSpaces",
 	contains	= "realStateSpace",
 
 ###########################################################################

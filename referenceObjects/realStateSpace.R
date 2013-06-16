@@ -1,6 +1,6 @@
 realStateSpace <- setRefClass(
-	Class		= "realStateSpace",
-	contains	= "stateSpace",
+	Class		= "RealStateSpaces",
+	contains	= "StateSpaces",
 
 ###########################################################################
 								# Fields

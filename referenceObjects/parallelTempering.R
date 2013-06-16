@@ -1,6 +1,6 @@
-ParallelTempering <- setRefClass(
-	Class		= "ParallelTempering",
-	contains	= "Simulations",
+parallelTempering <- setRefClass(
+	Class		= "ParallelTemperings",
+	contains	= "Algorithms",
 
 ###########################################################################
 								# Fields
@@ -65,45 +65,34 @@ ParallelTempering <- setRefClass(
 				# Initialisation
 				
 
-		parallelTemperingInitializator	= function(
+		initializeParallelTempering	= function(
 			temperatures 		= numeric(0),
 			strategyNumber		= 1L,
-			problemDimension	= 0L,
-			targetDensity 		= function(){}, 
-			initialStates		= matrix(nrow=0, ncol=0),
-			quasiMetric 		= function(){},
-			proposalCovariances = matrix(ncol=0, nrow=0),
 			detailedOutput		= FALSE
 			)
 			#### Initializes the parallel-tempering-specific fields.
 		{
-			insertTemperatures( temperatures 	)		
-			insertStrategyNo( 	strategyNumber 	)
+			temperatures 		<<- temperatures
+			inverseTemperatures <<- 1/tmpTemp
+			temperaturesNo 		<<- length(tmpTemp)
+
+			insertStrategyNo( strategyNumber )
 			insertTranspositions()
 
-			stateSpace 	<<- 
-				realStateSpace$new(
-					temperatures 		= .self$temperatures,
-					iterationsNo 		= iterationsNo,
-					temperaturesNo		= .self$temperaturesNo,
-					problemDimension	= problemDimension,
-					targetDensity 		= targetDensity,
-					initialStates 		= initialStates,
-					quasiMetric 		= quasiMetric,
-					proposalCovariances = proposalCovariances
-				)
+			lastTranspositionNo 	<<- -1L
+			transpositionHistory	<<-	integer( iterationsNo )
+			detailedOutput			<<- detailedOutput
+		},
 
+		prepareSimulation = function()
+			#### Initialises values needed before the simulation.
+		{
 				# Initially everything is new.
-			updatedStates 	<<- rep( TRUE, temperaturesNo)
+			updatedStates 			<<- rep( TRUE, temperaturesNo)
 
 				# Current states must get at least once calculated all without any updates.
 			lastStatesLogUDensities <<-  
 				stateSpace$getProposalLogsOfUDensities()
-
-			lastTranspositionNo 	<<- -1L
-			transpositionHistory	<<-	integer(iterationsNo)
-
-			detailedOutput			<<- detailedOutput
 
 			lastSwapUProbs			<<- updateSwapUProbs( translatorFromLexicOrderToTranspositions )		
 		},
@@ -127,39 +116,6 @@ ParallelTempering <- setRefClass(
 		},
 
 
-		insertTemperatures = function(
-			temperatures
-		)
-		{
-			if (length(temperatures) == 0)
-			{
-				cat(
-					'I did not receive any temperatures. I shall therefore proceed with rather arbitrary choice of 5 temperature levels 1<2<3<4<5.'
-				)
-				tmpTemp <- 1:5	# Can add here some global constant.
-			} else 
-			{
-				if (any( temperatures <= 1 )) cat('Do you really want to cool down the distribution? That does not make sense, does it? Try avoiding such things.')
-				
-				if ( !(1 %in% temperatures) )
-				{	#Adding base temperature.
-					tmpTemp						<- temperatures
-					tmpTemp[length(tmpTemp)+1] 	<- 1
-				}
-
-				tmpTemp	<- 
-					sort(
-						tmpTemp, 
-						decreasing=FALSE
-					) 
-			}
-		
-			temperatures 		<<- tmpTemp
-			inverseTemperatures <<- 1/tmpTemp
-			temperaturesNo 		<<- length(tmpTemp)
-		},
-
-
 		insertTranspositions = function()
 		{
 			translatorFromLexicOrderToTranspositions <<- 
@@ -174,34 +130,19 @@ ParallelTempering <- setRefClass(
 			iterationsNo 		= 0L,
 			temperatures 		= numeric(0),
 			strategyNumber		= 1L,
-			problemDimension	= 0L,
-			targetDensity 		= function(){}, 
-			initialStates		= matrix(nrow=0, ncol=0),
-			quasiMetric 		= function(){},
-			proposalCovariances = matrix(ncol=0, nrow=0),
-			example 			= FALSE,
 			detailedOutput		= FALSE
 			)
 			#### Splits the initialization to general Simulations initialization and parallel-tempering-specific initialization.
 		{
-			simulationInitializator(
+			algorithmInitializator(
 				iterationsNo 		= iterationsNo 
 			)
 
-			if( example )
-			{
-				LiangExampleInitalizator()
-			} else 
-				parallelTemperingInitializator( 
-					temperatures 		= temperatures,
-					strategyNumber		= strategyNumber,
-					problemDimension	= problemDimension,
-					targetDensity 		= targetDensity, 
-					initialStates		= initialStates,
-					quasiMetric 		= quasiMetric,
-					proposalCovariances = proposalCovariances,
-					detailedOutput		= detailedOutput
-				)
+			initializeParallelTempering( 
+				temperatures 		= temperatures,
+				strategyNumber		= strategyNumber,
+				detailedOutput		= detailedOutput
+			)
 		},
 
 
@@ -220,14 +161,14 @@ ParallelTempering <- setRefClass(
 			cat('Logs of unnormalised densities in last states:\n', lastStatesLogUDensities, '\n')
 			cat('Initial need for update: ', updatedStates, '\n')
 			cat('Initial swap U probabilities:\n', lastSwapUProbs, '\n')
-			print( stateSpace$showState() )	
+			print( stateSpace$showState() )
 		},
 
 	
 		show	= function()
 			#### Calls the father-class show method followed by its own show method.
 		{
-			simulationShow()
+			algorithmShow()
 			parallelTemperingShow()			
 		},
 	
