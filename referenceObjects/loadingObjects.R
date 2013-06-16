@@ -2,7 +2,7 @@ rm( list = ls())
 directory <- "/home/matteo/Documents/Scienza/Laurea_di_Matematica/Implementation"
 setwd(directory)
 source("./referenceObjects/simulations.R")
-source("./referenceObjects/parallelTempering.R")
+
 
 
 ########################################################### TESTS
@@ -24,3 +24,6 @@ LiangWangExample$simulate()
 LiangWangExample$transpositionHistory
 
 LiangWangExample$stateSpace$plotBaseTemperature()
+
+
+LiangWangExample <- 

@@ -7,7 +7,7 @@ stateSpace <- setRefClass(
 	fields		= list(
 
 			## Number of iterations of the parallel tempering algorithm.	
-		noOfIterations 		= "integer"
+		iterationsNo 		= "integer"
 	),
 
 ###########################################################################
@@ -19,25 +19,25 @@ stateSpace <- setRefClass(
 				# Initialisation
 
 		initializeStateSpace = function(
-			noOfIterations 	= 0L
+			iterationsNo 	= 0L
 		)
 		{
-			tmpNoOfIterations <- as.integer( noOfIterations )
-			if ( is.na(tmpNoOfIterations) || (tmpNoOfIterations < 0) ) 
+			tmpIterationsNo <- as.integer( iterationsNo )
+			if ( is.na(tmpIterationsNo) || (tmpIterationsNo < 0) ) 
 			{
 				stop("Inappropriate no of steps. Please enter an integer value.")
 			} else
 			{	
-				noOfIterations 		<<- tmpNoOfIterations
+				iterationsNo 		<<- tmpIterationsNo
 			}
 		},
 
 		initialize 	= function(
-			noOfIterations 	= 0L
+			iterationsNo 	= 0L
 		)
 		{
 			initializeStateSpace(
-				noOfIterations 			= noOfIterations
+				iterationsNo 			= iterationsNo
 			)
 		},
 
@@ -53,7 +53,7 @@ stateSpace <- setRefClass(
 		############################################################
 				# Algorithmic Methods				
 
-		getProposalLogsOfUnnormalisedDensities = function()
+		getProposalLogsOfUDensities = function()
 		{},
 
 		randomWalkProposal 			= function()

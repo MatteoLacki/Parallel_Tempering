@@ -99,3 +99,5 @@ Simulation <- setRefClass(
 
 	# This will lock all fields. We want that!
 Simulation$lock( names( Simulation$fields() ) )
+
+source("./referenceObjects/parallelTempering.R")

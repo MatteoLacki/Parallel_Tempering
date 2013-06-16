@@ -8,13 +8,13 @@ realStateSpace <- setRefClass(
 	fields		= list(
 
 			## Dimension of the original state space of interest.
-		problemDimension	= "integer",	
+		spaceDim			= "integer",	
 
 			## Temperature levels for the parallel tempering algorithm.
 		temperatures		= "numeric",
 
 			## Number of temperature levels.
-		noOfTemperatures	= "integer",
+		temperaturesNo		= "integer",
 
 			## The targetted density function, preserved by the algorithm's kernel.
 		targetDensity 		= "function",
@@ -35,15 +35,15 @@ realStateSpace <- setRefClass(
 		freeSlotNo 			= "integer",
 
 			## Number of cell complexes in the data structure
-		noOfSlots 			= "integer",
+		slotsNo 			= "integer",
 
 			## Matrix containing covariances for the proposal kernel.
 		proposalCovariancesCholeskised 	= "matrix",
 
 			## Boolean: says whether proposal covariances are the same on different temperature levels.
-		simpleCovariance	= "logical",
+		simpleProposalCovariance	= "logical",
 
-		dataForPlot 			= "data.frame"	
+		dataForPlot 		= "data.frame"	
 	),	
 	
 ###########################################################################
@@ -58,8 +58,8 @@ realStateSpace <- setRefClass(
 
 		initializeRealStateSpace = function(
 			temperatures 		= numeric(0),
-			noOfTemperatures 	= 0L,
-			problemDimension	= 0L,
+			temperaturesNo 		= 0L,
+			spaceDim			= 0L,
 			targetDensity 		= function(){},
 			initialStates 		= matrix(ncol=0, nrow=0),
 			quasiMetric 		= function(){},
@@ -68,46 +68,46 @@ realStateSpace <- setRefClass(
 			#### Initializes the real-state-space-specific fields.
 		{
 				# Checked already by the Simulation.
-			temperatures 	<<- temperatures
+			temperatures 		<<- temperatures
 
-			initialStatesDimension 	<- nrow(initialStates)
-			initialStatesnoOfTemperatures	<- ncol(initialStates)
-			tmpProblemDimension		<- as.integer(problemDimension)
-			tmpNoOfTemperatures		<- noOfTemperatures
+			initialStatesDim	<- nrow(initialStates)
+			initialStatesTemperaturesNo	<- ncol(initialStates)
+			tmpSpaceDim			<- as.integer(spaceDim)
+			tmpTemperaturesNo	<- temperaturesNo
 
 
-			if( tmpProblemDimension==0L | tmpNoOfTemperatures==0L )
+			if( tmpSpaceDim==0L | tmpTemperaturesNo==0L )
 			{
-				if( initialStatesDimension > 0L & 
-					initialStatesnoOfTemperatures > 0L ) 
+				if( initialStatesDim > 0L & 
+					initialStatesTemperaturesNo > 0L ) 
 				{
-					lastStates	<<- initialStates
+					lastStates		<<- initialStates
 
 						# Consider input data representative.
-					problemDimension<<- initialStatesDimension
-					noOfTemperatures 		<<- initialStatesnoOfTemperatures
+					spaceDim 		<<- initialStatesDim
+					temperaturesNo	<<- initialStatesTemperaturesNo
 
-					cat('\nWe infered from the initial states that\n a) problem has dimension equal to ',problemDimension,'\n b) there are ',noOfTemperatures,' chains to be consdered.\n')
+					cat('\nWe infered from the initial states that\n a) problem has dimension equal to ',spaceDim,'\n b) there are ',temperaturesNo,' chains to be consdered.\n')
 				} else	
-				stop("\nYou did not provide enough information to autogenerate initial states or did not provide the initial states yourself. Good job! You're really getting easily into troubles now...\n")
+				stop("\nYou did not provide enough information to autogenerate initial states or did not provide the initial states yourself. Good job! You're really getting easily into trouble now...\n")
 			} else
 			{
-				problemDimension<<- tmpProblemDimension
-				noOfTemperatures<<- tmpNoOfTemperatures
+				spaceDim 		<<- tmpSpaceDim
+				temperaturesNo 	<<- tmpTemperaturesNo
 
-				if( tmpProblemDimension == initialStatesDimension & 
-					tmpNoOfTemperatures == initialStatesnoOfTemperatures )
+				if( tmpSpaceDim == initialStatesDim & 
+					tmpTemperaturesNo == initialStatesTemperaturesNo )
 				{	
 					lastStates	<<- initialStates
 				} else
 				{
-					if( initialStatesDimension ==0 | initialStatesnoOfTemperatures==0 )
+					if( initialStatesDim ==0 | initialStatesTemperaturesNo==0 )
 					{		# No initial states supplied. Enough info to generate them.
 						lastStates <<- 
 							replicate( 
-								n 	= noOfTemperatures, 
+								n 	= temperaturesNo, 
 								expr= runif( 
-									n = problemDimension,
+									n = spaceDim,
 									min=0,
 									max=10 
 								)
@@ -123,42 +123,42 @@ realStateSpace <- setRefClass(
 
 			simulatedStates	<<- 
 				matrix(
-					nrow = problemDimension*(2*noOfIterations + 1), 
-					ncol = noOfTemperatures
+					nrow = spaceDim*(2*iterationsNo + 1), 
+					ncol = temperaturesNo
 				)
 
 			freeSlotNo 		<<- 1L
-			noOfSlots 		<<- noOfIterations*2L + 1L
+			slotsNo 		<<- iterationsNo*2L + 1L
 
 			insertStates()
 
-			rm( tmpProblemDimension, tmpNoOfTemperatures )
+			rm( tmpSpaceDim, tmpTemperaturesNo )
 
 			targetDensity	<<- targetDensity	
 			quasiMetric 	<<- quasiMetric
 
 			if(	class(proposalCovariances) == 'matrix' )
 			{
-				if(	nrow(proposalCovariances)==problemDimension &
-					ncol(proposalCovariances)==problemDimension	)
+				if(	nrow(proposalCovariances)==spaceDim &
+					ncol(proposalCovariances)==spaceDim	)
 				{
 					proposalCovariancesCholeskised <<- 
 						chol( proposalCovariances )			
-					simpleCovariance 	<<- TRUE
+					simpleProposalCovariance 	<<- TRUE
 				} else
 				{
 					cat('You supplied a covariance matrix that does not conform to our state space dimension or did not care to supply it at all.\n Proceeding with identity covariances.\n')
 					
 					proposalCovariancesCholeskised <<- 
 						diag(
-							rep.int(1, times=problemDimension)
+							rep.int(1, times=spaceDim)
 						)
-					simpleCovariance <<- TRUE
+					simpleProposalCovariance <<- TRUE
 				}		
 			} else
 			{	
 				if(	class(proposalCovariances) == 'list' &
-					length(proposalCovariances)==noOfTemperatures)
+					length(proposalCovariances)==temperaturesNo)
 				{
 					if (
 						all(
@@ -182,16 +182,16 @@ realStateSpace <- setRefClass(
 									chol 
 								) 
 							)
-						simpleCovariance 	<<- FALSE
+						simpleProposalCovariance 	<<- FALSE
 					} else
 					{
 						cat('Your covariances are either not matrices or their size do not conform to problem dimension.\n Proceeding with identity covariances.\n')
 
 						proposalCovariancesCholeskised <<- 
 							diag(
-								rep.int(1, times=problemDimension)
+								rep.int(1, times=spaceDim)
 							)
-						simpleCovariance <<- TRUE	
+						simpleProposalCovariance <<- TRUE	
 					}
 				} else
 				{
@@ -199,18 +199,18 @@ realStateSpace <- setRefClass(
 
 						proposalCovariancesCholeskised <<- 
 							diag(
-								rep.int(1, times=problemDimension)
+								rep.int(1, times=spaceDim)
 							)
-						simpleCovariance <<- TRUE	
+						simpleProposalCovariance <<- TRUE	
 				}		
 			}	
 		},
 
 		initialize	= function(
 			temperatures 		= numeric(0),
-			noOfIterations 		= 0L,  
-			noOfTemperatures 	= 0L,
-			problemDimension	= 0L,
+			iterationsNo 		= 0L,  
+			temperaturesNo 		= 0L,
+			spaceDim			= 0L,
 			targetDensity 		= function(){},
 			initialStates 		= matrix(ncol=0, nrow=0),
 			quasiMetric 		= function(){},
@@ -219,16 +219,16 @@ realStateSpace <- setRefClass(
 			#### Splits the initialization to general state-space initialization and real-state-space-specific initialization.
 		{
 			initializeStateSpace(
-				noOfIterations 		= noOfIterations
+				iterationsNo 		= iterationsNo
 			)
 
 			initializeRealStateSpace(
-				noOfTemperatures = noOfTemperatures,
-				temperatures 	 = temperatures,
-				problemDimension = problemDimension,
-				targetDensity 	 = targetDensity,
-				initialStates 	 = initialStates,
-				quasiMetric 	 = quasiMetric,
+				temperaturesNo  	= temperaturesNo,
+				temperatures 	  	= temperatures,
+				spaceDim  			= spaceDim,
+				targetDensity 	 	= targetDensity,
+				initialStates 	 	= initialStates,
+				quasiMetric 	 	= quasiMetric,
 				proposalCovariances = proposalCovariances
 			)
 		},
@@ -241,17 +241,17 @@ realStateSpace <- setRefClass(
 		simulationTerminated = function()
 			#### Checks whether simulation is terminated.
 		{
-			return( freeSlotNo == noOfSlots + 1L )
+			return( freeSlotNo == slotsNo + 1L )
 		},
 
 		insertStates	= function() 
 			#### Inserts current states to the data history (field: simulatedStates).
 		{
-			if( freeSlotNo <= noOfSlots )
+			if( freeSlotNo <= slotsNo )
 			{
 				simulatedStates[
-					((freeSlotNo-1)*problemDimension+1):
-					(freeSlotNo*problemDimension),
+					((freeSlotNo-1)*spaceDim+1):
+					(freeSlotNo*spaceDim),
 				] 	<<- lastStates
 
 				freeSlotNo 	<<- freeSlotNo + 1L
@@ -264,11 +264,10 @@ realStateSpace <- setRefClass(
 		)
 			#### Extracts the given slot from data history (field: simulatedStates).
 		{
-				# It's ok to return this: this is not a pointer, but a copied submatrix
 			return(
 				simulatedStates[ 
-					((whichSlotNo-1)*problemDimension+1):
-					(whichSlotNo*problemDimension),
+					((whichSlotNo-1)*spaceDim+1):
+					(whichSlotNo*spaceDim),
 				]
 			)
 		},
@@ -352,7 +351,7 @@ realStateSpace <- setRefClass(
 				)
 
 			colnames(tmpStates) <- temperatures
-			rownames(tmpStates) <- 1:problemDimension
+			rownames(tmpStates) <- 1:spaceDim
 
 			return(tmpStates)
 		},		
@@ -361,17 +360,17 @@ realStateSpace <- setRefClass(
 		prepareDataForPlot = function()
 			#### Reshuffles the entire history of states so that the entire result conforms to the data frame templates of ggplot2.
 		{
-			if (problemDimension == 2)	
+			if (spaceDim == 2)	
 			{			
-				data  	<- vector(	"list", noOfSlots )
+				data  	<- vector(	"list", slotsNo )
 
-				for( slotNo in 1:noOfSlots )
+				for( slotNo in 1:slotsNo )
 				{
 					data[[ slotNo ]] <-
 						cbind(
 							t( getStates( slotNo ) ),
 							temperatures,
-							rep.int( slotNo %/% 2, noOfTemperatures ),
+							rep.int( slotNo %/% 2, temperaturesNo ),
 							rep.int( 
 								ifelse(
 									slotNo == 1, 
@@ -382,7 +381,7 @@ realStateSpace <- setRefClass(
 										2
 									)	
 								), 
-								noOfTemperatures 
+								temperaturesNo 
 							)
 						)
 				}
@@ -392,7 +391,7 @@ realStateSpace <- setRefClass(
 				names( data )	<- 
 					c("x","y","Temperature","Progress","Phase")
 
-				data$Progress 	<- data$Progress/noOfIterations
+				data$Progress 	<- data$Progress/iterationsNo
 
 				data$Phase 	<- factor( data$Phase )
 
@@ -413,7 +412,7 @@ realStateSpace <- setRefClass(
 		plotAllChains = function()
 			#### Performs a plot of all simulated chains with an overlayed map of the real density from the Liang example.
 		{
-			if ( problemDimension == 2 )
+			if ( spaceDim == 2 )
 			{
 				require( ggplot2 )
 
@@ -452,7 +451,7 @@ realStateSpace <- setRefClass(
 			#### Performs a plot of the base level temperature chain of main interest with an overlayed map of the real density from the Liang example.
 
 		{
-			if ( problemDimension == 2 )
+			if ( spaceDim == 2 )
 			{
 				require( ggplot2 )
 
@@ -491,7 +490,7 @@ realStateSpace <- setRefClass(
 				# Algorithmic Methods
 
 
-		getProposalLogsOfUnnormalisedDensities = function()
+		getProposalLogsOfUDensities = function()
 			#### Calculates logs of unnormalised densities in all the proposed states. 
 		{
 			return(
@@ -505,39 +504,40 @@ realStateSpace <- setRefClass(
 			)
 		},
 
+
 		randomWalkProposal = function()
 			#### Generates new current states and logs of their unnormalised densities.
 		{
 			proposedStates <<-	
 				lastStates +
-				if(	simpleCovariance )
+				if(	simpleProposalCovariance )
 				{
 					proposalCovariancesCholeskised %*% 
 					matrix( 
 						rnorm( 
-							n = problemDimension*noOfTemperatures 
+							n = spaceDim*temperaturesNo 
 						),
-						nrow = problemDimension,
-						ncol = noOfTemperatures
+						nrow = spaceDim,
+						ncol = temperaturesNo
 					)
 				} else
 				{
 					sapply(
-						1:noOfTemperatures,
+						1:temperaturesNo,
 						function( covarianceMatrixNo )
 						{
 							proposalCovariancesCholeskised[, 
-								((covarianceMatrixNo-1)*problemDimension+1):
-								(covarianceMatrixNo*problemDimension)
+								((covarianceMatrixNo-1)*spaceDim+1):
+								(covarianceMatrixNo*spaceDim)
 							] %*%
-							rnorm(problemDimension)
+							rnorm(spaceDim)
 						}
 					)
 				}
 				
 				# Now it will return proposed states log densities.
 			return(	
-				getProposalLogsOfUnnormalisedDensities()
+				getProposalLogsOfUDensities()
 			)
 		},
 
@@ -558,3 +558,5 @@ realStateSpace <- setRefClass(
 				# Finis Structurae
 	)
 )
+
+source("./referenceObjects/LiangRealStateSpace.R")
