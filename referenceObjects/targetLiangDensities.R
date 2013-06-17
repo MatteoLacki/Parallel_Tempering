@@ -35,7 +35,7 @@ targetLiangDensity <- setRefClass(
 
 		initialize 	= function()
 		{
-			mixturesNo 		<<- 20
+			mixturesNo 		<<- 20L
 
 			mixturesWeight 	<<- 1/mixturesNo
 
@@ -56,6 +56,17 @@ targetLiangDensity <- setRefClass(
 		############################################################
 				# Visualisation
 
+		show = function()
+		{
+			cat('\nThe Liang target density inputs are here: \n')
+			cat('Mixture number: ', mixturesNo, '\n')
+			cat("Mixtures' weight: ", mixturesWeight, '\n')	
+			cat('Variance: ', sigma2, '\n')
+			cat("Mixtures' means:\n")
+			print(mixturesMeans)
+			cat('\n\n')
+		},		
+
 		############################################################
 				# Algorithmic Methods				
 
@@ -71,7 +82,7 @@ targetLiangDensity <- setRefClass(
 						function( mixtureMean )
 						{	
 							exp( 
-								crossprod( proposedState - mixtureMean )/ (2 * sigma2) 
+								- crossprod( proposedState - mixtureMean )/ (2 * sigma2) 
 							)
 						}
 					)

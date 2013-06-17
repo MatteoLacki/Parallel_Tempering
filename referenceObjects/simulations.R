@@ -37,7 +37,7 @@ simulation <- setRefClass(
 	
 			iterationsNo 		= 0L,
 			temperatures 		= numeric(0),
-			strategyNumber		= 1L,
+			strategyNo			= 1L,
 			spaceDim			= 0L,
 			targetDensity 		= function(){}, 
 			initialStates		= matrix(nrow=0, ncol=0),
@@ -47,9 +47,15 @@ simulation <- setRefClass(
 			detailedOutput		= FALSE
 		)
 		{
+			print("Thank you for choosing our software. We hope that you will have a pleasent day.")
+
+			iterationsNo 	<- checkIterationsNo( iterationsNo )
+
 			if( example )
 			{
-				tmpProposalCovariances <- vector( "list", 5L )
+				temperatures 			<- c(1, 2.8, 7.7, 21.6, 60)
+
+				tmpProposalCovariances 	<- vector( "list", 5L )
 
 				for (i in 1:5 )
 				{
@@ -57,30 +63,31 @@ simulation <- setRefClass(
 						diag( temperatures[i]^2, nrow=2, ncol=2 ) 				
 				}
 
-				print("Hello\n\n")
 				stateSpace 	<<- 
 					realStateSpace$new(
 						iterationsNo 		= iterationsNo,
-						temperatures 		= c(1, 2.8, 7.7, 21.6, 60),
+						temperatures 		= temperatures,
 						temperaturesNo 		= 5L,
 						spaceDim			= 2L,
 						initialStates		= initialStates,
 						quasiMetric 		= quasiMetric,
-						proposalCovariances = tmpProposalCovariances,
-						detailedOutput		= detailedOutput	
+						proposalCovariances = tmpProposalCovariances
 					)
 
 				targetMeasure 	<<- targetLiangDensity$new()
 
 				stateSpace$targetMeasure <<- targetMeasure
 
-				algorithm 		<<- 
+				algorithm <<- 
 					parallelTempering$new(
 						iterationsNo 	= iterationsNo,
 						temperatures 	= temperatures,
-						strategyNumber	= strategyNumber,
+						strategyNo		= strategyNo,
 						detailedOutput	= detailedOutput
 					)
+
+				algorithm$stateSpace <<- stateSpace
+					
 			} else 
 			{	
 				temperatures 	<- checkTemperatures( temperatures )
@@ -98,19 +105,18 @@ simulation <- setRefClass(
 							iterationsNo 		= iterationsNo,
 							temperatures 		= temperatures,
 							temperaturesNo 		= temperaturesNo,
-							strategyNumber		= strategyNumber,
 							spaceDim			= spaceDim,
 							#targetDensity 		= targetDensity, 
 							initialStates		= initialStates,
 							quasiMetric 		= quasiMetric,
-							proposalCovariances = proposalCovariances,
-							example 			= example,
-							detailedOutput		= detailedOutput	
+							proposalCovariances = proposalCovariances
 						)	
 					},
 	
 					cat("That kind of state-space is currently the only one unavailable.")
 				)
+
+				stateSpace$targetMeasure  <<- targetMeasure
 	
 				switch(
 					algorithmName,
@@ -119,11 +125,9 @@ simulation <- setRefClass(
 						algorithm <<- parallelTempering$new(
 							iterationsNo 	= iterationsNo,
 							temperatures 	= temperatures,
-							strategyNumber	= strategyNumber,
+							strategyNo	= strategyNo,
 							detailedOutput	= detailedOutput
 						)
-	
-						algorithm$stateSpace <<- stateSpace
 					},
 					MetropolisHasting 	=
 					{
@@ -134,6 +138,8 @@ simulation <- setRefClass(
 				
 					cat("That kind of algorithm is currently unavailable.")
 				)
+
+				algorithm$stateSpace <<- stateSpace
 			}	
 		},
 
@@ -168,13 +174,27 @@ simulation <- setRefClass(
 			return( tmpTemp )
 		},	
 
+
+		checkIterationsNo = function( iterationsNo )
+		{
+			iterationsNo 	<- as.integer( iterationsNo )
+	
+			if ( is.na( iterationsNo ) || ( iterationsNo < 0) ) 
+			{
+				stop("Inappropriate no of steps. Please enter an integer value.")
+			} else
+			{	
+				return( iterationsNo )
+			}	
+		},
+
 		############################################################
 				# Visualisation
 
-		show = function()
-		{
-
-		},
+		# show = function()
+		# {
+		# 	stateSpace$show()
+		# },
 
 		############################################################
 				# Algorithmic Methods
@@ -190,4 +210,4 @@ simulation <- setRefClass(
 )
 
 	# This will lock all fields. We want that?!
-simulation$lock( names( simulation$fields() ) )
+#simulation$lock( names( simulation$fields() ) )

@@ -24,7 +24,9 @@ targetMeasure <- setRefClass(
 				# Algorithmic Methods				
 
 		measure 	= function()
-		{}
+		{
+			return( NULL )
+		}
 ####################################################################
 				# Finis Structurae		
 	)

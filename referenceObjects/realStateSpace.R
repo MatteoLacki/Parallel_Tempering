@@ -68,8 +68,6 @@ realStateSpace <- setRefClass(
 			#### Initializes the real-state-space-specific fields.
 		{
 				# Checked already by the Simulation.
-			print("\nHERE2\n")	
-
 			temperatures 		<<- temperatures
 
 			initialStatesDim	<- nrow(initialStates)
@@ -208,9 +206,10 @@ realStateSpace <- setRefClass(
 			}	
 		},
 
+
 		initialize	= function(
-			temperatures 		= numeric(0),
 			iterationsNo 		= 0L,  
+			temperatures 		= numeric(0),
 			temperaturesNo 		= 0L,
 			spaceDim			= 0L,
 #			targetDensity 		= function(){},
@@ -246,6 +245,7 @@ realStateSpace <- setRefClass(
 			return( freeSlotNo == slotsNo + 1L )
 		},
 
+
 		insertStates	= function() 
 			#### Inserts current states to the data history (field: simulatedStates).
 		{
@@ -260,6 +260,7 @@ realStateSpace <- setRefClass(
 			} else
 			stop('The computer tried to make more steps than the user wanted him to. That is truly weird...') 
 		},
+
 
 		getStates 	= function(
 			whichSlotNo
@@ -276,7 +277,7 @@ realStateSpace <- setRefClass(
 
 
 		getIteration	= function(
-			iteration 	= 0L,
+			iteration 	= 1L,
 			type		= 'initial states' 
 		)
 			#### For a given iteration extracts results of a given step type, to choose among 'initial states', 'random walk', and 'swap'.
@@ -340,6 +341,40 @@ realStateSpace <- setRefClass(
 		############################################################
 				# Visualisation
 
+
+		showRealStateSpace = function()
+		{
+			cat('\nThe real-state-space inputs are here: \n')
+			cat('Space dimension: ', spaceDim, '\n')
+			cat('Number of temperatures: ', temperaturesNo, '\n')
+			
+			cat("Temperatures:\n")
+			print(temperatures)
+			cat("\n")
+
+			cat('Initial States:\n')
+			print( showState() )
+			cat("\n")
+
+			cat('Proposal covariances after Cholesky decomposition:\n')
+			print( proposalCovariancesCholeskised )
+			cat("\n")
+
+			if( simulationTerminated() )
+			{
+				cat('Genarated states:\n')
+				print( proposalCovariancesCholeskised )
+				cat("\n")
+
+				print( plotBaseTemperature() )
+			}
+		},
+
+		show 	 = function()
+		{
+			showStateSpace()
+			showRealStateSpace()
+		},
 
 		showState = function( 
 			iteration 	= 0L,
@@ -500,7 +535,10 @@ realStateSpace <- setRefClass(
 					apply( 
 						proposedStates, 
 						2, 
-						targetMeasure$measure() 
+						function( proposedState ) 
+							targetMeasure$measure( 
+								proposedState = proposedState
+							) 
 					)
 				)	
 			)

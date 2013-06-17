@@ -7,10 +7,13 @@ algorithm <- setRefClass(
 	fields		= list(
 
 			## Number of iterations of the algorithm.
-		noOfIterations  = "integer",
+		iterationsNo  = "integer",
 
 			## The data container with methods that act on it.
-		stateSpace		= "StateSpaces"	
+		stateSpace		= "StateSpaces",
+
+			## Boolean value: TRUE if the simulation has been carried out.
+		simulationFinished		= "logical"	
 	),
 
 ###########################################################################
@@ -22,27 +25,28 @@ algorithm <- setRefClass(
 				# Initialisation
 
 		initializeAlgorithm	= function(
-			noOfIterations 	= 0L
+			iterationsNo 	= 0L
 			)
 		{
-			tmpNoOfIterations 	<- as.integer(noOfIterations)
+			simulationFinished	<<- FALSE
+			tmpIterationsNo 	<- as.integer(iterationsNo)
 			
-			if ( is.na(tmpNoOfIterations) || (noOfIterations < 0) ) 
+			if ( is.na(tmpIterationsNo) || (iterationsNo < 0) ) 
 			{
 				stop("Inappropriate number of steps. Please enter an integer value.")
 			} else
 			{	
-				noOfIterations 	<<- tmpNoOfIterations
+				iterationsNo 	<<- tmpIterationsNo
 			}
 		},	
 
 
 		initialize = function(
-			noOfIterations 	= 0L
+			iterationsNo 	= 0L
 			)
 		{
 			initializeAlgorithm(
-				noOfIterations 	= noOfIterations			
+				iterationsNo 	= iterationsNo			
 			)
 		},
 
@@ -55,7 +59,7 @@ algorithm <- setRefClass(
 		algorithmShow = function()
 		{
 			cat('\n Welcome to our algorithm! \n')
-			cat('Number of steps: ', noOfIterations, '\n')
+			cat('Number of steps: ', iterationsNo, '\n')
 		},	
 
 		show = function()
@@ -83,7 +87,7 @@ algorithm <- setRefClass(
 			prepareSimulation()
 
 			tmp <- sapply( 
-				1:noOfIterations, 
+				1:iterationsNo, 
 				function( iteration ) 
 				{
 					makeStepOfTheAlgorithm( iteration )
@@ -94,6 +98,8 @@ algorithm <- setRefClass(
 			rm(tmp)
 
 			getDataForVisualisation()
+
+			simulationFinished	<<- TRUE
 		}	
 
 ###########################################################################
@@ -102,4 +108,4 @@ algorithm <- setRefClass(
 )
 
 	# This will lock all fields. We want that!
-algorithm$lock( names( algorithm$fields() ) )
+#algorithm$lock( names( algorithm$fields() ) )

@@ -14,7 +14,7 @@ parallelTempering <- setRefClass(
 		inverseTemperatures = "numeric",
 
 			## Number of swapping states strategy.
-		strategyNumber 		= "integer",
+		strategyNo 		= "integer",
 
 			## Number of temperature levels.						
 		temperaturesNo	= "integer",	
@@ -67,16 +67,16 @@ parallelTempering <- setRefClass(
 
 		initializeParallelTempering	= function(
 			temperatures 		= numeric(0),
-			strategyNumber		= 1L,
+			strategyNo			= 1L,
 			detailedOutput		= FALSE
 			)
 			#### Initializes the parallel-tempering-specific fields.
 		{
 			temperatures 		<<- temperatures
-			inverseTemperatures <<- 1/tmpTemp
-			temperaturesNo 		<<- length(tmpTemp)
+			inverseTemperatures <<- 1/temperatures
+			temperaturesNo 		<<- length(temperatures)
 
-			insertStrategyNo( strategyNumber )
+			insertStrategyNo( strategyNo )
 			insertTranspositions()
 
 			lastTranspositionNo 	<<- -1L
@@ -86,19 +86,19 @@ parallelTempering <- setRefClass(
 
 
 		insertStrategyNo = function(
-			strategyNumber
+			strategyNo
 		)
 		{
-			tmpStrategyNumber	<- as.integer(strategyNumber)
+			tmpStrategyNo	<- as.integer( strategyNo )
 
-			if ( is.na(tmpStrategyNumber) || tmpStrategyNumber < 0 )
+			if ( is.na( tmpStrategyNo ) || tmpStrategyNo < 0 )
 			{		 
 				stop(
 					"Inappropriate stregy number. Right now you can choose among strategies from 1 to 4."
 				)
 			} else
 			{	
-				strategyNumber	<<- tmpStrategyNumber
+				strategyNo	<<- tmpStrategyNo
 			}
 		},
 
@@ -113,22 +113,22 @@ parallelTempering <- setRefClass(
 		},
 
 
-		initialize 				= function(
-			iterationsNo 		= 0L,
-			temperatures 		= numeric(0),
-			strategyNumber		= 1L,
-			detailedOutput		= FALSE
+		initialize = function(
+			iterationsNo 	= 0L,
+			temperatures 	= numeric(0),
+			strategyNo		= 1L,
+			detailedOutput	= FALSE
 			)
 			#### Splits the initialization to general Simulations initialization and parallel-tempering-specific initialization.
 		{
-			algorithmInitializator(
-				iterationsNo 		= iterationsNo 
+			initializeAlgorithm(
+				iterationsNo = iterationsNo 
 			)
 
 			initializeParallelTempering( 
-				temperatures 		= temperatures,
-				strategyNumber		= strategyNumber,
-				detailedOutput		= detailedOutput
+				temperatures 	= temperatures,
+				strategyNo		= strategyNo,
+				detailedOutput	= detailedOutput
 			)
 		},
 
@@ -137,13 +137,13 @@ parallelTempering <- setRefClass(
 			#### Initialises values needed before the simulation.
 		{
 				# Initially everything is new.
-			updatedStates 			<<- rep( TRUE, temperaturesNo)
+			updatedStates <<- rep( TRUE, temperaturesNo)
 
 				# Current states must get at least once calculated all without any updates.
 			lastStatesLogUDensities <<-  
 				stateSpace$proposeLogsOfUMeasures()
 
-			lastSwapUProbs			<<- updateSwapUProbs( translatorFromLexicOrderToTranspositions )		
+			lastSwapUProbs	<<- updateSwapUProbs( translatorFromLexicOrderToTranspositions )
 		},
 
 		############################################################
@@ -156,12 +156,15 @@ parallelTempering <- setRefClass(
 			cat('\nThe Parallel Tempering inputs are here: \n')
 			cat('Temperatures: ', temperatures, '\n')
 			cat('Number of chains/temperatures: ', temperaturesNo, '\n')	
-			cat('Chosen swap-strategy number: ', strategyNumber, '\n')
+			cat('Chosen swap-strategy number: ', strategyNo, '\n')
 			cat('Number of transpositions: ', transpositionsNo, '\n')	
-			cat('Logs of unnormalised densities in last states:\n', lastStatesLogUDensities, '\n')
-			cat('Initial need for update: ', updatedStates, '\n')
-			cat('Initial swap U probabilities:\n', lastSwapUProbs, '\n')
-			print( stateSpace$showState() )
+
+			if( simulationFinished )
+			{
+				cat("Transpostion history:\n")
+				print( transpositionHistory )
+				cat("\n")
+			}
 		},
 
 	
@@ -506,7 +509,7 @@ parallelTempering <- setRefClass(
 		{
 			i <- transposition[1]
 			j <- transposition[2] 	
-			s <- strategyNumber
+			s <- strategyNo
 
 			tmp <- lastStatesLogUDensities[i] - lastStatesLogUDensities[j]
 
@@ -538,9 +541,9 @@ parallelTempering <- setRefClass(
 )
 
 								# No adaptation for now.
-parallelTempering$lock( 
-	'temperatures',
-	'inverseTemperatures',
-	'temperaturesNo',
-	'strategyNumber'
-)
+# parallelTempering$lock( 
+# 	'temperatures',
+# 	'inverseTemperatures',
+# 	'temperaturesNo',
+# 	'strategyNo'
+# )

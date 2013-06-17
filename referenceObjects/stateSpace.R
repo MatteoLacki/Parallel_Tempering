@@ -24,17 +24,8 @@ stateSpace <- setRefClass(
 		initializeStateSpace = function(
 			iterationsNo 	= 0L
 		)
-		{
-			print("\nHERE3\n")	
-
-			tmpIterationsNo <- as.integer( iterationsNo )
-			if ( is.na(tmpIterationsNo) || (tmpIterationsNo < 0) ) 
-			{
-				stop("Inappropriate no of steps. Please enter an integer value.")
-			} else
-			{	
-				iterationsNo 		<<- tmpIterationsNo
-			}
+		{	
+			iterationsNo <<- iterationsNo
 		},
 
 		initialize 	= function(
@@ -55,11 +46,24 @@ stateSpace <- setRefClass(
 		prepareDataForPlot = function()
 		{},
 
+		showStateSpace 	= function()
+		{
+			cat('\nThe general state-space inputs are here: \n')
+			cat('Number of iterations of the algorithm: ', iterationsNo, '\n\n')
+		},
+
+		show = function()
+		{
+			showStateSpace()
+		},
+
 		############################################################
 				# Algorithmic Methods				
 
 		proposeLogsOfUMeasures 		= function()
-		{},
+		{
+			return( NULL )
+		},
 
 		randomWalkProposal 			= function()
 		{},

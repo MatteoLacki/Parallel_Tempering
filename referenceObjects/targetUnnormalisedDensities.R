@@ -26,6 +26,13 @@ targetUDensity <- setRefClass(
 		############################################################
 				# Visualisation
 
+		show = function()
+		{
+			cat('\nThe general target unnormalised density inputs are here: \n')
+			cat("The target unnormalised density function:\n", targetUDensity)
+		},		
+
+
 		############################################################
 				# Algorithmic Methods				
 
