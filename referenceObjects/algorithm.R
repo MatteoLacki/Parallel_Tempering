@@ -10,7 +10,7 @@ algorithm <- setRefClass(
 		noOfIterations  = "integer",
 
 			## The data container with methods that act on it.
-		stateSpace		= "stateSpace"	
+		stateSpace		= "StateSpaces"	
 	),
 
 ###########################################################################
@@ -36,6 +36,7 @@ algorithm <- setRefClass(
 			}
 		},	
 
+
 		initialize = function(
 			noOfIterations 	= 0L
 			)
@@ -46,7 +47,7 @@ algorithm <- setRefClass(
 		},
 
 		prepareSimulation = function()
-		{}
+		{},
 
 		############################################################
 				# Visualisation

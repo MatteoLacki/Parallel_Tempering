@@ -22,6 +22,8 @@ stateSpace <- setRefClass(
 			iterationsNo 	= 0L
 		)
 		{
+			print("\nHERE3\n")	
+
 			tmpIterationsNo <- as.integer( iterationsNo )
 			if ( is.na(tmpIterationsNo) || (tmpIterationsNo < 0) ) 
 			{

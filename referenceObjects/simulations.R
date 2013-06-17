@@ -1,8 +1,8 @@
-source("./referenceObjects/stateSpace.R")
-source("./referenceObjects/realStateSpace.R")
-source("./referenceObjects/LiangRealStateSpace.R")
-source("./referenceObjects/algorithm.R")
-source("./referenceObjects/parallelTempering.R")
+# source("./referenceObjects/stateSpace.R")
+# source("./referenceObjects/realStateSpace.R")
+# source("./referenceObjects/liangRealStateSpace.R")
+# source("./referenceObjects/algorithm.R")
+# source("./referenceObjects/parallelTempering.R")
 
 simulation <- setRefClass(
 	Class		= "Simulations",
@@ -27,13 +27,13 @@ simulation <- setRefClass(
 				# Initialisation
 
 		initialize = function(
-			stateSpaceName		= "LiangRealStateSpaces",
-			algorithmName		= "ParallelTemperings",
+			stateSpaceName		= "LiangRealStateSpace",
+			algorithmName		= "ParallelTempering",
 			
 			iterationsNo 		= 0L,
 			temperatures 		= numeric(0),
 			strategyNumber		= 1L,
-			problemDimension	= 0L,
+			spaceDim			= 0L,
 			targetDensity 		= function(){}, 
 			initialStates		= matrix(nrow=0, ncol=0),
 			quasiMetric 		= function(){},
@@ -43,28 +43,30 @@ simulation <- setRefClass(
 		)
 		{
 			temperatures 	<- checkTemperatures( temperatures )
+			temperaturesNo	<- length( temperatures )
 
 			switch(
 				stateSpaceName,
-				RealStateSpaces	= 
+				RealStateSpace	= 
 				{
 					stateSpace <<- realStateSpace$new(
-						iterationsNo 		= 0L,
-						temperatures 		= numeric(0),
-						strategyNumber		= 1L,
-						problemDimension	= 0L,
-						targetDensity 		= function(){}, 
-						initialStates		= matrix(nrow=0, ncol=0),
-						quasiMetric 		= function(){},
-						proposalCovariances = matrix(ncol=0, nrow=0),
-						example 			= FALSE,
-						detailedOutput		= FALSE	
+						iterationsNo 		= iterationsNo,
+						temperatures 		= temperatures,
+						temperaturesNo 		= temperaturesNo,
+						strategyNumber		= strategyNumber,
+						spaceDim			= spaceDim,
+						targetDensity 		= targetDensity, 
+						initialStates		= initialStates,
+						quasiMetric 		= quasiMetric,
+						proposalCovariances = proposalCovariances,
+						example 			= example,
+						detailedOutput		= detailedOutput	
 					)	
 				},
 
-				LiangRealStateSpaces = 
+				LiangRealStateSpace = 
 				{
-					stateSpace <<- LiangRealStateSpace$new(
+					stateSpace <<- liangRealStateSpace$new(
 						iterationsNo  	= iterationsNo,
 						initialStates  	= initialStates,
 						quasiMetric 	= quasiMetric
@@ -80,10 +82,10 @@ simulation <- setRefClass(
 				ParallelTempering	= 
 				{
 					algorithm <<- parallelTempering$new(
-						iterationsNo 		= 0L,
-						temperatures 		= numeric(0),
-						strategyNumber		= 1L,
-						detailedOutput		= FALSE
+						iterationsNo 	= iterationsNo,
+						temperatures 	= temperatures,
+						strategyNumber	= strategyNumber,
+						detailedOutput	= detailedOutput
 					)
 
 					algorithm$stateSpace <<- stateSpace
@@ -97,8 +99,6 @@ simulation <- setRefClass(
 			
 				cat("That kind of algorithm is currently unavailable.")
 			)	
-	 
-
 		},
 
 
@@ -130,14 +130,14 @@ simulation <- setRefClass(
 			}
 
 			return( tmpTemp )
-		}	
+		},	
 
 		############################################################
 				# Visualisation
 
 		show = function()
 		{
-			simulationShow()
+
 		},
 
 		############################################################
@@ -153,5 +153,5 @@ simulation <- setRefClass(
 	)
 )
 
-	# This will lock all fields. We want that!
-Simulation$lock( names( Simulation$fields() ) )
+	# This will lock all fields. We want that?!
+simulation$lock( names( simulation$fields() ) )

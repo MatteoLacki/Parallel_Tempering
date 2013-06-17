@@ -68,6 +68,8 @@ realStateSpace <- setRefClass(
 			#### Initializes the real-state-space-specific fields.
 		{
 				# Checked already by the Simulation.
+			print("\nHERE2\n")	
+
 			temperatures 		<<- temperatures
 
 			initialStatesDim	<- nrow(initialStates)
@@ -89,7 +91,7 @@ realStateSpace <- setRefClass(
 
 					cat('\nWe infered from the initial states that\n a) problem has dimension equal to ',spaceDim,'\n b) there are ',temperaturesNo,' chains to be consdered.\n')
 				} else	
-				stop("\nYou did not provide enough information to autogenerate initial states or did not provide the initial states yourself. Good job! You're really getting easily into trouble now...\n")
+				cat("\nYou did not provide enough information to autogenerate initial states or did not provide the initial states yourself.\n")
 			} else
 			{
 				spaceDim 		<<- tmpSpaceDim
@@ -558,5 +560,3 @@ realStateSpace <- setRefClass(
 				# Finis Structurae
 	)
 )
-
-source("./referenceObjects/LiangRealStateSpace.R")

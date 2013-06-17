@@ -84,19 +84,6 @@ parallelTempering <- setRefClass(
 			detailedOutput			<<- detailedOutput
 		},
 
-		prepareSimulation = function()
-			#### Initialises values needed before the simulation.
-		{
-				# Initially everything is new.
-			updatedStates 			<<- rep( TRUE, temperaturesNo)
-
-				# Current states must get at least once calculated all without any updates.
-			lastStatesLogUDensities <<-  
-				stateSpace$getProposalLogsOfUDensities()
-
-			lastSwapUProbs			<<- updateSwapUProbs( translatorFromLexicOrderToTranspositions )		
-		},
-
 
 		insertStrategyNo = function(
 			strategyNumber
@@ -107,7 +94,7 @@ parallelTempering <- setRefClass(
 			if ( is.na(tmpStrategyNumber) || tmpStrategyNumber < 0 )
 			{		 
 				stop(
-					"Inappropriate stregy number. Please enter an integer value and submit $1000 to the author of this script."
+					"Inappropriate stregy number. Right now you can choose among strategies from 1 to 4."
 				)
 			} else
 			{	
@@ -145,6 +132,19 @@ parallelTempering <- setRefClass(
 			)
 		},
 
+
+		prepareSimulation = function()
+			#### Initialises values needed before the simulation.
+		{
+				# Initially everything is new.
+			updatedStates 			<<- rep( TRUE, temperaturesNo)
+
+				# Current states must get at least once calculated all without any updates.
+			lastStatesLogUDensities <<-  
+				stateSpace$getProposalLogsOfUDensities()
+
+			lastSwapUProbs			<<- updateSwapUProbs( translatorFromLexicOrderToTranspositions )		
+		},
 
 		############################################################
 				# Visualisation
@@ -538,7 +538,7 @@ parallelTempering <- setRefClass(
 )
 
 								# No adaptation for now.
-ParallelTempering$lock( 
+parallelTempering$lock( 
 	'temperatures',
 	'inverseTemperatures',
 	'temperaturesNo',

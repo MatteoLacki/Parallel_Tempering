@@ -26,4 +26,29 @@ LiangWangExample$transpositionHistory
 LiangWangExample$stateSpace$plotBaseTemperature()
 
 
-LiangWangExample <- 
+
+rm( list = ls())
+directory <- "/home/matteo/Documents/Scienza/Laurea_di_Matematica/Implementation"
+setwd(directory)
+
+source("./referenceObjects/stateSpace.R")
+stateSpace
+source("./referenceObjects/realStateSpace.R")
+realStateSpace
+
+source("./referenceObjects/liangRealStateSpace.R")
+
+source("./referenceObjects/algorithm.R")
+source("./referenceObjects/parallelTempering.R")
+source("./referenceObjects/simulations.R")
+
+stateSpace
+realStateSpace
+RliangRealStateSpace
+
+liangRealStateSpace <- setRefClass(
+	Class		= "LiangRealStateSpaces",
+	contains	= "StateSpaces",
+	fields	= list(),
+	methods = list()
+)
