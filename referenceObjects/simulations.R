@@ -1,6 +1,8 @@
+# source("./referenceObjects/targetMeasures.R")
+# source("./referenceObjects/targetUnnormalisedDensities.R")
+# source("./referenceObjects/targetLiangDensities.R")
 # source("./referenceObjects/stateSpace.R")
 # source("./referenceObjects/realStateSpace.R")
-# source("./referenceObjects/liangRealStateSpace.R")
 # source("./referenceObjects/algorithm.R")
 # source("./referenceObjects/parallelTempering.R")
 
@@ -15,7 +17,10 @@ simulation <- setRefClass(
 		stateSpace	= "StateSpaces",
 
 			## Morphisms applied to the state space. 
-		algorithm 	= "Algorithms"	
+		algorithm 	= "Algorithms",
+
+			## Unnormalised Probabilities of the state-space: the target measure from which we want to draw samples.
+		targetMeasure 	= "TargetMeasures"	
 	),
 
 ###########################################################################
@@ -29,7 +34,7 @@ simulation <- setRefClass(
 		initialize = function(
 			stateSpaceName		= "LiangRealStateSpace",
 			algorithmName		= "ParallelTempering",
-			
+	
 			iterationsNo 		= 0L,
 			temperatures 		= numeric(0),
 			strategyNumber		= 1L,
@@ -42,63 +47,94 @@ simulation <- setRefClass(
 			detailedOutput		= FALSE
 		)
 		{
-			temperatures 	<- checkTemperatures( temperatures )
-			temperaturesNo	<- length( temperatures )
+			if( example )
+			{
+				tmpProposalCovariances <- vector( "list", 5L )
 
-			switch(
-				stateSpaceName,
-				RealStateSpace	= 
+				for (i in 1:5 )
 				{
-					stateSpace <<- realStateSpace$new(
+					tmpProposalCovariances[[i]] <- 
+						diag( temperatures[i]^2, nrow=2, ncol=2 ) 				
+				}
+
+				print("Hello\n\n")
+				stateSpace 	<<- 
+					realStateSpace$new(
 						iterationsNo 		= iterationsNo,
-						temperatures 		= temperatures,
-						temperaturesNo 		= temperaturesNo,
-						strategyNumber		= strategyNumber,
-						spaceDim			= spaceDim,
-						targetDensity 		= targetDensity, 
+						temperatures 		= c(1, 2.8, 7.7, 21.6, 60),
+						temperaturesNo 		= 5L,
+						spaceDim			= 2L,
 						initialStates		= initialStates,
 						quasiMetric 		= quasiMetric,
-						proposalCovariances = proposalCovariances,
-						example 			= example,
+						proposalCovariances = tmpProposalCovariances,
 						detailedOutput		= detailedOutput	
-					)	
-				},
+					)
 
-				LiangRealStateSpace = 
-				{
-					stateSpace <<- liangRealStateSpace$new(
-						iterationsNo  	= iterationsNo,
-						initialStates  	= initialStates,
-						quasiMetric 	= quasiMetric
-					)	
-				},
+				targetMeasure 	<<- targetLiangDensity$new()
 
-				cat("That kind of state-space is currently unavailable.")
+				stateSpace$targetMeasure <<- targetMeasure
 
-			)
-
-			switch(
-				algorithmName,
-				ParallelTempering	= 
-				{
-					algorithm <<- parallelTempering$new(
+				algorithm 		<<- 
+					parallelTempering$new(
 						iterationsNo 	= iterationsNo,
 						temperatures 	= temperatures,
 						strategyNumber	= strategyNumber,
 						detailedOutput	= detailedOutput
 					)
+			} else 
+			{	
+				temperatures 	<- checkTemperatures( temperatures )
+				temperaturesNo	<- length( temperatures )
+	
 
-					algorithm$stateSpace <<- stateSpace
-				},
-				MetropolisHasting 	=
-				{
-					if( length(temperatures) != 1) 
-						cat(" I shall proceed with a number of chains equal to the number of temperatures, although the termperature levels are irrelevant in the apllication of the MH algorithm.")	
-					cat("Metropolis-Hasting currently unavailable.")
-				},
-			
-				cat("That kind of algorithm is currently unavailable.")
-			)	
+				targetMeasure 	<<- 
+					targetUDensity( targetDensity = targetDensity )
+
+				switch(
+					stateSpaceName,
+					RealStateSpace	= 
+					{
+						stateSpace <<- realStateSpace$new(
+							iterationsNo 		= iterationsNo,
+							temperatures 		= temperatures,
+							temperaturesNo 		= temperaturesNo,
+							strategyNumber		= strategyNumber,
+							spaceDim			= spaceDim,
+							#targetDensity 		= targetDensity, 
+							initialStates		= initialStates,
+							quasiMetric 		= quasiMetric,
+							proposalCovariances = proposalCovariances,
+							example 			= example,
+							detailedOutput		= detailedOutput	
+						)	
+					},
+	
+					cat("That kind of state-space is currently the only one unavailable.")
+				)
+	
+				switch(
+					algorithmName,
+					ParallelTempering	= 
+					{
+						algorithm <<- parallelTempering$new(
+							iterationsNo 	= iterationsNo,
+							temperatures 	= temperatures,
+							strategyNumber	= strategyNumber,
+							detailedOutput	= detailedOutput
+						)
+	
+						algorithm$stateSpace <<- stateSpace
+					},
+					MetropolisHasting 	=
+					{
+						if( length(temperatures) != 1) 
+							cat(" I shall proceed with a number of chains equal to the number of temperatures, although the termperature levels are irrelevant in the apllication of the MH algorithm.")	
+						cat("Metropolis-Hasting currently unavailable.")
+					},
+				
+					cat("That kind of algorithm is currently unavailable.")
+				)
+			}	
 		},
 
 

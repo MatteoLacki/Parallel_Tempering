@@ -141,7 +141,7 @@ parallelTempering <- setRefClass(
 
 				# Current states must get at least once calculated all without any updates.
 			lastStatesLogUDensities <<-  
-				stateSpace$getProposalLogsOfUDensities()
+				stateSpace$proposeLogsOfUMeasures()
 
 			lastSwapUProbs			<<- updateSwapUProbs( translatorFromLexicOrderToTranspositions )		
 		},

@@ -16,8 +16,8 @@ realStateSpace <- setRefClass(
 			## Number of temperature levels.
 		temperaturesNo		= "integer",
 
-			## The targetted density function, preserved by the algorithm's kernel.
-		targetDensity 		= "function",
+		# 	## The targetted density function, preserved by the algorithm's kernel.
+		# targetDensity 		= "function",
 
 			## Matrix containing all simulated points.
 		simulatedStates		= "matrix",
@@ -60,7 +60,7 @@ realStateSpace <- setRefClass(
 			temperatures 		= numeric(0),
 			temperaturesNo 		= 0L,
 			spaceDim			= 0L,
-			targetDensity 		= function(){},
+#			targetDensity 		= function(){},
 			initialStates 		= matrix(ncol=0, nrow=0),
 			quasiMetric 		= function(){},
 			proposalCovariances = matrix(ncol=0, nrow=0)
@@ -136,7 +136,7 @@ realStateSpace <- setRefClass(
 
 			rm( tmpSpaceDim, tmpTemperaturesNo )
 
-			targetDensity	<<- targetDensity	
+#			targetDensity	<<- targetDensity	
 			quasiMetric 	<<- quasiMetric
 
 			if(	class(proposalCovariances) == 'matrix' )
@@ -213,7 +213,7 @@ realStateSpace <- setRefClass(
 			iterationsNo 		= 0L,  
 			temperaturesNo 		= 0L,
 			spaceDim			= 0L,
-			targetDensity 		= function(){},
+#			targetDensity 		= function(){},
 			initialStates 		= matrix(ncol=0, nrow=0),
 			quasiMetric 		= function(){},
 			proposalCovariances = matrix(ncol=0, nrow=0)
@@ -228,7 +228,7 @@ realStateSpace <- setRefClass(
 				temperaturesNo  	= temperaturesNo,
 				temperatures 	  	= temperatures,
 				spaceDim  			= spaceDim,
-				targetDensity 	 	= targetDensity,
+#				targetDensity 	 	= targetDensity,
 				initialStates 	 	= initialStates,
 				quasiMetric 	 	= quasiMetric,
 				proposalCovariances = proposalCovariances
@@ -492,7 +492,7 @@ realStateSpace <- setRefClass(
 				# Algorithmic Methods
 
 
-		getProposalLogsOfUDensities = function()
+		proposeLogsOfUMeasures = function()
 			#### Calculates logs of unnormalised densities in all the proposed states. 
 		{
 			return(
@@ -500,7 +500,7 @@ realStateSpace <- setRefClass(
 					apply( 
 						proposedStates, 
 						2, 
-						targetDensity 
+						targetMeasure$measure() 
 					)
 				)	
 			)
@@ -539,7 +539,7 @@ realStateSpace <- setRefClass(
 				
 				# Now it will return proposed states log densities.
 			return(	
-				getProposalLogsOfUDensities()
+				proposeLogsOfUMeasures()
 			)
 		},
 

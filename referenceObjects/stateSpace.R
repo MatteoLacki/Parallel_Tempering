@@ -7,7 +7,10 @@ stateSpace <- setRefClass(
 	fields		= list(
 
 			## Number of iterations of the parallel tempering algorithm.	
-		iterationsNo 		= "integer"
+		iterationsNo	= "integer",
+
+			## The sub-object storing information needed for evaluation of the unnormalised density.
+		targetMeasure	= "TargetMeasures"	
 	),
 
 ###########################################################################
@@ -55,7 +58,7 @@ stateSpace <- setRefClass(
 		############################################################
 				# Algorithmic Methods				
 
-		getProposalLogsOfUDensities = function()
+		proposeLogsOfUMeasures 		= function()
 		{},
 
 		randomWalkProposal 			= function()
@@ -66,8 +69,6 @@ stateSpace <- setRefClass(
 
 		updateStatesAfterSwap 		= function()
 		{}
-
-
 ####################################################################
 				# Finis Structurae		
 	)

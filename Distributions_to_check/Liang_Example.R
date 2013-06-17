@@ -23,7 +23,7 @@ Liang_Inverse_Temperatures	<- 	1/Liang_Temperatures
 
 Liang_No_of_Chains		<- 	length( Liang_Temperatures )
 
-Liang_Initial_Points		<- 	replicate(
+Liang_Initial_Points	<- 	replicate(
 						Liang_No_of_Chains, 
 						runif(	Liang_Problem_Dimension	)
 					)
