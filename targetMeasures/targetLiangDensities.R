@@ -22,7 +22,6 @@ targetLiangDensity <- setRefClass(
 
 			## Mean values of the normal distributions that are getting mixed.
 		mixturesMeans	= "matrix"
-
 	),
 
 ###########################################################################
@@ -51,6 +50,8 @@ targetLiangDensity <- setRefClass(
 			sigma2 	<<- sigma^2	
 
 			weightConstant 	<<-  mixturesWeight/( sigma*sqrt( 2* pi) )
+
+			establishTrueValues()
 		},
 
 		############################################################
@@ -89,7 +90,55 @@ targetLiangDensity <- setRefClass(
 				)*
 				weightConstant
 			)
+		},
+
+		establishTrueValues = function()
+		{
+			cat("\nEvaluating Liang-Wang density example.\n\n")
+
+			gridBase 	<- seq(-2, 12, by = 0.1)
+			gridLength 	<- length( gridBase )
+
+			grid  <- 
+				do.call(
+					cbind,
+					lapply(
+						gridBase,
+						function( gridBasePoint )
+						{
+							matrix( 
+								c(
+									rep.int( gridBasePoint, times= gridLength ),
+									gridBase
+								),
+								ncol = gridLength,
+								nrow = 2,
+								byrow=TRUE
+							)
+						}
+					)
+				)
+			rm( gridBase, gridLength)
+
+			tmpRealDensityValues <-
+				as.data.frame(
+					cbind(
+						t( grid ),
+						apply(
+							grid,
+							2,
+							function( gridPoint ) measure( gridPoint )	
+						)
+					)			
+				)
+
+			colnames( tmpRealDensityValues ) <- c("x", "y", "z")
+			 
+			realDensityValues <<- tmpRealDensityValues
+
+			rm( grid, tmpRealDensityValues )
 		}
+
 ####################################################################
 				# Finis Structurae		
 	)

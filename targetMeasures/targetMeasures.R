@@ -4,7 +4,11 @@ targetMeasure <- setRefClass(
 
 ###########################################################################
 								# Fields
-	fields		= list(),
+	fields		= list(
+
+			## Real values of the density values pre-evaluated in a square [-2,12]^2.
+		realDensityValues = "data.frame"
+	),
 
 ###########################################################################
 								# Methods
@@ -26,6 +30,10 @@ targetMeasure <- setRefClass(
 		measure 	= function()
 		{
 			return( NULL )
+		},
+
+		establishTrueValues = function()
+		{			
 		}
 ####################################################################
 				# Finis Structurae		

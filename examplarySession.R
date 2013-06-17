@@ -18,11 +18,5 @@ LiangWangExample <- simulation$new(
 )
 
 LiangWangExample
-
 LiangWangExample$simulate()
-
-system.time(
-	LiangWangExample$simulate()
-)
-
-LiangWangExample$stateSpace$dataForPlot
+LiangWangExample
