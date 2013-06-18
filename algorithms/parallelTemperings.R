@@ -1,3 +1,4 @@
+
 parallelTempering <- setRefClass(
 	Class		= "ParallelTemperings",
 	contains	= "Algorithms",
@@ -46,10 +47,16 @@ parallelTempering <- setRefClass(
 		updatedStates			= "logical",	
 
 			## An integer value describing the number of swap in the lexicographical order. -1 corresponds to swap randomWalkRejection.
-		lastTranspositionNo	= "integer",
+		lastTranspositionNo		= "integer",
 
-			## A vector of integers : all accepted transpositions enlisted. As long as the provided number of iterations to be executed. When rejected, we put 0. It is also filled with zeros at the beginning.
-		transpositionHistory	= "integer",
+			## A vector of integers: all accepted transpositions enlisted. As long as the provided number of iterations to be executed. When rejected, we put 0. It is also filled with zeros at the beginning.
+		transpositionHistory	= "factor",
+
+			## A vector of integers: overall number of accepted random-walk proposals.
+		acceptedRandomWalksNo	= "integer",
+
+			## A vector of integers: overall number of accepted transposition-swap proposals.
+		acceptedSwapsNo			= "integer",
 
 			## Triggers detailed output during the simulation.
 		detailedOutput			= "logical"
@@ -79,8 +86,7 @@ parallelTempering <- setRefClass(
 			insertStrategyNo( strategyNo )
 			insertTranspositions()
 
-			lastTranspositionNo 	<<- -1L
-			transpositionHistory	<<-	integer( iterationsNo )
+			acceptedRandomWalksNo	<<- rep.int(0L, times = temperaturesNo)
 			detailedOutput			<<- detailedOutput
 		},
 
@@ -110,6 +116,17 @@ parallelTempering <- setRefClass(
 				
 			transpositionsNo 	<<- 
 				ncol( translatorFromLexicOrderToTranspositions )			
+
+			lastTranspositionNo <<- -1L
+
+			tmpTranspositionHistory <- as.factor( integer( iterationsNo ) )
+			tmpTranspositionHistory <- 
+				ordered(
+					tmpTranspositionHistory,
+					levels = 0:transpositionsNo
+				)
+
+			transpositionHistory<<-	tmpTranspositionHistory
 		},
 
 
@@ -164,6 +181,11 @@ parallelTempering <- setRefClass(
 				cat("Transpostion history:\n")
 				print( transpositionHistory )
 				cat("\n")
+
+				cat("Percentage of accepted random-walks:\n")
+				print( acceptedRandomWalksNo/iterationsNo )
+				cat("\n")
+				
 			}
 		},
 
@@ -174,7 +196,52 @@ parallelTempering <- setRefClass(
 			algorithmShow()
 			parallelTemperingShow()			
 		},
-	
+
+
+		plotHistory = function()
+		{
+			xAxisTags <- 
+				apply(
+					translatorFromLexicOrderToTranspositions,
+					2,
+					function( transposition )
+					{
+						paste(
+							"(", 
+							transposition[1], 
+							",",
+							transposition[2],
+							")", 
+							sep="", 
+							collapse=""
+						)	
+					}
+				)
+
+			xAxisTags <- c("No swap", xAxisTags)	
+
+			p <-qplot( 
+					transpositionHistory, 
+					geom="bar"
+				) +
+				scale_x_discrete(
+					breaks = 0:transpositionsNo,
+					labels = xAxisTags
+				) + 
+				theme(
+					axis.title.x=element_text(colour="darkred", size=14),
+					axis.title.y=element_text(colour="darkred", size=14),
+					plot.title=element_text(size=rel(1.5), colour="darkred")
+				) + 
+				labs(
+					x='Transposition',
+					y='Counts',
+					title ="Swaps distribution"
+				)
+
+
+			return( p )	
+		},	
 
 		############################################################
 				# Algorithmic Methods
@@ -268,8 +335,11 @@ parallelTempering <- setRefClass(
 
 			if ( anyUpdate ) 
 			{				# Updating state space..
-				lastStatesLogUDensities[ updatedStates ] <<-	
+				lastStatesLogUDensities[ updatedStates ]<<-	
 					proposalLogUDensities[ updatedStates ]
+
+				acceptedRandomWalksNo[ updatedStates ] 	<<-
+					acceptedRandomWalksNo[ updatedStates ] + 1L 
 
 # updating unnormalised probabilities of swaps caused by random walk changes.
 				transpositionsForUpdate <- findTranspositionsForUpdate() 

@@ -19,4 +19,5 @@ LiangWangExample <- simulation$new(
 
 LiangWangExample
 LiangWangExample$simulate()
-LiangWangExample
+LiangWangExample	
+LiangWangExample$algorithm$plotHistory()

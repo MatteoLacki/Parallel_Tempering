@@ -94,49 +94,71 @@ targetLiangDensity <- setRefClass(
 
 		establishTrueValues = function()
 		{
-			cat("\nEvaluating Liang-Wang density example.\n\n")
+			cat("\nEvaluating Liang-Wang density example and saving it. This might take a while.\n\n")
 
-			gridBase 	<- seq(-2, 12, by = 0.1)
-			gridLength 	<- length( gridBase )
+			if( file.exists("./data/LiangTrueValues.csv") )
+			{
+				cat("\nFile already exists. Proceeding with loading it.\n\n")
 
-			grid  <- 
-				do.call(
-					cbind,
-					lapply(
-						gridBase,
-						function( gridBasePoint )
-						{
-							matrix( 
-								c(
-									rep.int( gridBasePoint, times= gridLength ),
-									gridBase
-								),
-								ncol = gridLength,
-								nrow = 2,
-								byrow=TRUE
-							)
-						}
-					)
-				)
-			rm( gridBase, gridLength)
-
-			tmpRealDensityValues <-
-				as.data.frame(
-					cbind(
-						t( grid ),
-						apply(
-							grid,
-							2,
-							function( gridPoint ) measure( gridPoint )	
+				realDensityValues <<- 
+					as.data.frame( 
+						read.csv2(
+							"./data/LiangTrueValues.csv",
+							header = TRUE
+							) 
 						)
-					)			
+			} else 	
+			{
+				gridBase 	<- seq(-2, 12, by = 0.1)
+				gridLength 	<- length( gridBase )
+
+				grid  <- 
+					do.call(
+						cbind,
+						lapply(
+							gridBase,
+							function( gridBasePoint )
+							{
+								matrix( 
+									c(
+										rep.int( gridBasePoint, times= gridLength ),
+										gridBase
+									),
+									ncol = gridLength,
+									nrow = 2,
+									byrow=TRUE
+								)
+							}
+						)
+					)
+				rm( gridBase, gridLength)
+
+				tmpRealDensityValues <-
+					as.data.frame(
+						cbind(
+							t( grid ),
+							apply(
+								grid,
+								2,
+								function( gridPoint ) measure( gridPoint )	
+							)
+						)			
+					)
+
+				colnames( tmpRealDensityValues ) <- c("x", "y", "z")
+				 
+				realDensityValues <<- tmpRealDensityValues
+
+
+				if( !file.exists("./data") ) 	dir.create("./data")
+
+				write.csv2(
+					realDensityValues,
+					file 		= "./data/LiangTrueValues.csv"
 				)
 
-			colnames( tmpRealDensityValues ) <- c("x", "y", "z")
-			 
-			realDensityValues <<- tmpRealDensityValues
-
-			rm( grid, tmpRealDensityValues )
+				rm( grid, tmpRealDensityValues )
+			}
 		}
 
 ####################################################################
