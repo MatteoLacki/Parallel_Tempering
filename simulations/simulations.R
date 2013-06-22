@@ -33,8 +33,7 @@ simulation <- setRefClass(
 
 		initialize = function(
 			stateSpaceName		= "LiangRealStateSpace",
-			algorithmName		= "ParallelTempering",
-	
+			algorithmName		= "ParallelTempering",	
 			iterationsNo 		= 0L,
 			temperatures 		= numeric(0),
 			strategyNo			= 1L,
@@ -106,7 +105,6 @@ simulation <- setRefClass(
 							temperatures 		= temperatures,
 							temperaturesNo 		= temperaturesNo,
 							spaceDim			= spaceDim,
-							#targetDensity 		= targetDensity, 
 							initialStates		= initialStates,
 							quasiMetric 		= quasiMetric,
 							proposalCovariances = proposalCovariances
@@ -125,7 +123,7 @@ simulation <- setRefClass(
 						algorithm <<- parallelTempering$new(
 							iterationsNo 	= iterationsNo,
 							temperatures 	= temperatures,
-							strategyNo	= strategyNo,
+							strategyNo		= strategyNo,
 							detailedOutput	= detailedOutput
 						)
 					},
@@ -201,7 +199,16 @@ simulation <- setRefClass(
 
 		simulate = function()
 		{
-			algorithm$simulate()			
+			algorithm$simulate()
+
+			if( !file.exists("./data") ) dir.create("./data")
+
+			write.csv2(
+				stateSpace$simulatedStates,
+				file = paste("./data/simulatedStates",Sys.time(),".csv", sep="",colapse=""),
+				append= FALSE,
+				row.names=FALSE
+			)			
 		}
 
 ###########################################################################
