@@ -55,6 +55,9 @@ parallelTempering <- setRefClass(
 			## A vector of integers: overall number of accepted random-walk proposals.
 		acceptedRandomWalksNo	= "integer",
 
+			## A vector of integers: overall number of accepted random-walk proposals.
+		rejectedRandomWalksNo	= "integer",
+
 			## A vector of integers: overall number of accepted transposition-swap proposals.
 		acceptedSwapsNo			= "integer",
 
@@ -87,6 +90,7 @@ parallelTempering <- setRefClass(
 			insertTranspositions()
 
 			acceptedRandomWalksNo	<<- rep.int(0L, times = temperaturesNo)
+			rejectedRandomWalksNo	<<- rep.int(0L, times = temperaturesNo)
 			detailedOutput			<<- detailedOutput
 		},
 
@@ -182,10 +186,19 @@ parallelTempering <- setRefClass(
 				print( transpositionHistory )
 				cat("\n")
 
-				cat("Percentage of accepted random-walks:\n")
-				print( acceptedRandomWalksNo/iterationsNo )
+				cat("Percentage of accepted-rejected random-walks:\n")
+				acceptance <- 
+					rbind( temperatures, acceptedRandomWalksNo/iterationsNo, rejectedRandomWalksNo/iterationsNo)
+				acceptance <- as.data.frame( acceptance )
+
+				row.names(acceptance) 	<- 
+					c("temperatures","accepted", "rejected")
+				colnames(acceptance) 	<- 1:temperaturesNo
+				print( acceptance )
 				cat("\n")
 				
+				
+				cat("\n")
 			}
 		},
 
@@ -352,6 +365,12 @@ parallelTempering <- setRefClass(
 					)	
 			}
 
+			if ( !all( updatedStates ) )
+			{
+				rejectedRandomWalksNo[ !updatedStates ] <<- 
+					rejectedRandomWalksNo[ !updatedStates ] + 1L
+			}
+
 			stateSpace$updateStatesAfterRandomWalk( anyUpdate, updatedStates )
 		}, 
 
@@ -453,7 +472,19 @@ parallelTempering <- setRefClass(
 			{
 				lastSwapUProbs <<- proposalUProbs 
 				transpositionHistory[ iteration ] <<- swapProposalLexic
-			} 		
+
+				if ( detailedOutput ) 
+				cat(
+					"\nAccepted random swap: ",
+					swapProposal,
+					"\n"
+				)
+			} else
+				if ( detailedOutput ) 
+				cat(
+					"\nNo swap accepted.\n"
+				)
+
 			
 			stateSpace$updateStatesAfterSwap( proposalAccepted, swapProposal )
 		},

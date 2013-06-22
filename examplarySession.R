@@ -11,13 +11,20 @@ source("./algorithms/algorithms.R")
 source("./algorithms/parallelTemperings.R")
 source("./simulations/simulations.R")
 
+
 LiangWangExample <- simulation$new(
-	iterationsNo	= 10000,
-	strategyNo 	= 2,
-	example 	= TRUE	
+	iterationsNo= 10,
+	strategyNo 	= 3,
+	example 	= TRUE
 )
 
 LiangWangExample
 LiangWangExample$simulate()
 LiangWangExample	
 LiangWangExample$algorithm$plotHistory()
+
+svg("histogram.svg", width=6, height=4)
+	LiangWangExample$algorithm$plotHistory()
+dev.off()
+
+head(LiangWangExample$stateSpace$simulatedStates)
