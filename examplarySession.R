@@ -12,11 +12,16 @@ source("./algorithms/parallelTemperings.R")
 source("./simulations/simulations.R")
 
 LiangWangExample <- simulation$new(
-	iterationsNo	= 10000,
+	iterationsNo	= 100000,
 	strategyNo 	= 2,
 	example 	= TRUE	
 )
 
 LiangWangExample
-LiangWangExample$simulate()
+#LiangWangExample$simulate()
+
+system.time(
+  LiangWangExample$simulate()  
+) 
+
 LiangWangExample
