@@ -13,7 +13,7 @@ source("./simulations/simulations.R")
 
 
 LiangWangExample <- simulation$new(
-	iterationsNo= 10,
+	iterationsNo= 100,
 	strategyNo 	= 3,
 	example 	= TRUE
 )
@@ -23,8 +23,12 @@ LiangWangExample$simulate()
 LiangWangExample	
 LiangWangExample$algorithm$plotHistory()
 
+head(LiangWangExample$stateSpace$dataForPlot)
+X <- LiangWangExample$stateSpace$dataForPlot
+X <- X[X$Temperature == 1,]
+X
+X <- X[,1:2]
+
 svg("histogram.svg", width=6, height=4)
 	LiangWangExample$algorithm$plotHistory()
 dev.off()
-
-head(LiangWangExample$stateSpace$simulatedStates)

@@ -7,7 +7,7 @@ parallelTempering <- setRefClass(
 								# Fields
 
 	fields		= list(
-	
+#<fields>	
 			## Temperature levels for the parallel tempering algorithm.
 		temperatures		= "numeric",
 
@@ -63,6 +63,7 @@ parallelTempering <- setRefClass(
 
 			## Triggers detailed output during the simulation.
 		detailedOutput			= "logical"
+#</fields>		
 	),
 
 ###########################################################################
@@ -74,7 +75,7 @@ parallelTempering <- setRefClass(
 		############################################################
 				# Initialisation
 				
-
+#<method>
 		initializeParallelTempering	= function(
 			temperatures 		= numeric(0),
 			strategyNo			= 1L,
@@ -94,7 +95,7 @@ parallelTempering <- setRefClass(
 			detailedOutput			<<- detailedOutput
 		},
 
-
+#<method>
 		insertStrategyNo = function(
 			strategyNo
 		)
@@ -112,7 +113,7 @@ parallelTempering <- setRefClass(
 			}
 		},
 
-
+#<method>
 		insertTranspositions = function()
 		{
 			translatorFromLexicOrderToTranspositions <<- 
@@ -133,7 +134,7 @@ parallelTempering <- setRefClass(
 			transpositionHistory<<-	tmpTranspositionHistory
 		},
 
-
+#<method>
 		initialize = function(
 			iterationsNo 	= 0L,
 			temperatures 	= numeric(0),
@@ -153,7 +154,7 @@ parallelTempering <- setRefClass(
 			)
 		},
 
-
+#<method>
 		prepareSimulation = function()
 			#### Initialises values needed before the simulation.
 		{
@@ -170,7 +171,7 @@ parallelTempering <- setRefClass(
 		############################################################
 				# Visualisation
 
-
+#<method>
 		parallelTemperingShow	= function()
 			#### Shows the initialised fields before the simulation.
 		{
@@ -202,7 +203,7 @@ parallelTempering <- setRefClass(
 			}
 		},
 
-	
+#<method>	
 		show	= function()
 			#### Calls the father-class show method followed by its own show method.
 		{
@@ -210,7 +211,7 @@ parallelTempering <- setRefClass(
 			parallelTemperingShow()			
 		},
 
-
+#<method>
 		plotHistory = function()
 		{
 			xAxisTags <- 
@@ -259,7 +260,7 @@ parallelTempering <- setRefClass(
 		############################################################
 				# Algorithmic Methods
 					
-
+#<method>
 		makeStepOfTheAlgorithm	= function( 
 			iteration 
 		)
@@ -280,6 +281,7 @@ parallelTempering <- setRefClass(
 		},
 				###### random walk sphere ######
 
+#<method>
 		randomWalk = function()
 			#### Performs the random walk step: it asks the state-space to generate the logs of unnormalised probabilities evaluated in the proposed points and then performs the usual rejection part. All this could be done parallely if it was needed - this feature will be shipped with version 2.0.
 		{
@@ -300,7 +302,7 @@ parallelTempering <- setRefClass(
 			updateAfterRandomWalk() # both logdensities and current states.
 		},
 
-
+#<method>
 		randomWalkRejection = function()
 			#### Here the Hastings quotients get compared with randomly generated values from the unit interval. All values are taken in logs for numerical stability.
 		{
@@ -340,7 +342,7 @@ parallelTempering <- setRefClass(
 				)
 		},
 
-
+#<method>
 		updateAfterRandomWalk = function()
 			#### This procedure updates the state space after an operation consisting of accepting any new proposal in the random-walk phase of the algorithm. Updates are also needed in the probabilities of the last states stored in a field in the parallel-tempering object.
 		{
@@ -375,7 +377,7 @@ parallelTempering <- setRefClass(
 		}, 
 
 				###### swap sphere ######
-
+#<method>
 		swap = function(
 			iteration
 		)
@@ -392,7 +394,7 @@ parallelTempering <- setRefClass(
 				}
 		},
 
-
+#<method>
 		swapProposalGeneration = function()
 			#### Generates a random swap based on the last step swap  unnormalised probabilities.
 		{
@@ -407,7 +409,7 @@ parallelTempering <- setRefClass(
 				translateLexicToTranspositions( swapProposalLexic )
 		},
 
-
+#<method>
 		swapRejectionAndUpdate = function(
 			iteration
 		)
@@ -489,7 +491,7 @@ parallelTempering <- setRefClass(
 			stateSpace$updateStatesAfterSwap( proposalAccepted, swapProposal )
 		},
 
-			# =TO=DO= : rationalize after speed tests: maybe can vectorize swapStrategy.
+#<method>			
 		updateSwapUProbs = function(
 			transpositionsForUpdate
 		)
@@ -504,7 +506,7 @@ parallelTempering <- setRefClass(
 			)
 		},
 
-
+#<method>
 		findTranspositionsForUpdate = function()
 			#### Finds numbers of transpositions in the lexical ordering whose probabilities must be updated after the random walk phase. 
 		{
@@ -537,7 +539,7 @@ parallelTempering <- setRefClass(
 			)
 		},
 
-
+#<method>
 		generateTranspositions = function(
 			chainNumbers
 		)
@@ -570,7 +572,7 @@ parallelTempering <- setRefClass(
 			)
 		},
 
-
+#<method>
 		translateLexicToTranspositions = function( 
 			lexics 
 		)
@@ -579,7 +581,7 @@ parallelTempering <- setRefClass(
 			return( translatorFromLexicOrderToTranspositions[, lexics ] )
 		},
 
-
+#<method>
 		translateTranspositionsToLexic = function(
 			transpositions 	
 		)
@@ -602,7 +604,7 @@ parallelTempering <- setRefClass(
 			)
 		},
 
-
+#<method>
 		swapStrategy = function(
 			transposition
 		)	

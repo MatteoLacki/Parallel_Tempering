@@ -23,3 +23,6 @@ Zaimplementować wybór modelu liniowego, jak u Byrne i Pierre'a Jacoba.
 
 
 Proposal states can be a local variable.
+
+
+Pytania: czemu łańcuch ten dobrze przybliża całkę? Jak liczyć punkty, które po kilka razy zostały niezmienione w miejscu?

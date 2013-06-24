@@ -5,7 +5,7 @@ algorithm <- setRefClass(
 ###########################################################################
 								# Fields
 	fields		= list(
-
+#<fields>
 			## Number of iterations of the algorithm.
 		iterationsNo  = "integer",
 
@@ -14,6 +14,7 @@ algorithm <- setRefClass(
 
 			## Boolean value: TRUE if the simulation has been carried out.
 		simulationFinished		= "logical"	
+#</fields>		
 	),
 
 ###########################################################################
@@ -23,7 +24,7 @@ algorithm <- setRefClass(
 		
 		############################################################
 				# Initialisation
-
+#<method>
 		initializeAlgorithm	= function(
 			iterationsNo 	= 0L
 			)
@@ -40,7 +41,7 @@ algorithm <- setRefClass(
 			}
 		},	
 
-
+#<method>
 		initialize = function(
 			iterationsNo 	= 0L
 			)
@@ -50,23 +51,26 @@ algorithm <- setRefClass(
 			)
 		},
 
+#<method>
 		prepareSimulation = function()
 		{},
 
 		############################################################
 				# Visualisation
-
+#<method>
 		algorithmShow = function()
 		{
 			cat('\n Welcome to our algorithm! \n')
 			cat('Number of steps: ', iterationsNo, '\n')
 		},	
 
+#<method>
 		show = function()
 		{
 			algorithmShow()
 		},
 
+#<method>
 		getDataForVisualisation = function()
 		{
 			stateSpace$prepareDataForPlot()
@@ -75,6 +79,7 @@ algorithm <- setRefClass(
 		############################################################
 				# Algorithmic Methods
 
+#<method>
 		makeStepOfTheAlgorithm	= function( 
 			iteration 
 		)
@@ -82,6 +87,7 @@ algorithm <- setRefClass(
 			cat('I shall make it all happen.')
 		},
 
+#<method>
 		simulate = function()
 		{
 			prepareSimulation()

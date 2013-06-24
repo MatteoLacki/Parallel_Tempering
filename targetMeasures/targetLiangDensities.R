@@ -5,6 +5,7 @@ targetLiangDensity <- setRefClass(
 ###########################################################################
 								# Fields
 	fields		= list(
+#<fields>
 			## Number of mixtures of gaussian variables. 
 		mixturesNo 		= "integer",
 
@@ -22,6 +23,7 @@ targetLiangDensity <- setRefClass(
 
 			## Mean values of the normal distributions that are getting mixed.
 		mixturesMeans	= "matrix"
+#</fields>		
 	),
 
 ###########################################################################
@@ -31,7 +33,7 @@ targetLiangDensity <- setRefClass(
 
 		############################################################
 				# Initialisation
-
+#<method>
 		initialize 	= function()
 		{
 			mixturesNo 		<<- 20L
@@ -56,7 +58,7 @@ targetLiangDensity <- setRefClass(
 
 		############################################################
 				# Visualisation
-
+#<method>
 		show = function()
 		{
 			cat('\nThe Liang target density inputs are here: \n')
@@ -68,9 +70,39 @@ targetLiangDensity <- setRefClass(
 			cat('\n\n')
 		},		
 
+#<method>		
+		plotDistribuant = function()
+		{
+			grid  <- 
+				getSquareGrid(
+					minimum = -2,
+					maximum = 12,
+					mesh 	= 0.1
+				)
+
+			require("lattice")
+
+			distribuantInGrid <-
+				as.data.frame(
+					cbind(
+						t( grid ),
+						apply(
+							grid,
+							2,
+							function( gridPoint ) distribuant( gridPoint )	
+						)
+					)			
+				)
+
+			p <- wireframe(distribuantInGrid[,3] ~ tmpRealDistribuantValues[,1] * distribuantInGrid[,2])						
+
+			return(p)
+		},
+
+
 		############################################################
 				# Algorithmic Methods				
-
+#<method>
 		measure 	= function(
 			proposedState
 		)
@@ -92,6 +124,7 @@ targetLiangDensity <- setRefClass(
 			)
 		},
 
+#<method>
 		establishTrueValues = function()
 		{
 			cat("\nEvaluating Liang-Wang density example and saving it. This might take a while.\n\n")
@@ -109,29 +142,12 @@ targetLiangDensity <- setRefClass(
 						)
 			} else 	
 			{
-				gridBase 	<- seq(-2, 12, by = 0.1)
-				gridLength 	<- length( gridBase )
-
 				grid  <- 
-					do.call(
-						cbind,
-						lapply(
-							gridBase,
-							function( gridBasePoint )
-							{
-								matrix( 
-									c(
-										rep.int( gridBasePoint, times= gridLength ),
-										gridBase
-									),
-									ncol = gridLength,
-									nrow = 2,
-									byrow=TRUE
-								)
-							}
-						)
+					getSquareGrid(
+						minimum = -2,
+						maximum = 12,
+						mesh 	= 0.1
 					)
-				rm( gridBase, gridLength)
 
 				tmpRealDensityValues <-
 					as.data.frame(
@@ -159,7 +175,59 @@ targetLiangDensity <- setRefClass(
 
 				rm( grid, tmpRealDensityValues )
 			}
+		},
+
+#<method>
+		distribuant = function( 
+			x
+		)
+		{
+			pnorms <- 
+				apply(
+					mixturesMeans,
+					2,
+					function( means )
+					{
+						pnorm( (x - means)/sigma )
+					}
+				)
+
+			return( crossprod( pnorms[1,], pnorms[2,] )*mixturesWeight  )	
+		},
+
+#<method>
+		getSquareGrid = function( 
+			minimum , 
+			maximum ,
+			mesh 
+		)
+		{
+			gridBase 	<- seq( minimum, maximum, by = mesh)
+			gridLength 	<- length( gridBase )
+
+			return( 
+				do.call(
+					cbind,
+					lapply(
+						gridBase,
+						function( gridBasePoint )
+						{
+							matrix( 
+								c(
+									rep.int( gridBasePoint, times= gridLength ),
+									gridBase
+								),
+								ncol = gridLength,
+								nrow = 2,
+								byrow=TRUE
+							)
+						}
+					)
+				)
+			)
 		}
+
+
 
 ####################################################################
 				# Finis Structurae		

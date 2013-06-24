@@ -6,7 +6,7 @@ realStateSpace <- setRefClass(
 								# Fields
 
 	fields		= list(
-
+#<fields>
 			## Dimension of the original state space of interest.
 		spaceDim			= "integer",	
 
@@ -40,7 +40,9 @@ realStateSpace <- setRefClass(
 			## Boolean: says whether proposal covariances are the same on different temperature levels.
 		simpleProposalCovariance	= "logical",
 
+			## Dataframe containing data that can be manipulated by the ggplot2.
 		dataForPlot 		= "data.frame"	
+#</fields>		
 	),	
 	
 ###########################################################################
@@ -52,7 +54,7 @@ realStateSpace <- setRefClass(
 		############################################################
 				# Initialisation
 
-
+#<method>
 		initializeRealStateSpace = function(
 			temperatures 		= numeric(0),
 			temperaturesNo 		= 0L,
@@ -201,7 +203,7 @@ realStateSpace <- setRefClass(
 			}	
 		},
 
-
+#<method>
 		initialize	= function(
 			iterationsNo 		= 0L,  
 			temperatures 		= numeric(0),
@@ -231,14 +233,14 @@ realStateSpace <- setRefClass(
 		############################################################
 				# Data structure methods.
 
-
+#<method>
 		simulationTerminated = function()
 			#### Checks whether simulation is terminated.
 		{
 			return( freeSlotNo == slotsNo + 1L )
 		},
 
-
+#<method>
 		insertStates	= function() 
 			#### Inserts current states to the data history (field: simulatedStates).
 		{
@@ -254,8 +256,8 @@ realStateSpace <- setRefClass(
 			stop('The computer tried to make more steps than the user wanted him to. That is truly weird...') 
 		},
 
-
-		getStates 	= function(
+#<method>
+		getStates = function(
 			whichSlotNo
 		)
 			#### Extracts the given slot from data history (field: simulatedStates).
@@ -268,8 +270,8 @@ realStateSpace <- setRefClass(
 			)
 		},
 
-
-		getIteration	= function(
+#<method>
+		getIteration = function(
 			iteration 	= 1L,
 			type		= 'initial states' 
 		)
@@ -315,7 +317,7 @@ realStateSpace <- setRefClass(
 			insertStates()				
 		},
 
-				
+#<method>				
 		updateStatesAfterSwap = function(
 			proposalAccepted,
 			transposition	
@@ -334,7 +336,7 @@ realStateSpace <- setRefClass(
 		############################################################
 				# Visualisation
 
-
+#<method>
 		showRealStateSpace = function()
 		{
 			cat('\nThe real-state-space inputs are here: \n')
@@ -363,12 +365,14 @@ realStateSpace <- setRefClass(
 			}
 		},
 
-		show 	 = function()
+#<method>
+		show = function()
 		{
 			showStateSpace()
 			showRealStateSpace()
 		},
 
+#<method>
 		showState = function( 
 			iteration 	= 0L,
 			type 		= 'initial states'
@@ -386,7 +390,7 @@ realStateSpace <- setRefClass(
 			return(tmpStates)
 		},		
 
-
+#<method>
 		prepareDataForPlot = function()
 			#### Reshuffles the entire history of states so that the entire result conforms to the data frame templates of ggplot2.
 		{
@@ -438,7 +442,7 @@ realStateSpace <- setRefClass(
 			}
 		}, 
 
-
+#<method>
 		plotAllChains = function()
 			#### Performs a plot of all simulated chains with an overlayed map of the real density from the Liang example.
 		{
@@ -472,7 +476,7 @@ realStateSpace <- setRefClass(
 				cat( "\n It is highly non-trivial to plot a non-2D example \n.")
 		},
 
-
+#<method>
 		plotBaseTemperature = function()
 			#### Performs a plot of the base level temperature chain of main interest with an overlayed map of the real density from the Liang example.
 
@@ -511,7 +515,7 @@ realStateSpace <- setRefClass(
 		############################################################
 				# Algorithmic Methods
 
-
+#<method>
 		proposeLogsOfUMeasures = function()
 			#### Calculates logs of unnormalised densities in all the proposed states. 
 		{
@@ -529,7 +533,7 @@ realStateSpace <- setRefClass(
 			)
 		},
 
-
+#<method>
 		randomWalkProposal = function()
 			#### Generates new current states and logs of their unnormalised densities.
 		{
@@ -566,6 +570,7 @@ realStateSpace <- setRefClass(
 			)
 		},
 
+#<method>
 		measureQuasiDistance = function(
 			iState,
 			jState

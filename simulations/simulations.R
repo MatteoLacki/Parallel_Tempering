@@ -12,7 +12,7 @@ simulation <- setRefClass(
 ###########################################################################
 								# Fields
 	fields		= list(
-
+#<fields>
 			## The data container with methods that act on it and deliver the probabilities.
 		stateSpace	= "StateSpaces",
 
@@ -21,6 +21,7 @@ simulation <- setRefClass(
 
 			## Unnormalised Probabilities of the state-space: the target measure from which we want to draw samples.
 		targetMeasure 	= "TargetMeasures"	
+#</fields>	
 	),
 
 ###########################################################################
@@ -31,6 +32,7 @@ simulation <- setRefClass(
 		############################################################
 				# Initialisation
 
+#<method>
 		initialize = function(
 			stateSpaceName		= "LiangRealStateSpace",
 			algorithmName		= "ParallelTempering",	
@@ -141,7 +143,7 @@ simulation <- setRefClass(
 			}	
 		},
 
-
+#<method>
 		checkTemperatures = function(
 			temperatures
 		)
@@ -172,7 +174,7 @@ simulation <- setRefClass(
 			return( tmpTemp )
 		},	
 
-
+#<method>
 		checkIterationsNo = function( iterationsNo )
 		{
 			iterationsNo 	<- as.integer( iterationsNo )
@@ -197,6 +199,7 @@ simulation <- setRefClass(
 		############################################################
 				# Algorithmic Methods
 
+#<method>
 		simulate = function()
 		{
 			algorithm$simulate()
@@ -206,7 +209,6 @@ simulation <- setRefClass(
 			write.csv2(
 				stateSpace$simulatedStates,
 				file = paste("./data/simulatedStates",Sys.time(),".csv", sep="",colapse=""),
-				append= FALSE,
 				row.names=FALSE
 			)			
 		}
