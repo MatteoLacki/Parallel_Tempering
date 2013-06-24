@@ -21,8 +21,12 @@ simulation <- setRefClass(
 
 			## Unnormalised Probabilities of the state-space: the target measure from which we want to draw samples.
 		targetMeasure 	= "TargetMeasures"	
+
+			## Save results?    
+	    save = "logical"
+    
 #</fields>	
-	),
+    ),
 
 ###########################################################################
 								# Methods
@@ -45,13 +49,16 @@ simulation <- setRefClass(
 			quasiMetric 		= function(){},
 			proposalCovariances = matrix(ncol=0, nrow=0),
 			example 			= FALSE,
-			detailedOutput		= FALSE
-		)
+			detailedOutput		= FALSE,
+			save = FALSE
+      )
 		{
 			print("Thank you for choosing our software. We hope that you will have a pleasent day.")
 
 			iterationsNo 	<- checkIterationsNo( iterationsNo )
-
+    
+      save <<- save
+      
 			if( example )
 			{
 				temperatures 			<- c(1, 2.8, 7.7, 21.6, 60)
@@ -206,11 +213,21 @@ simulation <- setRefClass(
 
 			if( !file.exists("./data") ) dir.create("./data")
 
+<<<<<<< HEAD
 			write.csv2(
 				stateSpace$simulatedStates,
 				file = paste("./data/simulatedStates",Sys.time(),".csv", sep="",colapse=""),
 				row.names=FALSE
 			)			
+=======
+			if( save ){
+        write.csv2(
+  				stateSpace$simulatedStates,
+  				file = paste(path,"simulatedStates",Sys.time(),".csv", sep="",colapse=""),
+  				row.names=FALSE
+  			)	
+			}  
+>>>>>>> origin/master
 		}
 
 ###########################################################################
