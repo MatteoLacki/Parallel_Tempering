@@ -13,8 +13,8 @@ source("./simulations/simulations.R")
 
 
 LiangWangExample <- simulation$new(
-	iterationsNo= 100,
-	strategyNo 	= 3,
+	iterationsNo	= 1000,
+	strategyNo 	= 1,
 	example 	= TRUE	
 )
 
@@ -24,6 +24,13 @@ system.time(
 ) 
 LiangWangExample	
 LiangWangExample$algorithm$plotHistory()
+
+
+
+X <- LiangWangExample$stateSpace$dataForPlot[,1:2]
+
+colMeans(X^2)
+
 
 head(LiangWangExample$stateSpace$dataForPlot)
 X <- LiangWangExample$stateSpace$dataForPlot

@@ -11,7 +11,7 @@ Zaimplementować wybór modelu liniowego, jak u Byrne i Pierre'a Jacoba.
 	
 	Zaimplementować adaptację .
 	
-	Jaka jest akceptacja kroków w RWalku -> jeśli odbiega od 25%. 
+	Jaka jest akceptacja kroków w RWalku -> jeśli odbieag od 25%. 
 	Zaimplementować adaptacyjny random walk. 
 	
 	Albo jeśli poziom akceptacji będzie za duży, to zwiększyć wariancję. 
@@ -26,3 +26,20 @@ Proposal states can be a local variable.
 
 
 Pytania: czemu łańcuch ten dobrze przybliża całkę? Jak liczyć punkty, które po kilka razy zostały niezmienione w miejscu?
+
+
+1. Dodać dwie strategie: rozkład jednostajny na parach i jednostajny na sąsiadach. Nie trzeba w nich poprawiać akceptacji swapu.
+
+2. Sprawdzić, które kwantyle są rysowane. 
+
+3. Tak nanieść izokwanty, żeby punkty poza nimi były małego prawdopodobieństwa bbeta.
+
+4. Porównać się z wynikami Baragatti.
+
+5. Zrobić dwuwymiarowy przykład z dwoma modami (2 mieszanki) Scott Schmidler. Jedna moda płaska, druga spiszasta. Sprawdzić strategię IV z euklidesową metryką.
+
+5b. Implement the biological example -> Bayesian Mixture Model Based Clustering...
+
+6. (*) skalibrować kowariancje proposali.
+
+7. Uaktualnić bibliografię.

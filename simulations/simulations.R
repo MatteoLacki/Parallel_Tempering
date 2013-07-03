@@ -20,7 +20,7 @@ simulation <- setRefClass(
 		algorithm 	= "Algorithms",
 
 			## Unnormalised Probabilities of the state-space: the target measure from which we want to draw samples.
-		targetMeasure 	= "TargetMeasures"	
+		targetMeasure 	= "TargetMeasures",	
 
 			## Save results?    
 	    save = "logical"
@@ -65,10 +65,20 @@ simulation <- setRefClass(
 
 				tmpProposalCovariances 	<- vector( "list", 5L )
 
+				# for (i in 1:5 )
+				# {
+				# 	tmpProposalCovariances[[i]] <- 
+				# 		diag( temperatures[i]^2, nrow=2, ncol=2 ) 				
+				# }
+
 				for (i in 1:5 )
 				{
 					tmpProposalCovariances[[i]] <- 
-						diag( temperatures[i]^2, nrow=2, ncol=2 ) 				
+						diag( 
+							ifelse(i <=3, .05, .01)*temperatures[i]^2,
+							nrow=2, 
+							ncol=2 
+						) 				
 				}
 
 				stateSpace 	<<- 
@@ -213,21 +223,13 @@ simulation <- setRefClass(
 
 			if( !file.exists("./data") ) dir.create("./data")
 
-<<<<<<< HEAD
-			write.csv2(
-				stateSpace$simulatedStates,
-				file = paste("./data/simulatedStates",Sys.time(),".csv", sep="",colapse=""),
-				row.names=FALSE
-			)			
-=======
 			if( save ){
-        write.csv2(
-  				stateSpace$simulatedStates,
-  				file = paste(path,"simulatedStates",Sys.time(),".csv", sep="",colapse=""),
-  				row.names=FALSE
-  			)	
+        		write.csv2(
+	  				stateSpace$simulatedStates,
+	  				file = paste(path,"simulatedStates",Sys.time(),".csv", sep="",colapse=""),
+	  				row.names=FALSE
+	  			)	
 			}  
->>>>>>> origin/master
 		}
 
 ###########################################################################
