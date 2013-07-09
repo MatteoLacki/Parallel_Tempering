@@ -1,3 +1,4 @@
+############################### Loading files ################################
 rm( list = ls())
 directory <- "/home/matteo/Documents/Scienza/Laurea_di_Matematica/Implementation"
 setwd(directory)
@@ -11,7 +12,7 @@ source("./algorithms/algorithms.R")
 source("./algorithms/parallelTemperings.R")
 source("./simulations/simulations.R")
 
-
+############################### State-dependent simulation ###################
 LiangWangExample <- simulation$new(
 	iterationsNo	= 1000,
 	strategyNo 	= 1,
@@ -25,8 +26,36 @@ system.time(
 LiangWangExample	
 LiangWangExample$algorithm$plotHistory()
 
+############################### State-independent simulation #################
+
+LiangWangExample <- simulation$new(
+	iterationsNo	= 1000,
+	strategyNo 	= 5,
+	example 	= TRUE	
+)
+
+LiangWangExample
+system.time(
+  LiangWangExample$simulate()  
+) 
+LiangWangExample	
+LiangWangExample$algorithm$plotHistory()
 
 
+LiangWangExample <- simulation$new(
+	iterationsNo	= 1000,
+	strategyNo 	= 5,
+	example 	= TRUE	
+)
+
+LiangWangExample
+system.time(
+  LiangWangExample$simulate()  
+) 
+LiangWangExample	
+LiangWangExample$algorithm$plotHistory()
+
+############################### Additional Topics ############################
 X <- LiangWangExample$stateSpace$dataForPlot[,1:2]
 
 colMeans(X^2)

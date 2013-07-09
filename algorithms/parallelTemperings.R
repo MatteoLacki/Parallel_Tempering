@@ -62,8 +62,14 @@ parallelTempering <- setRefClass(
 		acceptedSwapsNo			= "integer",
 
 			## Triggers detailed output during the simulation.
-		detailedOutput			= "logical"
+		detailedOutput			= "logical",
 #</fields>		
+
+			## Is the swap probability independent of point in space?	
+		simpleSwap				= "logical",
+
+			## If a state-independent strategy was chosen, this vector will store the possible states. In lexicographic order.
+		possibleSwaps 			= "integer"
 	),
 
 ###########################################################################
@@ -87,8 +93,8 @@ parallelTempering <- setRefClass(
 			inverseTemperatures <<- 1/temperatures
 			temperaturesNo 		<<- length(temperatures)
 
-			insertStrategyNo( strategyNo )
 			insertTranspositions()
+			insertStrategyNo( strategyNo )
 
 			acceptedRandomWalksNo	<<- rep.int(0L, times = temperaturesNo)
 			rejectedRandomWalksNo	<<- rep.int(0L, times = temperaturesNo)
@@ -111,7 +117,39 @@ parallelTempering <- setRefClass(
 			{	
 				strategyNo	<<- tmpStrategyNo
 			}
+
+				# Strategies 5 and 6 are state independent.
+			simpleSwap 	<<- ifelse( strategyNo %in% c(5,6) , TRUE, FALSE )
+
+				# Uniform swaps on all possible transpositions
+			if ( strategyNo == 5)
+			{
+				possibleSwaps 	<<- 1:transpositionsNo 
+			}
+
+				# Uniform swaps on neighbouring transpositions
+			if ( strategyNo == 6)
+			{
+				possibleSwaps 	<<- getNeighbours()
+			}
 		},
+
+
+#<method>
+		getNeighbours = function()
+		{
+			return( 
+				sapply(
+					1:(temperaturesNo-1),
+					function( chainNo ) {				
+						as.integer(
+							(chainNo - 1)*( temperaturesNo - chainNo/2 ) + 1
+						)
+					}	
+				)
+			)
+		},		
+
 
 #<method>
 		insertTranspositions = function()
@@ -180,6 +218,7 @@ parallelTempering <- setRefClass(
 			cat('Number of chains/temperatures: ', temperaturesNo, '\n')	
 			cat('Chosen swap-strategy number: ', strategyNo, '\n')
 			cat('Number of transpositions: ', transpositionsNo, '\n')	
+			cat('State-independent swaps: ', ifelse( simpleSwap, ' yes',' no'), '\n')	
 
 			if( simulationFinished )
 			{
@@ -197,7 +236,7 @@ parallelTempering <- setRefClass(
 				colnames(acceptance) 	<- 1:temperaturesNo
 				print( acceptance )
 				cat("\n")
-				
+							
 				
 				cat("\n")
 			}
@@ -376,6 +415,7 @@ parallelTempering <- setRefClass(
 			stateSpace$updateStatesAfterRandomWalk( anyUpdate, updatedStates )
 		}, 
 
+
 				###### swap sphere ######
 #<method>
 		swap = function(
@@ -398,15 +438,30 @@ parallelTempering <- setRefClass(
 		swapProposalGeneration = function()
 			#### Generates a random swap based on the last step swap  unnormalised probabilities.
 		{
-			swapProposalLexic <<-
-				sample(
+			if( simpleSwap ) {
+				swapProposalLexic <<-
+					sample(
+						possibleSwaps,  
+						size = 1
+					)
+			} else {
+				swapProposalLexic <<-
+					sample(
 						1:transpositionsNo,  
 						size = 1,
 						prob = lastSwapUProbs
-				) 
+					) 
+			}
 
-			swapProposal <<- 
+			swapProposal <<- 	
 				translateLexicToTranspositions( swapProposalLexic )
+
+			tmpUpdatedStates 				<- rep(FALSE, temperaturesNo)
+		
+				# The pair of states get the update tag here.
+			tmpUpdatedStates[swapProposal] 	<- TRUE
+			
+			updatedStates <<- tmpUpdatedStates
 		},
 
 #<method>
@@ -415,47 +470,64 @@ parallelTempering <- setRefClass(
 		)
 			#### Performs the rejection in the swap step and the resulting  update. 
 		{
-			tmpUpdatedStates 			<- rep(FALSE, temperaturesNo)
-			tmpUpdatedStates[swapProposal] 	<- TRUE
-			
-			updatedStates <<- tmpUpdatedStates
-			rm( tmpUpdatedStates )
+			if (!simpleSwap) {
 
-			transpositionsUpdateForProposal <- 
-				findTranspositionsForUpdate()	
-					
-			proposalUProbs 	<- lastSwapUProbs
+					# The procedure for strategies 1-4.
 
-			proposalUProbs[ transpositionsUpdateForProposal ] <- 
-				updateSwapUProbs( 
-					translateLexicToTranspositions(
-						transpositionsUpdateForProposal
-					) 
-				)
-			
-			proposalLogProb	<- 
-				log( proposalUProbs[ swapProposalLexic ] ) - 
-				log( sum( proposalUProbs ) )
+				transpositionsUpdateForProposal <- 
+					findTranspositionsForUpdate()	
+						
+				proposalUProbs 	<- lastSwapUProbs
 
-			lastLogProb		<- 
-				log( lastSwapUProbs[ swapProposalLexic ] ) - 
-				log( sum( lastSwapUProbs ) )
+				proposalUProbs[ transpositionsUpdateForProposal ] <- 
+					updateSwapUProbs( 
+						translateLexicToTranspositions(
+							transpositionsUpdateForProposal
+						) 
+					)
+				
+				proposalLogProb	<- 
+					log( proposalUProbs[ swapProposalLexic ] ) - 
+					log( sum( proposalUProbs ) )
 
-			proposalInverseTemperatures <- inverseTemperatures[ swapProposal ]
+				lastLogProb		<- 
+					log( lastSwapUProbs[ swapProposalLexic ] ) - 
+					log( sum( lastSwapUProbs ) )
 
-			targetLogDensities		<- lastStatesLogUDensities[ swapProposal ]
+				proposalInverseTemperatures <- inverseTemperatures[ swapProposal ]
 
-			logAlpha <- 
-				(
-					proposalInverseTemperatures[1] -
-					proposalInverseTemperatures[2]				
-				)*
-				(
-					targetLogDensities[2] - 
-					targetLogDensities[1]
-				)+
-				proposalLogProb -
-				lastLogProb
+				targetLogDensities		<- lastStatesLogUDensities[ swapProposal ]		
+
+				logAlpha <- 
+					(
+						proposalInverseTemperatures[1] -
+						proposalInverseTemperatures[2]				
+					)*
+					(
+						targetLogDensities[2] - 
+						targetLogDensities[1]
+					)+
+					proposalLogProb -
+					lastLogProb
+
+			} else {
+
+				proposalInverseTemperatures <- inverseTemperatures[ swapProposal ]
+
+				targetLogDensities		<- lastStatesLogUDensities[ swapProposal ]
+
+					# The procedure for state-independent strategies.
+
+				logAlpha <- 
+					(
+						proposalInverseTemperatures[1] -
+						proposalInverseTemperatures[2]				
+					)*
+					(
+						targetLogDensities[2] - 
+						targetLogDensities[1]
+					)
+			}
 
 			Ulog <- log( runif(1) )
 				
@@ -472,7 +544,10 @@ parallelTempering <- setRefClass(
 
 			if ( proposalAccepted )
 			{
-				lastSwapUProbs <<- proposalUProbs 
+				if (!simpleSwap) {	
+					lastSwapUProbs <<- proposalUProbs 
+				}
+
 				transpositionHistory[ iteration ] <<- swapProposalLexic
 
 				if ( detailedOutput ) 
