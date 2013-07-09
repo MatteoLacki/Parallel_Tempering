@@ -28,8 +28,11 @@ LiangWangExample$algorithm$plotHistory()
 
 ############################### State-independent simulation #################
 
+
+	### Uniform distribution on all transpositions.
+source("./stateSpaces/realStateSpaces.R")
 LiangWangExample <- simulation$new(
-	iterationsNo	= 1000,
+	iterationsNo	= 10,
 	strategyNo 	= 5,
 	example 	= TRUE	
 )
@@ -40,11 +43,13 @@ system.time(
 ) 
 LiangWangExample	
 LiangWangExample$algorithm$plotHistory()
+head(LiangWangExample$targetMeasure$realDensityValues)
 
+	### Uniform distribution on neighbouring transpositions.
 
 LiangWangExample <- simulation$new(
 	iterationsNo	= 1000,
-	strategyNo 	= 5,
+	strategyNo 	= 6,
 	example 	= TRUE	
 )
 
@@ -52,8 +57,10 @@ LiangWangExample
 system.time(
   LiangWangExample$simulate()  
 ) 
-LiangWangExample	
+LiangWangExample
+LiangWangExample$stateSpace$plotAllChains()	
 LiangWangExample$algorithm$plotHistory()
+
 
 ############################### Additional Topics ############################
 X <- LiangWangExample$stateSpace$dataForPlot[,1:2]

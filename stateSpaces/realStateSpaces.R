@@ -481,8 +481,12 @@ realStateSpace <- setRefClass(
 			#### Performs a plot of the base level temperature chain of main interest with an overlayed map of the real density from the Liang example.
 
 		{
+				# Setting bins creates evenly spaced contours in the range of the data
 			if ( spaceDim == 2 )
 			{
+				contourData 	<- targetMeasure$realDensityValues 
+				contourData2 	<- contourData[contourData$z < .1,]
+
 				require( ggplot2 )
 
 				return(
@@ -499,9 +503,11 @@ realStateSpace <- setRefClass(
 						high 	= "black"
 					) +
 					stat_contour(
-						data 	= targetMeasure$realDensityValues, 
+						data 	= contourData, 
 						aes( x, y, z =z ), 
-						bins 	= 5, 
+						#bins 	= 5, 
+						# binwidth= .05,
+						breaks = c(.1),
 						size 	= .5, 
 						colour 	= "red"
 					) +
