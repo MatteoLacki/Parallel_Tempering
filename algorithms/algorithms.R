@@ -58,7 +58,7 @@ algorithm <- setRefClass(
 		############################################################
 				# Visualisation
 #<method>
-		algorithmShow = function()
+		showAlgorithm = function()
 		{
 			cat('\n Welcome to our algorithm! \n')
 			cat('Number of steps: ', iterationsNo, '\n')
@@ -67,7 +67,7 @@ algorithm <- setRefClass(
 #<method>
 		show = function()
 		{
-			algorithmShow()
+			showAlgorithm()
 		},
 
 #<method>

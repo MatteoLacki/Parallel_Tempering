@@ -7,13 +7,15 @@ source("./targetMeasures/targetUnnormalisedDensities.R")
 source("./targetMeasures/targetLiangDensities.R")
 source("./stateSpaces/stateSpaces.R")
 source("./stateSpaces/realStateSpaces.R")
+source("./stateSpaces/realTemperedStateSpaces.R")
 source("./algorithms/algorithms.R")
+source("./algorithms/metropolisHastings.R")
 source("./algorithms/parallelTemperings.R")
 source("./simulations/simulations.R")
 
 
 LiangWangExample <- simulation$new(
-	iterationsNo	= 1000,
+	iterationsNo	= 100,
 	strategyNo 	= 1,
 	example 	= TRUE	
 )
