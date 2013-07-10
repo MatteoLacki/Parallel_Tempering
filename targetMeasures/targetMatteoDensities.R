@@ -46,17 +46,17 @@ targetMatteoDensity <- setRefClass(
 		{
 			mixturesNo 		<<- 2L
 
-			mixturesWeight 	<<- c(1/5, 4/5)
+			mixturesWeight 	<<- c(1/10, 9/10)
 
 			mixturesMeans 	<<- 
 				matrix(
-					c(2, 2, 8, 8), 
+					c(2, 8, 2, 8), 
 					nrow=2, 
 					ncol=2, 
 					byrow=TRUE
 				)
 
-			sigma 	<<- c(.8, .1)
+			sigma 	<<- c(.7, .05)
 			sigma2 	<<- sigma^2	
 
 			meansSigmasWeights <<- rbind(mixturesMeans, sigma, mixturesWeight)

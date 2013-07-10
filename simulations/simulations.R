@@ -1,9 +1,11 @@
 # source("./referenceObjects/targetMeasures.R")
 # source("./referenceObjects/targetUnnormalisedDensities.R")
 # source("./referenceObjects/targetLiangDensities.R")
+# source("./referenceObjects/targetMatteoDensities.R")
 # source("./referenceObjects/stateSpace.R")
 # source("./referenceObjects/realStateSpace.R")
 # source("./referenceObjects/algorithm.R")
+# source("./referenceObjects/metropolisHastings.R")
 # source("./referenceObjects/parallelTempering.R")
 
 simulation <- setRefClass(
@@ -38,31 +40,31 @@ simulation <- setRefClass(
 
 #<method>
 		initialize = function(
-			stateSpaceName		= "LiangRealStateSpace",
-			algorithmName		= "ParallelTempering",	
+			stateSpaceName		= "real",
+			algorithmName		= "parallel tempering",
+			targetMeasureName	= "Liang-Wang",	
+			example 			= FALSE,
 			iterationsNo 		= 0L,
+			chainsNo 			= 0L,
+			spaceDim			= 0L,
+			initialStates		= matrix(nrow=0, ncol=0),
+			targetDensity 		= function(){}, 
 			temperatures 		= numeric(0),
 			strategyNo			= 1L,
-			spaceDim			= 0L,
-			targetDensity 		= function(){}, 
-			initialStates		= matrix(nrow=0, ncol=0),
 			quasiMetric 		= function(){},
 			proposalCovariances = matrix(ncol=0, nrow=0),
-			example 			= FALSE,
 			detailedOutput		= FALSE,
-			save = FALSE
+			save 				= FALSE
       )
 		{
-			print("Thank you for choosing our software. We hope that you will have a pleasent day.")
+			print("Thank you for choosing our software. We wish you a pleasent day.")
 
 			iterationsNo 	<- checkIterationsNo( iterationsNo )
-    
-      save <<- save
-      
+      		save <<- save
+
 			if( example )
 			{
 				temperatures 			<- c(1, 2.8, 7.7, 21.6, 60)
-
 				tmpProposalCovariances 	<- vector( "list", 5L )
 
 				# for (i in 1:5 )
@@ -81,83 +83,99 @@ simulation <- setRefClass(
 						) 				
 				}
 
-				stateSpace 	<<- 
-					realStateSpace$new(
+				chainsNo			<- 5L
+				spaceDim			<- 2L
+				algorithmName 		<- 'parallel tempering'					
+
+			}  
+			
+			if( algorithmName == 'parallel tempering') {
+				temperatures 	<- checkTemperatures( temperatures )
+
+				if ( 
+					!( stateSpaceName %in% c(
+							'real'
+						) 
+					) 
+				){ 
+				stop("We have not yet developped the required state-space.")
+				}
+
+			}
+
+			switch(
+				targetMeasureName,
+				'Liang-Wang'={
+					targetMeasure 	<<- targetLiangDensity$new()
+				},
+				'Matteo'={
+					targetMeasure 	<<- targetMatteoDensity$new()
+				},
+				'any density'={
+					targetMeasure 	<<- targetUDensity$new(
+						targetDensity 	= targetDensity
+					)
+				},
+				stop("You must supply a target measure.")
+			)
+
+			switch(
+				stateSpaceName,
+				'real'	= 
+				{
+					stateSpace <<- realStateSpace$new(
 						iterationsNo 		= iterationsNo,
 						temperatures 		= temperatures,
-						temperaturesNo 		= 5L,
-						spaceDim			= 2L,
+						temperaturesNo		= chainsNo,
+						spaceDim			= spaceDim,
 						initialStates		= initialStates,
 						quasiMetric 		= quasiMetric,
 						proposalCovariances = tmpProposalCovariances
 					)
+				},	
+				# 'real tempered'	= 
+				# {
+				# 	stateSpace <<- realTemperedStateSpace$new(
+				# 		iterationsNo 		= iterationsNo,
+				# 		temperatures 		= temperatures,
+				# 		chainsNo 			= chainsNo,
+				# 		spaceDim			= spaceDim,
+				# 		initialStates		= initialStates,
+				# 		quasiMetric 		= quasiMetric,
+				# 		proposalCovariances = proposalCovariances
+				# 	)	
+				# },
+				cat("That kind of state-space is currently the only one unavailable.")
+			)
 
-				targetMeasure 	<<- targetLiangDensity$new()
+			stateSpace$targetMeasure  <<- targetMeasure
 
-				stateSpace$targetMeasure <<- targetMeasure
+			switch(
+				algorithmName,
+				# 'Metropolis-Hastings' 	=
+				# {
+				# 	algorithm <<- metropolisHastings$new(
+				# 		iterationsNo 	= iterationsNo,
+				# 		strategyNo		= strategyNo,
+				# 		detailedOutput	= detailedOutput
+				# 	)	
+				# },
 
-				algorithm <<- 
-					parallelTempering$new(
+				'parallel tempering'	= 
+				{
+					algorithm <<- parallelTempering$new(
 						iterationsNo 	= iterationsNo,
 						temperatures 	= temperatures,
 						strategyNo		= strategyNo,
 						detailedOutput	= detailedOutput
 					)
+				},
 
-				algorithm$stateSpace <<- stateSpace
-					
-			} else 
-			{	
-				temperatures 	<- checkTemperatures( temperatures )
-				temperaturesNo	<- length( temperatures )
-	
+				cat("That kind of algorithm is currently unavailable.")
+			)
 
-				targetMeasure 	<<- 
-					targetUDensity( targetDensity = targetDensity )
-
-				switch(
-					stateSpaceName,
-					RealStateSpace	= 
-					{
-						stateSpace <<- realStateSpace$new(
-							iterationsNo 		= iterationsNo,
-							temperatures 		= temperatures,
-							temperaturesNo 		= temperaturesNo,
-							spaceDim			= spaceDim,
-							initialStates		= initialStates,
-							quasiMetric 		= quasiMetric,
-							proposalCovariances = proposalCovariances
-						)	
-					},
-	
-					cat("That kind of state-space is currently the only one unavailable.")
-				)
-
-				stateSpace$targetMeasure  <<- targetMeasure
-	
-				switch(
-					algorithmName,
-					ParallelTempering	= 
-					{
-						algorithm <<- parallelTempering$new(
-							iterationsNo 	= iterationsNo,
-							temperatures 	= temperatures,
-							strategyNo		= strategyNo,
-							detailedOutput	= detailedOutput
-						)
-					},
-					MetropolisHasting 	=
-					{
-						if( length(temperatures) != 1) 
-							cat(" I shall proceed with a number of chains equal to the number of temperatures, although the termperature levels are irrelevant in the apllication of the MH algorithm.")	
-						cat("Metropolis-Hasting currently unavailable.")
-					},
-				
-					cat("That kind of algorithm is currently unavailable.")
-				)
-
-				algorithm$stateSpace <<- stateSpace
-			}	
+			algorithm$stateSpace <<- stateSpace
+			
 		},
 
 #<method>
@@ -170,25 +188,24 @@ simulation <- setRefClass(
 				cat(
 					'I did not receive any temperatures. I shall therefore proceed with rather arbitrary choice of 5 temperature levels 1<2<3<4<5.'
 				)
-				tmpTemp <- 1:5	# Can add here some global constant.
+				temperatures <- 1:5	# Can add here some global constant.
 			} else 
 			{
-				if (any( temperatures <= 1 )) cat('Do you really want to cool down the distribution? That does not make sense, does it? Try avoiding such things.')
+				if (any( temperatures < 1 )) cat('Do you really want to cool down the distribution? That does not make sense, does it? Try avoiding such things.')
 				
 				if ( !(1 %in% temperatures) )
 				{	#Adding base temperature.
-					tmpTemp						<- temperatures
-					tmpTemp[length(tmpTemp)+1] 	<- 1
+					temperatures[ length(temperatures)+1 ] 	<- 1
 				}
 
-				tmpTemp	<- 
+				temperatures	<- 
 					sort(
-						tmpTemp, 
+						temperatures, 
 						decreasing=FALSE
 					) 
 			}
 
-			return( tmpTemp )
+			return( temperatures )
 		},	
 
 #<method>

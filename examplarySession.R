@@ -6,6 +6,7 @@ setwd(directory)
 source("./targetMeasures/targetMeasures.R")
 source("./targetMeasures/targetUnnormalisedDensities.R")
 source("./targetMeasures/targetLiangDensities.R")
+source("./targetMeasures/targetMatteoDensities.R")
 source("./stateSpaces/stateSpaces.R")
 source("./stateSpaces/realStateSpaces.R")
 source("./algorithms/algorithms.R")
@@ -79,3 +80,26 @@ X <- X[,1:2]
 svg("histogram.svg", width=6, height=4)
 	LiangWangExample$algorithm$plotHistory()
 dev.off()
+
+############################### New Measure ############################
+source("./targetMeasures/targetMatteoDensities.R")
+LiangWangExample <- simulation$new(
+	iterationsNo	= 1000,
+	strategyNo 	= 1,
+	example 	= TRUE,
+	targetMeasureName = 'Matteo'	
+)
+
+LiangWangExample
+system.time(
+  LiangWangExample$simulate()  
+) 
+LiangWangExample	
+
+
+svg("MatteoDistributionStrategy5.svg", width=6, height=4)
+	LiangWangExample$stateSpace$plotBaseTemperature()	
+dev.off()
+
+LiangWangExample$algorithm$plotHistory()
+
