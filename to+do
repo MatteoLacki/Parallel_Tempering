@@ -28,11 +28,12 @@ Proposal states can be a local variable.
 Pytania: czemu łańcuch ten dobrze przybliża całkę? Jak liczyć punkty, które po kilka razy zostały niezmienione w miejscu?
 
 
-1. Dodać dwie strategie: rozkład jednostajny na parach i jednostajny na sąsiadach. Nie trzeba w nich poprawiać akceptacji swapu.
+1. ****DONE**** Dodać dwie strategie: rozkład jednostajny na parach i jednostajny na sąsiadach. Nie trzeba w nich poprawiać akceptacji swapu.
 
-2. Sprawdzić, które kwantyle są rysowane. 
+2. ****DONE**** Sprawdzić, które kwantyle są rysowane: 
+	ODP. Teraz linie odpowiadają wysokości 
 
-3. Tak nanieść izokwanty, żeby punkty poza nimi były małego prawdopodobieństwa bbeta.
+3. ****DONE**** Tak nanieść izokwanty, żeby punkty poza nimi były małego prawdopodobieństwa bbeta.
 
 4. Porównać się z wynikami Baragatti.
 
@@ -42,4 +43,4 @@ Pytania: czemu łańcuch ten dobrze przybliża całkę? Jak liczyć punkty, któ
 
 6. (*) skalibrować kowariancje proposali.
 
-7. Uaktualnić bibliografię.
+7. ****DONE**** Uaktualnić bibliografię.

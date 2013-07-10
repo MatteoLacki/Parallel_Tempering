@@ -30,6 +30,8 @@ LiangWangExample$algorithm$plotHistory()
 
 
 	### Uniform distribution on all transpositions.
+source("./targetMeasures/targetLiangDensities.R")
+
 source("./stateSpaces/realStateSpaces.R")
 LiangWangExample <- simulation$new(
 	iterationsNo	= 10,
@@ -40,10 +42,10 @@ LiangWangExample <- simulation$new(
 LiangWangExample
 system.time(
   LiangWangExample$simulate()  
-) 
-LiangWangExample	
+)
+LiangWangExample 
 LiangWangExample$algorithm$plotHistory()
-head(LiangWangExample$targetMeasure$realDensityValues)
+LiangWangExample$targetMeasure$quantiles
 
 	### Uniform distribution on neighbouring transpositions.
 

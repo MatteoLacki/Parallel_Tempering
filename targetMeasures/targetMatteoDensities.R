@@ -1,5 +1,5 @@
-targetLiangDensity <- setRefClass(
-	Class		= "TargetLiangDensities",
+targetMatteoDensity <- setRefClass(
+	Class		= "TargetMatteoDensities",
 	contains	= "TargetMeasures",
 
 ###########################################################################
@@ -12,10 +12,10 @@ targetLiangDensity <- setRefClass(
 			## Weights of every mixture.
 		mixturesWeight  = "numeric",
 
-			## The norming constant of the covariance matrices of the Liang density.
+			## The norming constant of the covariance matrices of the Matteo density.
 		sigma2			= "numeric",
 
-			## Square root of the norming constant of the covariance matrices of the Liang density.
+			## Square root of the norming constant of the covariance matrices of the Matteo density.
 		sigma			= "numeric",
 
 			## A constant related to weight and sigma. 
@@ -25,9 +25,10 @@ targetLiangDensity <- setRefClass(
 		mixturesMeans	= "matrix",
 
 			## Approximated quantiles of the distribution. 
-		quantiles 		= "numeric"	 
+		quantiles 		= "numeric",	 
 
-
+			## matrix with column with means and sigma and weights.
+		meansSigmasWeights = "matrix"
 #</fields>		
 	),
 
@@ -43,23 +44,24 @@ targetLiangDensity <- setRefClass(
 			quantileSimulationsNo = 10000
 		)
 		{
-			mixturesNo 		<<- 20L
+			mixturesNo 		<<- 2L
 
-			mixturesWeight 	<<- 1/mixturesNo
+			mixturesWeight 	<<- c(1/5, 4/5)
 
 			mixturesMeans 	<<- 
 				matrix(
-					c(2.18, 8.67, 4.24, 8.41, 3.93, 3.25, 1.70, 4.59, 6.91, 6.87, 5.41, 2.70, 4.98, 1.14, 8.33, 4.93, 1.83, 2.26, 5.54, 1.69, 5.76, 9.59, 8.48, 1.68, 8.82, 3.47, 0.50, 5.60, 5.81, 5.40, 2.65, 7.88, 3.70, 2.39, 9.50, 1.50, 0.09, 0.31, 6.86, 8.11), 
+					c(2, 2, 8, 8), 
 					nrow=2, 
-					ncol=20, 
+					ncol=2, 
 					byrow=TRUE
 				)
 
-			sigma 	<<- .1
+			sigma 	<<- c(.8, .1)
 			sigma2 	<<- sigma^2	
 
-			# weightConstant 	<<-  mixturesWeight/( sigma*sqrt( 2* pi) )
-			weightConstant 	<<-  mixturesWeight/( sigma2*2*pi )
+			meansSigmasWeights <<- rbind(mixturesMeans, sigma, mixturesWeight)
+
+			weightConstant 	<<-  1/( 2*pi)
 
 			establishTrueValues()
 
@@ -71,10 +73,12 @@ targetLiangDensity <- setRefClass(
 #<method>
 		show = function()
 		{
-			cat('\nThe Liang target density inputs are here: \n')
+			cat('\nThe Matteo target density inputs are here: \n')
 			cat('Mixture number: ', mixturesNo, '\n')
-			cat("Mixtures' weight: ", mixturesWeight, '\n')	
-			cat('Variance: ', sigma2, '\n')
+			cat("First Mixture weight: ", mixturesWeight[1], '\n')	
+			cat("Second Mixture weight: ", mixturesWeight[2], '\n')	
+			cat('First Mixture variance: ', sigma2[1], '\n')
+			cat('Second Mixture variance: ', sigma2[1], '\n')
 			cat("Mixtures' means:\n")
 			print(mixturesMeans)
 			cat('\n\n')
@@ -120,26 +124,25 @@ targetLiangDensity <- setRefClass(
 			return(
 				sum(
 					apply(
-						mixturesMeans,
+						meansSigmasWeights,
 						2,
-						function( mixtureMean )
+						function( b )
 						{	
-							exp( 
-								- crossprod( proposedState - mixtureMean )/ (2 * sigma2) 
+							b[4]*exp( 
+							- crossprod( proposedState - b[1:2] )/ (2 * b[3]) 
 							)
 						}
 					)
-				)*
-				weightConstant
+				)
 			)
 		},
 
 #<method>
 		establishTrueValues = function()
 		{
-			cat("\nEvaluating Liang-Wang density example and saving it. This might take a while.\n\n")
+			cat("\nEvaluating Matteo density example and saving it. This might take a while.\n\n")
 
-			fileName <- "./data/LiangTrueValues.csv"
+			fileName <- "./data/MatteoTrueValues.csv"
 
 			if( file.exists( fileName ) )
 			{
@@ -191,17 +194,18 @@ targetLiangDensity <- setRefClass(
 		distribuant = function( 
 			x
 		){
-			pnorms <- 
+
+			weightedProbabilities <- 
 				apply(
-					mixturesMeans,
+					meansSigmasWeights,
 					2,
-					function( means )
+					function( b )
 					{
-						pnorm( (x - means)/sigma )
+						b[4]*pnorm( (x - b[1:2])/b[3] ) 
 					}
 				)
 
-			return( crossprod( pnorms[1,], pnorms[2,] )*mixturesWeight  )	
+			return( sum(weightedProbabilities) )	
 		},
 
 #<method>
@@ -263,10 +267,10 @@ targetLiangDensity <- setRefClass(
 		simulateQuantiles = function(
 			simulationsNo
 		){	
-			cat("\nApproximating real quantiles by Monte Carlo and saving them.\n\n")
+			cat("\nApproximating quantiles.\n\n")
 
 			fileName <- paste(
-				"./data/LiangApproximateQuantiles_", 
+				"./data/MatteoApproximateQuantiles_", 
 				simulationsNo,
 				'.csv', 
 				collapse='',

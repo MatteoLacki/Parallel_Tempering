@@ -485,8 +485,7 @@ realStateSpace <- setRefClass(
 			if ( spaceDim == 2 )
 			{
 				contourData 	<- targetMeasure$realDensityValues 
-				contourData2 	<- contourData[contourData$z < .1,]
-
+				
 				require( ggplot2 )
 
 				return(
@@ -502,13 +501,42 @@ realStateSpace <- setRefClass(
 						low		= "white",
 						high 	= "black"
 					) +
+					# scale_colour_gradientn(
+					# limits=c(0,1),
+					# colours = c(
+					# 	"white", 
+					# 	"yellow", 
+					# 	"orange", 
+					# 	"darkred")
+					# ) +
 					stat_contour(
 						data 	= contourData, 
 						aes( x, y, z =z ), 
-						#bins 	= 5, 
-						# binwidth= .05,
-						breaks = c(.1),
+						breaks = targetMeasure$quantiles[1],
 						size 	= .5, 
+						colour 	= "yellow"
+					) +
+					# stat_contour(
+					# 	data 	= contourData, 
+					# 	aes( x, y, z =z ), 
+					# 	#bins 	= 5, 
+					# 	# binwidth= .05,
+					# 	breaks = targetMeasure$quantiles[2:5],
+					# 	size 	= .4, 
+					# 	colour 	= "red"
+					# ) +
+					stat_contour(
+						data 	= contourData, 
+						aes( x, y, z =z), 
+						breaks = targetMeasure$quantiles[2],
+						size 	= .5,
+						colour 	= "orange"
+					) +
+					stat_contour(
+						data 	= contourData, 
+						aes( x, y, z =z), 
+						breaks = targetMeasure$quantiles[3:5],
+						size 	= .5,
 						colour 	= "red"
 					) +
 					ggtitle( "Parallel Tempering - Base Temperature" ) +
