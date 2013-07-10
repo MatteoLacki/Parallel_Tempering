@@ -37,7 +37,7 @@ Pytania: czemu łańcuch ten dobrze przybliża całkę? Jak liczyć punkty, któ
 
 4. Porównać się z wynikami Baragatti.
 
-5. Zrobić dwuwymiarowy przykład z dwoma modami (2 mieszanki) Scott Schmidler. Jedna moda płaska, druga spiszasta. Sprawdzić strategię IV z euklidesową metryką.
+5. ****DONE**** Zrobić dwuwymiarowy przykład z dwoma modami (2 mieszanki) Scott Schmidler. Jedna moda płaska, druga spiszasta. Sprawdzić strategię IV z euklidesową metryką.
 
 5b. Implement the biological example -> Bayesian Mixture Model Based Clustering...
 

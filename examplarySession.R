@@ -97,7 +97,41 @@ system.time(
 LiangWangExample	
 
 
-svg("MatteoDistributionStrategy5.svg", width=6, height=4)
+LiangWangExample <- simulation$new(
+	iterationsNo	= 1000,
+	strategyNo 	= 5,
+	example 	= TRUE,
+	targetMeasureName = 'Matteo'	
+)
+
+LiangWangExample
+system.time(
+  LiangWangExample$simulate()  
+) 
+LiangWangExample	
+
+
+kwaziNazi <- function(x,y)
+{
+	return( crossprod(x-y) )
+}
+
+LiangWangExample <- simulation$new(
+	iterationsNo	= 1000,
+	strategyNo 	= 4,
+	example 	= TRUE,
+	targetMeasureName = 'Matteo',
+	quasiMetric	= kwaziNazi
+)
+
+LiangWangExample
+system.time(
+  LiangWangExample$simulate()  
+) 
+LiangWangExample	
+
+
+svg("MatteoDistributionStrategyWithQuasiMetric.svg", width=12, height=8)
 	LiangWangExample$stateSpace$plotBaseTemperature()	
 dev.off()
 
