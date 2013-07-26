@@ -96,7 +96,47 @@ system.time(
 ) 
 LiangWangExample	
 
+################################################
+LiangWangExample <- simulation$new(
+	iterationsNo	= 1000,
+	strategyNo 	= 2,
+	example 	= TRUE,
+	targetMeasureName = 'Matteo'	
+)
 
+LiangWangExample
+system.time(
+  LiangWangExample$simulate()  
+) 
+LiangWangExample	
+
+svg("MatteoDistributionStrategy2.svg", width=12, height=8)
+	LiangWangExample$stateSpace$plotBaseTemperature()	
+dev.off()
+
+
+
+
+################################################
+LiangWangExample <- simulation$new(
+	iterationsNo	= 1000,
+	strategyNo 	= 6,
+	example 	= TRUE,
+	targetMeasureName = 'Matteo'	
+)
+
+LiangWangExample
+system.time(
+  LiangWangExample$simulate()  
+) 
+LiangWangExample	
+
+svg("MatteoDistributionStrategyUniformDistributionOnNeighbouringTranspositions.svg", width=12, height=8)
+	LiangWangExample$stateSpace$plotBaseTemperature()	
+dev.off()
+
+
+################################################
 LiangWangExample <- simulation$new(
 	iterationsNo	= 1000,
 	strategyNo 	= 5,
@@ -109,6 +149,12 @@ system.time(
   LiangWangExample$simulate()  
 ) 
 LiangWangExample	
+
+svg("MatteoDistributionStrategyUniformDistributionOnAllTranspositions.svg", width=12, height=8)
+	LiangWangExample$stateSpace$plotBaseTemperature()	
+dev.off()
+
+################################################
 
 
 kwaziNazi <- function(x,y)
@@ -135,5 +181,8 @@ svg("MatteoDistributionStrategyWithQuasiMetric.svg", width=12, height=8)
 	LiangWangExample$stateSpace$plotBaseTemperature()	
 dev.off()
 
-LiangWangExample$algorithm$plotHistory()
+
+svg("MatteoDistributionStrategyWithQuasiMetricTranspositionHistory.svg", width=12, height=8)
+	LiangWangExample$algorithm$plotHistory()
+dev.off()
 

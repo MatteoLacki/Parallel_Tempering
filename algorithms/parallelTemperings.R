@@ -63,13 +63,13 @@ parallelTempering <- setRefClass(
 
 			## Triggers detailed output during the simulation.
 		detailedOutput			= "logical",
-#</fields>		
 
 			## Is the swap probability independent of point in space?	
 		simpleSwap				= "logical",
 
 			## If a state-independent strategy was chosen, this vector will store the possible states. In lexicographic order.
 		possibleSwaps 			= "integer"
+#</fields>		
 	),
 
 ###########################################################################
