@@ -6,15 +6,12 @@ realStateSpace <- setRefClass(
 								# Fields
 
 	fields		= list(
-#<fields>
+
 			## Dimension of the original state space of interest.
 		spaceDim			= "integer",	
 
-			## Temperature levels for the parallel tempering algorithm.
-		temperatures		= "numeric",
-
-			## Number of temperature levels.
-		temperaturesNo		= "integer",
+			## Number of chains (independent simulations)
+		chainsNo			= "integer",
 
 			## Matrix containing all simulated points.
 		simulatedStates		= "matrix",
@@ -25,8 +22,8 @@ realStateSpace <- setRefClass(
 			## Matrix containing points simulated in the last step of the algorithm: after random walk phase it is composed of previous current states with updates being the accepted proposals.
 		lastStates 			= "matrix",
 
-			## Quasi metric between two points from the state space.
-		quasiMetric  		= "function",
+		# 	## Quasi metric between two points from the state space.
+		# quasiMetric  		= "function",
 
 			## The number of the last cell complex in the data metrix where something was inserted. If zero then nothing was inserted.
 		freeSlotNo 			= "integer",
@@ -35,14 +32,13 @@ realStateSpace <- setRefClass(
 		slotsNo 			= "integer",
 
 			## Matrix containing covariances for the proposal kernel.
-		proposalCovariancesCholeskised 	= "matrix",
+		proposalCholCovariances 	= "matrix",
 
 			## Boolean: says whether proposal covariances are the same on different temperature levels.
 		simpleProposalCovariance	= "logical",
 
 			## Dataframe containing data that can be manipulated by the ggplot2.
-		dataForPlot 		= "data.frame"	
-#</fields>		
+		dataForPlot 		= "data.frame"		
 	),	
 	
 ###########################################################################
@@ -54,124 +50,151 @@ realStateSpace <- setRefClass(
 		############################################################
 				# Initialisation
 
-#<method>
+
 		initializeRealStateSpace = function(
-			temperatures 		= numeric(0),
-			temperaturesNo 		= 0L,
+			chainsNo 			= 0L,
 			spaceDim			= 0L,
 			initialStates 		= matrix(ncol=0, nrow=0),
-			quasiMetric 		= function(){},
 			proposalCovariances = matrix(ncol=0, nrow=0)
 		)
 			#### Initializes the real-state-space-specific fields.
 		{
-				# Checked already by the Simulation.
-			temperatures 		<<- temperatures
-
-			initialStatesDim	<- nrow(initialStates)
-			initialStatesTemperaturesNo	<- ncol(initialStates)
-			tmpSpaceDim			<- as.integer(spaceDim)
-			tmpTemperaturesNo	<- temperaturesNo
+			insertInitialStates( 
+				initialStates 	= initialStates,
+				spaceDim 		= spaceDim,
+				chainsNo		= chainsNo
+			)				
 
 
-			if( tmpSpaceDim==0L | tmpTemperaturesNo==0L )
-			{
-				if( initialStatesDim > 0L & 
-					initialStatesTemperaturesNo > 0L ) 
-				{
-					lastStates		<<- initialStates
+			if( spaceDim > 0 & chainsNo > 0 ) { createDataStorage() }			
+			if (length(slotsNo) > 0) {	insertStates()	}
 
-						# Consider input data representative.
-					spaceDim 		<<- initialStatesDim
-					temperaturesNo	<<- initialStatesTemperaturesNo
+			insertProposalCovariances(
+				proposalCovariances = proposalCovariances
+			)
+		},
 
-					cat('\nWe infered from the initial states that\n a) problem has dimension equal to ',spaceDim,'\n b) there are ',temperaturesNo,' chains to be consdered.\n')
-				} else	
-				cat("\nYou did not provide enough information to autogenerate initial states or did not provide the initial states yourself.\n")
-			} else
-			{
-				spaceDim 		<<- tmpSpaceDim
-				temperaturesNo 	<<- tmpTemperaturesNo
 
-				if( tmpSpaceDim == initialStatesDim & 
-					tmpTemperaturesNo == initialStatesTemperaturesNo )
-				{	
-					lastStates	<<- initialStates
-				} else
-				{
-					if( initialStatesDim ==0 | initialStatesTemperaturesNo==0 )
-					{		# No initial states supplied. Enough info to generate them.
-						lastStates <<- 
-							replicate( 
-								n 	= temperaturesNo, 
-								expr= runif( 
-									n = spaceDim,
-									min=0,
-									max=10 
-								)
-							)	
-					} else
-							# Inconsistency...
-					stop("\nThe initial states you supplied differ in dimension or differ in number of chains.\n")
-				}
-			}
+		initialize	= function(
+			iterationsNo 		= NULL,  
+			chainsNo 			= 0L,
+			spaceDim			= 0L,
+			initialStates 		= matrix(ncol=0, nrow=0),
+			proposalCovariances = matrix(ncol=0, nrow=0)
+		)
+			#### Splits the initialization to general state-space initialization and real-state-space-specific initialization.
+		{
+			if ( !is.null(iterationsNo)){			
+				initializeStateSpace(
+					iterationsNo 		= iterationsNo
+				)
 	
-				# These are the same as current because we want updateLogsOfUnnormalisedDensities to update the correct inital log densities.
+				initializeRealStateSpace(
+					initialStates 	 	= initialStates,
+					spaceDim  			= spaceDim,
+					chainsNo  			= chainsNo,
+					proposalCovariances = proposalCovariances
+				)
+			}
+		},
+
+
+		insertInitialStates	= function( 
+			initialStates 		= matrix(ncol=0, nrow=0),
+			spaceDim			= 0L,
+			chainsNo			= 0L
+			)
+		{
+			tmpSpaceDim 			<- as.integer(spaceDim)
+			tmpChainsNo 			<- as.integer(chainsNo)
+			initialStatesDim 		<- nrow(initialStates)  
+			initialStatesChainsNo	<- ncol(initialStates)
+
+			if ( initialStatesDim > 0  & initialStatesChainsNo > 0 )
+			{
+				cat( "We infered state-space dimension and number of chains directly from the provided initial states.")
+
+				spaceDim 	<<- initialStatesDim
+				chainsNo  	<<- initialStatesChainsNo
+				lastStates 	<<- initialStates
+
+				if( initialStatesDim 		!= tmpSpaceDim | 
+					initialStatesChainsNo 	!= tmpChainsNo )
+				{
+					cat("Thou have supplied us with inconsisten data. We proceed with the initial states information on the state-space.")
+				}		
+			} else {
+				
+				if ( tmpSpaceDim > 0 & tmpChainsNo > 0) {
+
+					cat("You did not provide any initial states, so we will generate them uniformly from a hypercube [0,10]^dim")
+
+					lastStates <<- replicate( 
+						n 		= tmpChainsNo, 
+						expr	= runif( n = tmpSpaceDim, min=0, max=10)
+					)				
+
+					spaceDim 	<<- tmpSpaceDim
+					chainsNo 	<<- tmpChainsNo
+
+				} else 
+				cat("Not enough information on state-space dimension or the number of simulation chains.")			
+			}
+
 			proposedStates 	<<- lastStates
 
+		},
+
+
+		createDataStorage = function()
+		{
 			simulatedStates	<<- 
-				matrix(
-					nrow = spaceDim*(2*iterationsNo + 1), 
-					ncol = temperaturesNo
-				)
+			matrix(
+				nrow = spaceDim*(iterationsNo + 1), 
+				ncol = chainsNo
+			)
 
 			freeSlotNo 		<<- 1L
-			slotsNo 		<<- iterationsNo*2L + 1L
+			slotsNo 		<<- iterationsNo + 1L
+		},
 
-			insertStates()
 
-			rm( tmpSpaceDim, tmpTemperaturesNo )
+		insertProposalCovariances = function(
+			proposalCovariances = matrix(ncol=0, nrow=0)
+		){
+			switch(
+				class(proposalCovariances),
+				'matrix'	= {
+					if( checkCovariance(proposalCovariances) )
+					{
+						proposalCholCovariances 	<<- 
+							chol( proposalCovariances )	
 
-			quasiMetric 	<<- quasiMetric
+						simpleProposalCovariance 	<<- TRUE
 
-			if(	class(proposalCovariances) == 'matrix' )
-			{
-				if(	nrow(proposalCovariances)==spaceDim &
-					ncol(proposalCovariances)==spaceDim	)
-				{
-					proposalCovariancesCholeskised <<- 
-						chol( proposalCovariances )			
-					simpleProposalCovariance 	<<- TRUE
-				} else
-				{
-					cat('You supplied a covariance matrix that does not conform to our state space dimension or did not care to supply it at all.\n Proceeding with identity covariances.\n')
-					
-					proposalCovariancesCholeskised <<- 
-						diag(
-							rep.int(1, times=spaceDim)
-						)
-					simpleProposalCovariance <<- TRUE
-				}		
-			} else
-			{	
-				if(	class(proposalCovariances) == 'list' &
-					length(proposalCovariances)==temperaturesNo)
-				{
-					if (
+					} else {
+						cat('You supplied a covariance matrix that does 
+							not conform to our state space dimension 
+							or did not care to supply it at all.\n 
+							Proceeding with identity covariances.\n')
+						
+						proposalCholCovariances <<- 
+							diag( rep.int(1, times=spaceDim) )
+
+						simpleProposalCovariance<<- TRUE
+					}		
+				},
+				'list'		= {
+					if( 
 						all(
 							sapply(
 								proposalCovariances,
-								function( x ) 
-									ifelse( 
-										(class(x) == 'matrix'), 
-										nrow(x)==2 & ncol(x)==2, 
-										FALSE
-									) 
+								checkCovariance	
 							)
-						)
-					)	
-					{
-						proposalCovariancesCholeskised <<-
+						) & 
+						length(proposalCovariances) == chainsNo
+					){
+						proposalCholCovariances <<-
 							do.call( 
 								cbind, 
 								lapply( 
@@ -179,53 +202,38 @@ realStateSpace <- setRefClass(
 									chol 
 								) 
 							)
+
 						simpleProposalCovariance 	<<- FALSE
-					} else
-					{
-						cat('Your covariances are either not matrices or their size do not conform to problem dimension.\n Proceeding with identity covariances.\n')
 
-						proposalCovariancesCholeskised <<- 
-							diag(
-								rep.int(1, times=spaceDim)
-							)
-						simpleProposalCovariance <<- TRUE	
+					} else {
+						cat('Your covariances are either not matrices 
+							or their size do not conform to problem dimension
+							or you provided a number of them that is different
+							from the number of temperatures.\n\n
+							Proceeding with identity covariances.\n' 
+						)
+
+						proposalCholCovariances <<- 
+							diag( rep.int(1, times=spaceDim) )
+							
+						simpleProposalCovariance<<- TRUE
 					}
-				} else
-				{
-						cat('\nProposal covariances are not enlisted or are enlisted but the number of covariance matrices is other than the number of temperatures.\n Proceeding with identity covariances.\n')
-
-						proposalCovariancesCholeskised <<- 
-							diag(
-								rep.int(1, times=spaceDim)
-							)
-						simpleProposalCovariance <<- TRUE	
-				}		
-			}	
+				},	
+				stop('Wrong format of the proposal covariances.')
+			)
 		},
 
-#<method>
-		initialize	= function(
-			iterationsNo 		= 0L,  
-			temperatures 		= numeric(0),
-			temperaturesNo 		= 0L,
-			spaceDim			= 0L,
-			initialStates 		= matrix(ncol=0, nrow=0),
-			quasiMetric 		= function(){},
-			proposalCovariances = matrix(ncol=0, nrow=0)
-		)
-			#### Splits the initialization to general state-space initialization and real-state-space-specific initialization.
-		{
-			initializeStateSpace(
-				iterationsNo 		= iterationsNo
-			)
 
-			initializeRealStateSpace(
-				temperaturesNo  	= temperaturesNo,
-				temperatures 	  	= temperatures,
-				spaceDim  			= spaceDim,
-				initialStates 	 	= initialStates,
-				quasiMetric 	 	= quasiMetric,
-				proposalCovariances = proposalCovariances
+		checkCovariance = function(
+			covarianceMatrix
+		){
+			return(
+				ifelse(
+					class(covarianceMatrix) == 'matrix',
+					nrow( covarianceMatrix )==spaceDim & 
+					ncol(covarianceMatrix )	==spaceDim, 
+					FALSE
+				)
 			)
 		},
 
@@ -233,14 +241,14 @@ realStateSpace <- setRefClass(
 		############################################################
 				# Data structure methods.
 
-#<method>
+
 		simulationTerminated = function()
 			#### Checks whether simulation is terminated.
 		{
 			return( freeSlotNo == slotsNo + 1L )
 		},
 
-#<method>
+
 		insertStates	= function() 
 			#### Inserts current states to the data history (field: simulatedStates).
 		{
@@ -253,10 +261,10 @@ realStateSpace <- setRefClass(
 
 				freeSlotNo 	<<- freeSlotNo + 1L
 			} else
-			stop('The computer tried to make more steps than the user wanted him to. That is truly weird...') 
+			cat('The computer tried to make more steps than the user wanted him to. That is truly weird...') 
 		},
 
-#<method>
+
 		getStates = function(
 			whichSlotNo
 		)
@@ -270,35 +278,35 @@ realStateSpace <- setRefClass(
 			)
 		},
 
-#<method>
+
 		getIteration = function(
 			iteration 	= 1L,
-			type		= 'initial states' 
+			type 		= 'initial states' 
 		)
-			#### For a given iteration extracts results of a given step type, to choose among 'initial states', 'random walk', and 'swap'.
 		{
 			if ( simulationTerminated() )
 			{
-				result 	<- getStates(
+				result <- getStates(
 					ifelse(
 						type == 'initial states',
 						1L,
-						ifelse( 
-							type == 'random walk',
-							2L*iteration,
-							ifelse(
-								type = 'swap',
-								2L*iteration+1L,
-								stop("Error: you can choose only among types such as 'initial states', 'random walks', or 'swap'. " )
-							)
-						)
-					)	
-				)			
-			} else
-			{
+						iteration+1L
+					)
+				)
+			} else {
 				cat('Simulation not yet terminated - here are the initial states:\n\n')
 				result 	<- getStates(1L) 
 			}
+
+			tmpNames <- character( chainsNo )
+
+			for ( i in 1:chainsNo ) {
+				tmpNames[i] <- paste( 'chain ', i, sep="", collapse="" )
+			}
+
+			colnames(tmpStates) <- tmpNames
+			rownames(tmpStates) <- 1:spaceDim	
+
 			return( result )
 		},
 
@@ -317,62 +325,40 @@ realStateSpace <- setRefClass(
 			insertStates()				
 		},
 
-#<method>				
-		updateStatesAfterSwap = function(
-			proposalAccepted,
-			transposition	
-		)
-			#### Performs an update to the most recent values of the state space after the rejection step of the random swap phase.
-		{
-			if( proposalAccepted )	
-			{
-				lastStates[,transposition] <<- lastStates[,transposition[2:1]]
-			}
-						
-			insertStates()	
-		},				
-
 
 		############################################################
 				# Visualisation
 
-#<method>
+
 		showRealStateSpace = function()
 		{
 			cat('\nThe real-state-space inputs are here: \n')
 			cat('Space dimension: ', spaceDim, '\n')
-			cat('Number of temperatures: ', temperaturesNo, '\n')
+			cat('Number of chains: ', chainsNo, '\n')
 			
-			cat("Temperatures:\n")
-			print(temperatures)
-			cat("\n")
-
 			cat('Initial States:\n')
-			print( showState() )
+			print( getIteration() )
 			cat("\n")
 
 			cat('Proposal covariances after Cholesky decomposition:\n')
-			print( proposalCovariancesCholeskised )
-			cat("\n")
+			print( proposalCholCovariances )
+			cat("\n")		
+		},
 
-			if( simulationTerminated() )
+
+		show = function( 
+			algorithmName 
+		){
+			showStateSpace()
+			showRealStateSpace( algorithmName )
+
+			if( simulationTerminated()) 
 			{
-				cat('Genarated states:\n')
-				print( proposalCovariancesCholeskised )
-				cat("\n")
-
-				print( plotBaseTemperature() )
+				print( plotBasics( algorithmName = algorithmName ) )
 			}
 		},
 
-#<method>
-		show = function()
-		{
-			showStateSpace()
-			showRealStateSpace()
-		},
 
-#<method>
 		showState = function( 
 			iteration 	= 0L,
 			type 		= 'initial states'
@@ -390,166 +376,104 @@ realStateSpace <- setRefClass(
 			return(tmpStates)
 		},		
 
-#<method>
+
 		prepareDataForPlot = function()
-			#### Reshuffles the entire history of states so that the entire result conforms to the data frame templates of ggplot2.
+			#### Reshuffles the entire history of states so that the entire result conforms to the data frame templates of ggplot2
 		{
-			if (spaceDim == 2)	
-			{			
-				data  	<- vector(	"list", slotsNo )
+			require( ggplot2 )
 
-				for( slotNo in 1:slotsNo )
-				{
-					data[[ slotNo ]] <-
-						cbind(
-							t( getStates( slotNo ) ),
-							temperatures,
-							rep.int( slotNo %/% 2, temperaturesNo ),
-							rep.int( 
-								ifelse(
-									slotNo == 1, 
-									0,
-									ifelse(
-										slotNo %% 2 == 0,
-										1,
-										2
-									)	
-								), 
-								temperaturesNo 
+			switch(
+				spaceDim,	
+				'1L'= cat('To be implemented'),
+				'2L'={
+					data  	<- vector(	"list", slotsNo )
+
+					for( slotNo in 1:slotsNo )
+					{
+						data[[ slotNo ]] <- 
+							cbind(
+								t( getStates( slotNo ) ),
+								1:chainsNo,
+								rep.int( slotNo, chainsNo ),
+								ifelse( slotNo == 1, 0, 1)
 							)
-						)
-				}
+					}
 
-				data 	<- as.data.frame( do.call( rbind, data ) )
+					data <- 
+						as.data.frame( do.call( rbind, data ) )
 
-				names( data )	<- 
-					c("x","y","Temperature","Progress","Phase")
-
-				data$Progress 	<- data$Progress/iterationsNo
-
-				data$Phase 	<- factor( data$Phase )
-
-				levels( data$Phase ) <- c("Initial State","Random Walk","Swap")
-
-				data$Temperature<- 
-					factor( 
-						data$Temperature,
-						levels 	= temperatures,
-						ordered	= TRUE  
-					)
-
-				dataForPlot <<- data 
-			}
-		}, 
-
-#<method>
-		plotAllChains = function()
-			#### Performs a plot of all simulated chains with an overlayed map of the real density from the Liang example.
-		{
-			if ( spaceDim == 2 )
-			{
-				require( ggplot2 )
-
-				return( 
-					qplot(
-						x, 
-						y, 
-						data 	= dataForPlot,
-						colour 	= Temperature
-					) + 
-					geom_point() +
-					scale_colour_brewer(
-						type 	= "seq", 
-						palette = 3
-					) +
-					stat_contour(
-						data = targetMeasure$realDensityValues, 
-						aes(x, y, z =z ), 
-						bins	= 10, 
-						size	= .5, 
-						colour 	= "orange"
-					) +
-					ggtitle( "Parallel Tempering" ) +
-					labs( x="", y="" )
-				)		
-			} else 
-				cat( "\n It is highly non-trivial to plot a non-2D example \n.")
+					names( data )		<- c("x","y","Chain","Progress","Phase")
+					data$Progress 		<- data$Progress/iterationsNo
+					data$Phase 			<- factor( data$Phase )
+					levels( data$Phase )<- c("Initial State","Random Walk")
+					
+					dataForPlot <<- data 
+				},
+				cat("I do not know how to visualise 
+					non-2D state-spaces")
+			)		
 		},
 
-#<method>
-		plotBaseTemperature = function()
+
+				plotBasics = function(
+			algorithmName 
+		)
 			#### Performs a plot of the base level temperature chain of main interest with an overlayed map of the real density from the Liang example.
-
 		{
-				# Setting bins creates evenly spaced contours in the range of the data
-			if ( spaceDim == 2 )
-			{
-				contourData 	<- targetMeasure$realDensityValues 
-				
-				require( ggplot2 )
+			require( ggplot2 )
+			contourData 	<- 	targetMeasure$realDensityValues 
 
-				return(
-					qplot(
-						x, 
-						y, 
-						data 	= dataForPlot[dataForPlot$Temperature==1,],
-						colour 	= Progress
-					) + 
-					geom_point() +
-					scale_colour_gradient(
-						limits 	= c(0, 1),
-						low		= "white",
-						high 	= "black"
-					) +
-					# scale_colour_gradientn(
-					# limits=c(0,1),
-					# colours = c(
-					# 	"white", 
-					# 	"yellow", 
-					# 	"orange", 
-					# 	"darkred")
-					# ) +
-					stat_contour(
-						data 	= contourData, 
-						aes( x, y, z =z ), 
-						breaks = targetMeasure$quantiles[1],
-						size 	= .5, 
-						colour 	= "yellow"
-					) +
-					# stat_contour(
-					# 	data 	= contourData, 
-					# 	aes( x, y, z =z ), 
-					# 	#bins 	= 5, 
-					# 	# binwidth= .05,
-					# 	breaks = targetMeasure$quantiles[2:5],
-					# 	size 	= .4, 
-					# 	colour 	= "red"
-					# ) +
-					stat_contour(
-						data 	= contourData, 
-						aes( x, y, z =z), 
-						breaks = targetMeasure$quantiles[2],
-						size 	= .5,
-						colour 	= "orange"
-					) +
-					stat_contour(
-						data 	= contourData, 
-						aes( x, y, z =z), 
-						breaks = targetMeasure$quantiles[3:5],
-						size 	= .5,
-						colour 	= "red"
-					) +
-					ggtitle( "Parallel Tempering - Base Temperature" ) +
-					labs( x="", y="" )
-				)
-			} else 
-				cat( "\n It is highly non-trivial to plot a non-2D example \n.")
+			switch(
+				spaceDim, 
+				'1L'= cat('To be implemented'),
+				'2L'={
+					return(
+						qplot(
+							x, 
+							y, 
+							data 	= dataForPlot,
+							colour 	= Progress
+						) + 
+						geom_point() +
+						scale_colour_gradient(
+							limits 	= c(0, 1),
+							low		= "white",
+							high 	= "black"
+						) +
+						stat_contour(
+							data 	= contourData, 
+							aes( x, y, z =z ), 
+							breaks = targetMeasure$quantiles[1],
+							size 	= .5, 
+							colour 	= "yellow"
+						) +
+						stat_contour(
+							data 	= contourData, 
+							aes( x, y, z =z), 
+							breaks = targetMeasure$quantiles[2],
+							size 	= .5,
+							colour 	= "orange"
+						) +
+						stat_contour(
+							data 	= contourData, 
+							aes( x, y, z =z), 
+							breaks = targetMeasure$quantiles[3:5],
+							size 	= .5,
+							colour 	= "red"
+						) +
+						ggtitle( algorithmName ) +
+						labs( x="", y="" )
+					)
+				},	
+				cat( "\n It is highly non-trivial 
+					to plot a non-2D example \n.")
+			)
 		},
 
 		############################################################
 				# Algorithmic Methods
 
-#<method>
+
 		proposeLogsOfUMeasures = function()
 			#### Calculates logs of unnormalised densities in all the proposed states. 
 		{
@@ -567,7 +491,7 @@ realStateSpace <- setRefClass(
 			)
 		},
 
-#<method>
+
 		randomWalkProposal = function()
 			#### Generates new current states and logs of their unnormalised densities.
 		{
@@ -575,21 +499,21 @@ realStateSpace <- setRefClass(
 				lastStates +
 				if(	simpleProposalCovariance )
 				{
-					proposalCovariancesCholeskised %*% 
+					proposalCholCovariances %*% 
 					matrix( 
 						rnorm( 
-							n = spaceDim*temperaturesNo 
+							n = spaceDim*chainsNo 
 						),
 						nrow = spaceDim,
-						ncol = temperaturesNo
+						ncol = chainsNo
 					)
 				} else
 				{
 					sapply(
-						1:temperaturesNo,
+						1:chainsNo,
 						function( covarianceMatrixNo )
 						{
-							proposalCovariancesCholeskised[, 
+							proposalCholCovariances[, 
 								((covarianceMatrixNo-1)*spaceDim+1):
 								(covarianceMatrixNo*spaceDim)
 							] %*%
@@ -601,21 +525,6 @@ realStateSpace <- setRefClass(
 				# Now it will return proposed states log densities.
 			return(	
 				proposeLogsOfUMeasures()
-			)
-		},
-
-#<method>
-		measureQuasiDistance = function(
-			iState,
-			jState
-		)
-			#### Measure the quasi distance between states.
-		{
-			return(
-				quasiMetric(
-					lastStates[,iState],
-					lastStates[,jState]
-				)
 			)
 		}
 ###########################################################################

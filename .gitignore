@@ -13,14 +13,15 @@
 
 *.Rnw~
 *.R~
+*.Rout
 *.synctex.gz
 *.tex
 *.csv
 
-# Certain little shits #
+# Certain little files/shits #
 ###########
 *.pdf
-
+*.svg
 
 # Packages #
 ############

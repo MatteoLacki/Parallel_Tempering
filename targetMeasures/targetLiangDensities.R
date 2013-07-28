@@ -5,7 +5,7 @@ targetLiangDensity <- setRefClass(
 ###########################################################################
 								# Fields
 	fields		= list(
-#<fields>
+
 			## Number of mixtures of gaussian variables. 
 		mixturesNo 		= "integer",
 
@@ -26,9 +26,6 @@ targetLiangDensity <- setRefClass(
 
 			## Approximated quantiles of the distribution. 
 		quantiles 		= "numeric"	 
-
-
-#</fields>		
 	),
 
 ###########################################################################
@@ -38,7 +35,7 @@ targetLiangDensity <- setRefClass(
 
 		############################################################
 				# Initialisation
-#<method>
+
 		initialize 	= function(
 			quantileSimulationsNo = 10000
 		)
@@ -68,7 +65,7 @@ targetLiangDensity <- setRefClass(
 
 		############################################################
 				# Visualisation
-#<method>
+
 		show = function()
 		{
 			cat('\nThe Liang target density inputs are here: \n')
@@ -80,7 +77,7 @@ targetLiangDensity <- setRefClass(
 			cat('\n\n')
 		},		
 
-#<method>		
+		
 		plotDistribuant = function()
 		{
 			grid  <- 
@@ -112,7 +109,7 @@ targetLiangDensity <- setRefClass(
 
 		############################################################
 				# Algorithmic Methods				
-#<method>
+
 		measure 	= function(
 			proposedState
 		)
@@ -134,7 +131,7 @@ targetLiangDensity <- setRefClass(
 			)
 		},
 
-#<method>
+
 		establishTrueValues = function()
 		{
 			cat("\nEvaluating Liang-Wang density example and saving it. This might take a while.\n\n")
@@ -187,7 +184,7 @@ targetLiangDensity <- setRefClass(
 			}
 		},
 
-#<method>
+
 		distribuant = function( 
 			x
 		){
@@ -204,7 +201,7 @@ targetLiangDensity <- setRefClass(
 			return( crossprod( pnorms[1,], pnorms[2,] )*mixturesWeight  )	
 		},
 
-#<method>
+
 		getSquareGrid = function( 
 			minimum , 
 			maximum ,

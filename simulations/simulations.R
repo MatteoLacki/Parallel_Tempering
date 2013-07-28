@@ -14,20 +14,23 @@ simulation <- setRefClass(
 ###########################################################################
 								# Fields
 	fields		= list(
-#<fields>
 			## The data container with methods that act on it and deliver the probabilities.
-		stateSpace	= "StateSpaces",
+		stateSpace		= "StateSpaces",
 
 			## Morphisms applied to the state space. 
-		algorithm 	= "Algorithms",
+		algorithm 		= "Algorithms",
 
 			## Unnormalised Probabilities of the state-space: the target measure from which we want to draw samples.
 		targetMeasure 	= "TargetMeasures",	
 
 			## Save results?    
-	    save = "logical"
-    
-#</fields>	
+	    save 			= "logical",
+
+
+	    	## Names of used objects
+	    algorithmName 		= "character",
+	    stateSpaceName 		= "character",
+	    targetMeasureName 	= "character"
     ),
 
 ###########################################################################
@@ -38,13 +41,12 @@ simulation <- setRefClass(
 		############################################################
 				# Initialisation
 
-#<method>
 		initialize = function(
-			stateSpaceName		= "real",
+			stateSpaceName		= "real tempered",
 			algorithmName		= "parallel tempering",
 			targetMeasureName	= "Liang-Wang",	
 			example 			= FALSE,
-			iterationsNo 		= 0L,
+			iterationsNo 		= NULL,
 			chainsNo 			= 0L,
 			spaceDim			= 0L,
 			initialStates		= matrix(nrow=0, ncol=0),
@@ -57,10 +59,14 @@ simulation <- setRefClass(
 			save 				= FALSE
       )
 		{
-			print("Thank you for choosing our software. We wish you a pleasent day.")
+			cat("Thank you for choosing our software. We wish you a pleasent day.")
 
 			iterationsNo 	<- checkIterationsNo( iterationsNo )
-      		save <<- save
+      		save 			<<- save
+
+      		stateSpaceName 		<<- stateSpaceName
+      		targetMeasureName 	<<- targetMeasureName
+			algorithmName 		<<- algorithmName
 
 			if( example )
 			{
@@ -68,10 +74,10 @@ simulation <- setRefClass(
 				tmpProposalCovariances 	<- vector( "list", 5L )
 
 				# for (i in 1:5 )
-				# {
-				# 	tmpProposalCovariances[[i]] <- 
-				# 		diag( temperatures[i]^2, nrow=2, ncol=2 ) 				
-				# }
+				#  {
+				#  	tmpProposalCovariances[[i]] <- 
+				#  		diag( temperatures[i]^2, nrow=2, ncol=2 ) 				
+				#  }
 
 				for (i in 1:5 )
 				{
@@ -85,8 +91,10 @@ simulation <- setRefClass(
 
 				chainsNo			<- 5L
 				spaceDim			<- 2L
-				algorithmName 		<- 'parallel tempering'					
 
+				targetMeasureName 	<<- 'Liang-Wang'
+				algorithmName 		<<- 'parallel tempering'					
+				proposalCovariances <- tmpProposalCovariances
 			}  
 			
 			if( algorithmName == 'parallel tempering') {
@@ -94,7 +102,7 @@ simulation <- setRefClass(
 
 				if ( 
 					!( stateSpaceName %in% c(
-							'real'
+							'real tempered'
 						) 
 					) 
 				){ 
@@ -125,60 +133,60 @@ simulation <- setRefClass(
 				{
 					stateSpace <<- realStateSpace$new(
 						iterationsNo 		= iterationsNo,
+						chainsNo 			= chainsNo,
+						spaceDim			= spaceDim,
+						initialStates		= initialStates,
+						proposalCovariances = proposalCovariances
+					)
+				},	
+				'real tempered'	= 
+				{
+					stateSpace <<- realTemperedStateSpace$new(
+						iterationsNo 		= iterationsNo,
 						temperatures 		= temperatures,
-						temperaturesNo		= chainsNo,
+						chainsNo 			= chainsNo,
 						spaceDim			= spaceDim,
 						initialStates		= initialStates,
 						quasiMetric 		= quasiMetric,
-						proposalCovariances = tmpProposalCovariances
-					)
-				},	
-				# 'real tempered'	= 
-				# {
-				# 	stateSpace <<- realTemperedStateSpace$new(
-				# 		iterationsNo 		= iterationsNo,
-				# 		temperatures 		= temperatures,
-				# 		chainsNo 			= chainsNo,
-				# 		spaceDim			= spaceDim,
-				# 		initialStates		= initialStates,
-				# 		quasiMetric 		= quasiMetric,
-				# 		proposalCovariances = proposalCovariances
-				# 	)	
-				# },
+						proposalCovariances = proposalCovariances
+					)	
+				},
 				cat("That kind of state-space is currently the only one unavailable.")
 			)
 
+
 			stateSpace$targetMeasure  <<- targetMeasure
+
 
 			switch(
 				algorithmName,
-				# 'Metropolis-Hastings' 	=
-				# {
-				# 	algorithm <<- metropolisHastings$new(
-				# 		iterationsNo 	= iterationsNo,
-				# 		strategyNo		= strategyNo,
-				# 		detailedOutput	= detailedOutput
-				# 	)	
-				# },
-
+				'Metropolis-Hastings' 	=
+				{
+					algorithm <<- metropolisHastings$new(
+						iterationsNo 	= iterationsNo,
+						strategyNo		= strategyNo,
+						detailedOutput	= detailedOutput,
+						chainsNo 		= chainsNo
+					)	
+				},
 				'parallel tempering'	= 
 				{
 					algorithm <<- parallelTempering$new(
 						iterationsNo 	= iterationsNo,
 						temperatures 	= temperatures,
 						strategyNo		= strategyNo,
-						detailedOutput	= detailedOutput
+						detailedOutput	= detailedOutput,
+						chainsNo 		= chainsNo
 					)
 				},
 
 				cat("That kind of algorithm is currently unavailable.")
 			)
 
-			algorithm$stateSpace <<- stateSpace
-			
+			algorithm$stateSpace <<- stateSpace			
 		},
 
-#<method>
+
 		checkTemperatures = function(
 			temperatures
 		)
@@ -208,32 +216,33 @@ simulation <- setRefClass(
 			return( temperatures )
 		},	
 
-#<method>
+
 		checkIterationsNo = function( iterationsNo )
 		{
-			iterationsNo 	<- as.integer( iterationsNo )
-	
-			if ( is.na( iterationsNo ) || ( iterationsNo < 0) ) 
-			{
-				stop("Inappropriate no of steps. Please enter an integer value.")
-			} else
-			{	
-				return( iterationsNo )
+			if ( !is.null(iterationsNo) ){	
+				iterationsNo 	<- as.integer( iterationsNo )
+		
+				if ( is.na( iterationsNo ) || ( iterationsNo < 0) ) stop("Inappropriate no of steps. Please enter an integer value.")	
 			}	
+			
+			return( iterationsNo )
 		},
 
 		############################################################
 				# Visualisation
 
-		# show = function()
-		# {
-		# 	stateSpace$show()
-		# },
+
+		show = function()
+		{
+			stateSpace$show( 
+				algorithmName = algorithmName 
+			)
+		},
 
 		############################################################
 				# Algorithmic Methods
 
-#<method>
+
 		simulate = function()
 		{
 			algorithm$simulate()

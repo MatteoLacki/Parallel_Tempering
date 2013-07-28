@@ -5,7 +5,7 @@ targetMatteoDensity <- setRefClass(
 ###########################################################################
 								# Fields
 	fields		= list(
-#<fields>
+
 			## Number of mixtures of gaussian variables. 
 		mixturesNo 		= "integer",
 
@@ -29,7 +29,6 @@ targetMatteoDensity <- setRefClass(
 
 			## matrix with column with means and sigma and weights.
 		meansSigmasWeights = "matrix"
-#</fields>		
 	),
 
 ###########################################################################
@@ -39,7 +38,7 @@ targetMatteoDensity <- setRefClass(
 
 		############################################################
 				# Initialisation
-#<method>
+
 		initialize 	= function(
 			quantileSimulationsNo = 10000
 		)
@@ -70,7 +69,7 @@ targetMatteoDensity <- setRefClass(
 
 		############################################################
 				# Visualisation
-#<method>
+
 		show = function()
 		{
 			cat('\nThe Matteo target density inputs are here: \n')
@@ -84,7 +83,7 @@ targetMatteoDensity <- setRefClass(
 			cat('\n\n')
 		},		
 
-#<method>		
+		
 		plotDistribuant = function()
 		{
 			grid  <- 
@@ -116,7 +115,7 @@ targetMatteoDensity <- setRefClass(
 
 		############################################################
 				# Algorithmic Methods				
-#<method>
+
 		measure 	= function(
 			proposedState
 		)
@@ -137,7 +136,7 @@ targetMatteoDensity <- setRefClass(
 			)
 		},
 
-#<method>
+
 		establishTrueValues = function()
 		{
 			cat("\nEvaluating Matteo density example and saving it. This might take a while.\n\n")
@@ -190,7 +189,7 @@ targetMatteoDensity <- setRefClass(
 			}
 		},
 
-#<method>
+
 		distribuant = function( 
 			x
 		){
@@ -208,7 +207,7 @@ targetMatteoDensity <- setRefClass(
 			return( sum(weightedProbabilities) )	
 		},
 
-#<method>
+
 		getSquareGrid = function( 
 			minimum , 
 			maximum ,
