@@ -7,7 +7,7 @@ metropolisHastings <- setRefClass(
 								# Fields
 
 	fields		= list(
-#<fields>	
+
 			## Number of chains: independent random walk simulations.	
 		chainsNo	= "integer",	
 
@@ -33,7 +33,6 @@ metropolisHastings <- setRefClass(
 
 			## Triggers detailed output during the simulation.
 		detailedOutput			= "logical"
-#</fields>		
 	),
 
 ###########################################################################
@@ -215,17 +214,11 @@ metropolisHastings <- setRefClass(
 		triggerUpdateAfterRandomWalk = function()
 			#### This procedure updates the state space after an operation consisting of accepting any new proposal in the random-walk phase of the algorithm. Updates are also needed in the probabilities of the last states stored in a field in the parallel-tempering object.
 		{
-			cat('\n\nHello ', updatedStates, '\n\n')
+			anyUpdate 		<- 	any( updatedStates )
 
-			anyUpdate <- any( updatedStates )
+			if ( anyUpdate ) 	updateAfterRandomWalk()
 
-
-			if ( anyUpdate ) {	
-				updateAfterRandomWalk()
-			}
-
-			if ( !all( updatedStates ) )
-			{
+			if ( !all( updatedStates ) ){
 				rejectedRandomWalksNo[ !updatedStates ] <<- 
 					rejectedRandomWalksNo[ !updatedStates ] + 1L
 			}

@@ -23,7 +23,13 @@ simulation <- setRefClass(
 		targetMeasure 	= "TargetMeasures",	
 
 			## Save results?    
-	    save 			= "logical"
+	    save 			= "logical",
+
+
+	    	## Names of used objects
+	    algorithmName 		= "character",
+	    stateSpaceName 		= "character",
+	    targetMeasureName 	= "character"
     ),
 
 ###########################################################################
@@ -55,33 +61,37 @@ simulation <- setRefClass(
 			cat("Thank you for choosing our software. We wish you a pleasent day.")
 
 			iterationsNo 	<- checkIterationsNo( iterationsNo )
-      		save <<- save
+      		save 			<<- save
+
+      		stateSpaceName 		<<- stateSpaceName
+      		targetMeasureName 	<<- targetMeasureName
+			algorithmName 		<<- algorithmName
 
 			if( example )
 			{
 				temperatures 			<- c(1, 2.8, 7.7, 21.6, 60)
 				tmpProposalCovariances 	<- vector( "list", 5L )
 
-				for (i in 1:5 )
-				 {
-				 	tmpProposalCovariances[[i]] <- 
-				 		diag( temperatures[i]^2, nrow=2, ncol=2 ) 				
-				 }
-
 				# for (i in 1:5 )
-				# {
-				# 	tmpProposalCovariances[[i]] <- 
-				# 		diag( 
-				# 			ifelse(i <=3, .05, .01)*temperatures[i]^2,
-				# 			nrow=2, 
-				# 			ncol=2 
-				# 		) 				
-				# }
+				#  {
+				#  	tmpProposalCovariances[[i]] <- 
+				#  		diag( temperatures[i]^2, nrow=2, ncol=2 ) 				
+				#  }
+
+				for (i in 1:5 )
+				{
+					tmpProposalCovariances[[i]] <- 
+						diag( 
+							ifelse(i <=3, .05, .01)*temperatures[i]^2,
+							nrow=2, 
+							ncol=2 
+						) 				
+				}
 
 				chainsNo			<- 5L
 				spaceDim			<- 2L
-				targetMeasureName 	<- 'Liang-Wang'
-				algorithmName 		<- 'parallel tempering'					
+				targetMeasureName 	<<- 'Liang-Wang'
+				algorithmName 		<<- 'parallel tempering'					
 				proposalCovariances <- tmpProposalCovariances
 			}  
 			
@@ -170,9 +180,7 @@ simulation <- setRefClass(
 				cat("That kind of algorithm is currently unavailable.")
 			)
 
-cat('\n\n\ngot here bla\n\n')
-			algorithm$stateSpace <<- stateSpace
-			
+			algorithm$stateSpace <<- stateSpace			
 		},
 
 
@@ -220,10 +228,13 @@ cat('\n\n\ngot here bla\n\n')
 		############################################################
 				# Visualisation
 
-		# show = function()
-		# {
-		# 	stateSpace$show()
-		# },
+
+		show = function()
+		{
+			stateSpace$show( 
+				algorithmName = algorithmName 
+			)
+		},
 
 		############################################################
 				# Algorithmic Methods

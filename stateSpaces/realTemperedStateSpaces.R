@@ -23,7 +23,7 @@ realTemperedStateSpace <- setRefClass(
 		############################################################
 				# Initialisation
 
-#<method>
+
 		initializeTemperedRealStateSpace = function(
 			temperatures 		= numeric(0),
 			quasiMetric 		= function(){} 
@@ -36,7 +36,7 @@ realTemperedStateSpace <- setRefClass(
 			quasiMetric <<- quasiMetric
 		},
 
-#<method>
+
 		initialize	= function(
 			iterationsNo 		= NULL,  
 			chainsNo 			= 0L,
@@ -99,7 +99,7 @@ realTemperedStateSpace <- setRefClass(
 				# Data structure methods.
 
 
-#<method>
+
 		getIteration = function(
 			iteration 	= 1L,
 			type		= 'initial states' 
@@ -136,7 +136,7 @@ realTemperedStateSpace <- setRefClass(
 		},
 
 
-#<method>				
+				
 		updateStatesAfterSwap = function(
 			proposalAccepted,
 			transposition	
@@ -155,7 +155,7 @@ realTemperedStateSpace <- setRefClass(
 		############################################################
 				# Visualisation
 
-#<method>
+
 		showRealTemperedStateSpace = function()
 		{
 			cat("Temperatures:\n")
@@ -167,140 +167,190 @@ realTemperedStateSpace <- setRefClass(
 			cat("\n")
 		},
 
-#<method>
-		show = function()
+
+		show = function( algorithmName )
 		{
 			showStateSpace()
 			showRealStateSpace()
 			showRealTemperedStateSpace()
+
+			if( simulationTerminated()) print( plotBasics( algorithmName ) )
 		},
 
-#<method>
-		# prepareDataForPlot = function()
-		# 	#### Reshuffles the entire history of states so that the entire result conforms to the data frame templates of ggplot2.
+
+		prepareDataForPlot = function()
+			#### Reshuffles the entire history of states so that the entire result conforms to the data frame templates of ggplot2
+		{
+			switch(
+				spaceDim,	
+				'1L'= cat('To be implemented'),
+				'2L'={
+					data  	<- vector(	"list", slotsNo )
+
+					for( slotNo in 1:slotsNo )
+					{
+						data[[ slotNo ]] <-
+							cbind(
+								t( getStates( slotNo ) ),
+								temperatures,
+								rep.int( slotNo %/% 2, chainsNo ),
+								rep.int( 
+									ifelse(
+										slotNo == 1, 
+										0,
+										ifelse(
+											slotNo %% 2 == 0,
+											1,
+											2
+										)	
+									), 
+									chainsNo 
+								)
+							)
+					}
+
+					data <- 
+						as.data.frame( do.call( rbind, data ) )
+
+					names( data )		<- 	c("x","y","Temperature","Progress","Phase")
+					data$Progress 		<- data$Progress/iterationsNo
+					data$Phase 			<- factor( data$Phase )
+					levels( data$Phase )<- c("Initial State","Random Walk","Swap")
+					data$Temperature 	<- 
+						factor( 
+							data$Temperature,
+							levels 	= temperatures,
+							ordered	= TRUE  
+						)				
+
+					dataForPlot <<- data 
+				},
+				cat("I do not know how to visualise 
+					non-2D state-spaces")
+			)		
+		},
+
+
+		# plotAllChains = function()
+		# 	#### Performs a plot of all simulated chains with an overlayed map of the real density from the Liang example.
 		# {
-		# 	if (spaceDim == 2)	
-		# 	{			
-		# 		data  	<- vector(	"list", slotsNo )
+		# 	if ( spaceDim == 2 )
+		# 	{
+		# 		require( ggplot2 )
 
-		# 		for( slotNo in 1:slotsNo )
-		# 		{
-		# 			data[[ slotNo ]] <-
-		# 				cbind(
-		# 					t( getStates( slotNo ) ),
-		# 					temperatures,
-		# 					rep.int( slotNo %/% 2, chainsNo ),
-		# 					rep.int( 
-		# 						ifelse(
-		# 							slotNo == 1, 
-		# 							0,
-		# 							ifelse(
-		# 								slotNo %% 2 == 0,
-		# 								1,
-		# 								2
-		# 							)	
-		# 						), 
-		# 						chainsNo 
-		# 					)
-		# 				)
-		# 		}
+		# 		return( 
+		# 			qplot(
+		# 				x, 
+		# 				y, 
+		# 				data 	= dataForPlot,
+		# 				colour 	= Temperature
+		# 			) + 
+		# 			geom_point() +
+		# 			scale_colour_brewer(
+		# 				type 	= "seq", 
+		# 				palette = 3
+		# 			) +
+		# 			stat_contour(
+		# 				data = targetMeasure$realDensityValues, 
+		# 				aes(x, y, z =z ), 
+		# 				bins	= 10, 
+		# 				size	= .5, 
+		# 				colour 	= "orange"
+		# 			) +
+		# 			ggtitle( "Parallel Tempering" ) +
+		# 			labs( x="", y="" )
+		# 		)		
+		# 	} else 
+		# 		cat( "\n It is highly non-trivial to plot a non-2D example \n.")
+		# },
 
-		# 		data 	<- as.data.frame( do.call( rbind, data ) )
-
-		# 		names( data )	<- 
-		# 			c("x","y","Temperature","Progress","Phase")
-
-		# 		data$Progress 	<- data$Progress/iterationsNo
-
-		# 		data$Phase 	<- factor( data$Phase )
-
-		# 		levels( data$Phase ) <- c("Initial State","Random Walk","Swap")
-
-		# 		data$Temperature<- 
-		# 			factor( 
-		# 				data$Temperature,
-		# 				levels 	= temperatures,
-		# 				ordered	= TRUE  
-		# 			)
-
-		# 		dataForPlot <<- data 
-		# 	}
-		# }, 
-
-#<method>
-		plotAllChains = function()
+		plotAllTemperatures = function()
 			#### Performs a plot of all simulated chains with an overlayed map of the real density from the Liang example.
 		{
-			if ( spaceDim == 2 )
-			{
-				require( ggplot2 )
+			require( ggplot2 )
 
-				return( 
-					qplot(
-						x, 
-						y, 
-						data 	= dataForPlot,
-						colour 	= Temperature
-					) + 
-					geom_point() +
-					scale_colour_brewer(
-						type 	= "seq", 
-						palette = 3
-					) +
-					stat_contour(
-						data = targetMeasure$realDensityValues, 
-						aes(x, y, z =z ), 
-						bins	= 10, 
-						size	= .5, 
-						colour 	= "orange"
-					) +
-					ggtitle( "Parallel Tempering" ) +
-					labs( x="", y="" )
-				)		
-			} else 
-				cat( "\n It is highly non-trivial to plot a non-2D example \n.")
+			switch(	
+				spaceDim,			
+				'1L'= cat('To be implemented'),
+				'2L'={
+					return( 
+						qplot(
+							x, 
+							y, 
+							data 	= dataForPlot,
+							colour 	= Temperature
+						) + 
+						geom_point() +
+						scale_colour_brewer(
+							type 	= "seq", 
+							palette = 3
+						) +
+						stat_contour(
+							data = targetMeasure$realDensityValues, 
+							aes(x, y, z =z ), 
+							bins	= 10, 
+							size	= .5, 
+							colour 	= "orange"
+						) +
+						ggtitle( "Parallel Tempering" ) +
+						labs( x="", y="" )
+					)
+				},			
+				cat("I do not know how to visualise 
+					non-2D state-spaces")
+			)
 		},
 
-#<method>
-		plotBaseTemperature = function()
+
+		plotBasics = function(
+			algorithmName 
+		)
 			#### Performs a plot of the base level temperature chain of main interest with an overlayed map of the real density from the Liang example.
-
 		{
-			if ( spaceDim == 2 )
-			{
-				require( ggplot2 )
+			require( ggplot2 )
 
-				return(
-					qplot(
-						x, 
-						y, 
-						data 	= dataForPlot[dataForPlot$Temperature==1,],
-						colour 	= Progress
-					) + 
-					geom_point() +
-					scale_colour_gradient(
-						limits 	= c(0, 1),
-						low		= "white",
-						high 	= "black"
-					) +
-					stat_contour(
-						data 	= targetMeasure$realDensityValues, 
-						aes( x, y, z =z ), 
-						bins 	= 5, 
-						size 	= .5, 
-						colour 	= "red"
-					) +
-					ggtitle( "Parallel Tempering - Base Temperature" ) +
-					labs( x="", y="" )
-				)
-			} else 
+			switch(
+				spaceDim, 
+				'1L'= cat('To be implemented'),
+				'2L'={
+					return(
+						qplot(
+							x, 
+							y, 
+							data 	= dataForPlot[dataForPlot$Temperature==1,],
+							colour 	= Progress
+						) + 
+						geom_point() +
+						scale_colour_gradient(
+							limits 	= c(0, 1),
+							low		= "white",
+							high 	= "black"
+						) +
+						stat_contour(
+							data 	= targetMeasure$realDensityValues, 
+							aes( x, y, z =z ), 
+							bins 	= 5, 
+							size 	= .5, 
+							colour 	= "red"
+						) +
+						ggtitle( 
+							paste(
+								algorithmName,
+								": base temperature",
+								sep="",
+								collapse="") 
+						) +
+						labs( x="", y="" )
+					)
+				},	
 				cat( "\n It is highly non-trivial to plot a non-2D example \n.")
+			)
 		},
 
 		############################################################
 				# Algorithmic Methods
 
-#<method>
+
 		measureQuasiDistance = function(
 			iState,
 			jState
