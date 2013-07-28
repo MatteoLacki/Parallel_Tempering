@@ -6,13 +6,12 @@ realTemperedStateSpace <- setRefClass(
 								# Fields
 
 	fields		= list(
-#<fields>
+
 			## Temperature levels for the parallel tempering algorithm.
 		temperatures		= "numeric",
 
 			## Quasi metric between two points from the state space.
 		quasiMetric  		= "function"
-#</fields>		
 	),	
 	
 ###########################################################################
@@ -39,7 +38,7 @@ realTemperedStateSpace <- setRefClass(
 
 #<method>
 		initialize	= function(
-			iterationsNo 		= 0L,  
+			iterationsNo 		= NULL,  
 			chainsNo 			= 0L,
 			spaceDim			= 0L,
 			initialStates 		= matrix(ncol=0, nrow=0),
@@ -49,23 +48,23 @@ realTemperedStateSpace <- setRefClass(
 		)
 			#### Splits the initialization to general state-space initialization and real-state-space-specific initialization.
 		{
-			initializeStateSpace(
-				iterationsNo 		= iterationsNo
-			)
-			
-			initializeRealStateSpace(
-				chainsNo  			= chainsNo,
-				spaceDim  			= spaceDim,
-				initialStates 	 	= initialStates,
-				proposalCovariances = proposalCovariances
-			)
-			
-			initializeTemperedRealStateSpace(
-				temperatures 	  	= temperatures,
-				quasiMetric 	 	= quasiMetric
-			)
-
-			createDataStorage()
+			if ( !is.null(iterationsNo)){		
+				initializeStateSpace(
+					iterationsNo 		= iterationsNo
+				)
+				
+				initializeRealStateSpace(
+					chainsNo  			= chainsNo,
+					spaceDim  			= spaceDim,
+					initialStates 	 	= initialStates,
+					proposalCovariances = proposalCovariances
+				)
+				
+				initializeTemperedRealStateSpace(
+					temperatures 	  	= temperatures,
+					quasiMetric 	 	= quasiMetric
+				)
+			}
 		},
 
 		createDataStorage = function()

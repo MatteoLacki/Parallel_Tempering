@@ -32,9 +32,11 @@ stateSpace <- setRefClass(
 			iterationsNo 	= 0L
 		)
 		{
-			initializeStateSpace(
-				iterationsNo 			= iterationsNo
-			)
+			if ( !is.null(iterationsNo)){
+				initializeStateSpace(
+					iterationsNo 			= iterationsNo
+				)
+			}	
 		},
 
 		############################################################

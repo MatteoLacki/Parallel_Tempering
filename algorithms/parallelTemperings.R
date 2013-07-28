@@ -7,7 +7,7 @@ parallelTempering <- setRefClass(
 								# Fields
 
 	fields		= list(
-#<fields>	
+
 			## Temperature levels for the parallel tempering algorithm.
 		temperatures		= "numeric",
 
@@ -39,9 +39,7 @@ parallelTempering <- setRefClass(
 		transpositionHistory	= "factor",
 
 			## A vector of integers: overall number of accepted transposition-swap proposals.
-		acceptedSwapsNo			= "integer"
-
-#</fields>		
+		acceptedSwapsNo			= "integer"		
 	),
 
 ###########################################################################
@@ -53,7 +51,7 @@ parallelTempering <- setRefClass(
 		############################################################
 				# Initialisation
 				
-#<method>
+
 		initializeParallelTempering	= function(
 			temperatures 		= numeric(0),
 			strategyNo			= 1L
@@ -67,7 +65,7 @@ parallelTempering <- setRefClass(
 			insertTranspositions()
 		},
 
-#<method>
+
 		insertStrategyNo = function(
 			strategyNo
 		)
@@ -85,7 +83,7 @@ parallelTempering <- setRefClass(
 			}
 		},
 
-#<method>
+
 		insertTranspositions = function()
 		{
 			translatorFromLexicOrderToTranspositions <<- 
@@ -106,44 +104,52 @@ parallelTempering <- setRefClass(
 			transpositionHistory<<-	tmpTranspositionHistory
 		},
 
-#<method>
+
 		initialize = function(
-			iterationsNo 	= 0L,
+			iterationsNo 	= NULL,
 			temperatures 	= numeric(0),
 			strategyNo		= 1L,
-			detailedOutput	= FALSE
+			detailedOutput	= FALSE,
+			chainsNo 		= 0L
 			)
 			#### Splits the initialization to general Simulations initialization and parallel-tempering-specific initialization.
 		{
-			initializeAlgorithm(
-				iterationsNo = iterationsNo 
-			)
-
-			initializeMetropolisHastings( 
-				chainsNo		= chainsNo,
-				detailedOutput	= detailedOutput
-			)
-
-			initializeParallelTempering(
-				temperatures 		= numeric(0),
-				strategyNo			= 1L
-			)
-
-			insertChainNames()
+			if ( !is.null(iterationsNo)){
+				initializeAlgorithm(
+					iterationsNo 	= iterationsNo 
+				)
+	
+				initializeMetropolisHastings( 
+					chainsNo		= chainsNo,
+					detailedOutput	= detailedOutput
+				)
+	
+				initializeParallelTempering(
+					temperatures 	= temperatures,
+					strategyNo		= strategyNo
+				)
+	
+				insertChainNames()
+			}
 		},
 
-#<method>
-		insertChainNames = function() {
+
+		insertChainNames = function() 
+		{
 			tmpNames <- character( chainsNo )
 
 			for ( i in 1:chainsNo ) {
-				tmpNames[i] <- paste( 'temp=', temperatures[i], sep="", collapse="" )
+				tmpNames[i] <- paste( 
+					'temp=', 
+					temperatures[i], 
+					sep="", collapse="" 
+				)
 			}
 
 			chainNames <<- tmpNames
 		},
 
-#<method>
+
 		prepareSimulation = function()
 			#### Initialises values needed before the simulation.
 		{
@@ -160,7 +166,7 @@ parallelTempering <- setRefClass(
 		############################################################
 				# Visualisation
 
-#<method>
+
 		showParallelTempering = function()
 			#### Shows the initialised fields before the simulation.
 		{
@@ -177,7 +183,7 @@ parallelTempering <- setRefClass(
 			}
 		},
 
-#<method>	
+	
 		show	= function()
 			#### Calls the father-class show method followed by its own show method.
 		{
@@ -186,7 +192,7 @@ parallelTempering <- setRefClass(
 			showParallelTempering()			
 		},
 
-#<method>
+
 		plotHistory = function()
 		{
 			xAxisTags <- 
@@ -235,7 +241,7 @@ parallelTempering <- setRefClass(
 		############################################################
 				# Algorithmic Methods
 					
-#<method>
+
 		makeStepOfTheAlgorithm	= function( 
 			iteration 
 		)
@@ -256,6 +262,9 @@ parallelTempering <- setRefClass(
 		},
 				###### random walk sphere ######
 
+
+
+				
 
 		updateAfterRandomWalk = function()
 		{
@@ -278,8 +287,17 @@ parallelTempering <- setRefClass(
 		},
 
 
+		getLogAlpha = function()
+		{
+			return( 
+				inverseTemperatures * 
+				(proposalLogUDensities - lastStatesLogUDensities) 
+			)
+		},
+
+
 				###### swap sphere ######
-#<method>
+
 		swap = function(
 			iteration
 		)
@@ -296,7 +314,7 @@ parallelTempering <- setRefClass(
 				}
 		},
 
-#<method>
+
 		swapProposalGeneration = function()
 			#### Generates a random swap based on the last step swap  unnormalised probabilities.
 		{
@@ -311,7 +329,7 @@ parallelTempering <- setRefClass(
 				translateLexicToTranspositions( swapProposalLexic )
 		},
 
-#<method>
+
 		swapRejectionAndUpdate = function(
 			iteration
 		)
@@ -393,7 +411,7 @@ parallelTempering <- setRefClass(
 			stateSpace$updateStatesAfterSwap( proposalAccepted, swapProposal )
 		},
 
-#<method>			
+			
 		updateSwapUProbs = function(
 			transpositionsForUpdate
 		)
@@ -408,7 +426,7 @@ parallelTempering <- setRefClass(
 			)
 		},
 
-#<method>
+
 		findTranspositionsForUpdate = function()
 			#### Finds numbers of transpositions in the lexical ordering whose probabilities must be updated after the random walk phase. 
 		{
@@ -441,7 +459,7 @@ parallelTempering <- setRefClass(
 			)
 		},
 
-#<method>
+
 		generateTranspositions = function(
 			chainNumbers
 		)
@@ -474,7 +492,7 @@ parallelTempering <- setRefClass(
 			)
 		},
 
-#<method>
+
 		translateLexicToTranspositions = function( 
 			lexics 
 		)
@@ -483,7 +501,7 @@ parallelTempering <- setRefClass(
 			return( translatorFromLexicOrderToTranspositions[, lexics ] )
 		},
 
-#<method>
+
 		translateTranspositionsToLexic = function(
 			transpositions 	
 		)
@@ -506,7 +524,7 @@ parallelTempering <- setRefClass(
 			)
 		},
 
-#<method>
+
 		swapStrategy = function(
 			transposition
 		)	

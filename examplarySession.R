@@ -17,16 +17,18 @@ source("./simulations/simulations.R")
 LiangWangExample <- simulation$new(
 	iterationsNo	= 100,
 	strategyNo 	= 1,
-	example 	= TRUE	
+	example 	= TRUE,
+	detailed	= TRUE	
 )
 
 LiangWangExample
 system.time(
   LiangWangExample$simulate()  
 ) 
-LiangWangExample	
-LiangWangExample$algorithm$plotHistory()
+LiangWangExample$stateSpace
 
+
+LiangWangExample$algorithm$plotHistory()
 
 
 X <- LiangWangExample$stateSpace$dataForPlot[,1:2]

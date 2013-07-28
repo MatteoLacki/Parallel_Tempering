@@ -6,7 +6,7 @@ realStateSpace <- setRefClass(
 								# Fields
 
 	fields		= list(
-#<fields>
+
 			## Dimension of the original state space of interest.
 		spaceDim			= "integer",	
 
@@ -32,14 +32,13 @@ realStateSpace <- setRefClass(
 		slotsNo 			= "integer",
 
 			## Matrix containing covariances for the proposal kernel.
-		proposalCovariancesCholeskised 	= "matrix",
+		proposalCholCovariances 	= "matrix",
 
 			## Boolean: says whether proposal covariances are the same on different temperature levels.
 		simpleProposalCovariance	= "logical",
 
 			## Dataframe containing data that can be manipulated by the ggplot2.
-		dataForPlot 		= "data.frame"	
-#</fields>		
+		dataForPlot 		= "data.frame"		
 	),	
 	
 ###########################################################################
@@ -51,7 +50,7 @@ realStateSpace <- setRefClass(
 		############################################################
 				# Initialisation
 
-#<method>
+
 		initializeRealStateSpace = function(
 			chainsNo 			= 0L,
 			spaceDim			= 0L,
@@ -65,19 +64,19 @@ realStateSpace <- setRefClass(
 				spaceDim 		= spaceDim,
 				chainsNo		= chainsNo
 			)				
-			
-			if (length(slotsNo) > 0) {
-				insertStates()
-			}
-			
+
+
+			if( spaceDim > 0 & chainsNo > 0 ) { createDataStorage() }			
+			if (length(slotsNo) > 0) {	insertStates()	}
+
 			insertProposalCovariances(
 				proposalCovariances = proposalCovariances
 			)
 		},
 
-#<method>
+
 		initialize	= function(
-			iterationsNo 		= 0L,  
+			iterationsNo 		= NULL,  
 			chainsNo 			= 0L,
 			spaceDim			= 0L,
 			initialStates 		= matrix(ncol=0, nrow=0),
@@ -85,30 +84,29 @@ realStateSpace <- setRefClass(
 		)
 			#### Splits the initialization to general state-space initialization and real-state-space-specific initialization.
 		{
-			initializeStateSpace(
-				iterationsNo 		= iterationsNo
-			)
-
-			initializeRealStateSpace(
-				initialStates 	 	= initialStates,
-				spaceDim  			= spaceDim,
-				chainsNo  			= chainsNo,
-				proposalCovariances = proposalCovariances
-			)
-
-			if( spaceDim > 0 & chainsNo > 0 ) { createDataStorage() }
+			if ( !is.null(iterationsNo)){			
+				initializeStateSpace(
+					iterationsNo 		= iterationsNo
+				)
+	
+				initializeRealStateSpace(
+					initialStates 	 	= initialStates,
+					spaceDim  			= spaceDim,
+					chainsNo  			= chainsNo,
+					proposalCovariances = proposalCovariances
+				)
+			}
 		},
 
-#<method>
+
 		insertInitialStates	= function( 
 			initialStates 		= matrix(ncol=0, nrow=0),
 			spaceDim			= 0L,
 			chainsNo			= 0L
 			)
 		{
-			tmpSpaceDim 	<- as.integer(spaceDim)
-			tmpChainsNo 	<- as.integer(chainsNo)
-
+			tmpSpaceDim 			<- as.integer(spaceDim)
+			tmpChainsNo 			<- as.integer(chainsNo)
 			initialStatesDim 		<- nrow(initialStates)  
 			initialStatesChainsNo	<- ncol(initialStates)
 
@@ -140,8 +138,7 @@ realStateSpace <- setRefClass(
 					chainsNo 	<<- tmpChainsNo
 
 				} else 
-				cat("Not enough information on state-space dimension or the number of simulation chains.")
-				
+				cat("Not enough information on state-space dimension or the number of simulation chains.")			
 			}
 
 			proposedStates 	<<- lastStates
@@ -166,49 +163,35 @@ realStateSpace <- setRefClass(
 			proposalCovariances = matrix(ncol=0, nrow=0)
 		)
 		{
-			if(	class(proposalCovariances) == 'matrix' )
-			{
-				if( nrow(proposalCovariances) > 0 ) {
-				
-					if(	nrow(proposalCovariances)==spaceDim &
-						ncol(proposalCovariances)==spaceDim	)
+			switch(
+				class(proposalCovariances),
+				'matrix'	= {
+					if( checkCovariance(proposalCovariances) )
 					{
-						proposalCovariancesCholeskised <<- 
-							chol( proposalCovariances )			
+						proposalCholCovariances 	<<- chol( proposalCovariances )	
 						simpleProposalCovariance 	<<- TRUE
-					} else
-					{
-						cat('You supplied a covariance matrix that does not conform to our state space dimension or did not care to supply it at all.\n Proceeding with identity covariances.\n')
+					} else {
+						cat('You supplied a covariance matrix that does 
+							not conform to our state space dimension 
+							or did not care to supply it at all.\n 
+							Proceeding with identity covariances.\n')
 						
-						proposalCovariancesCholeskised <<- 
-							diag(
-								rep.int(1, times=spaceDim)
-							)
-						simpleProposalCovariance <<- TRUE
+						proposalCholCovariances <<- 
+							diag( rep.int(1, times=spaceDim) )
+						simpleProposalCovariance<<- TRUE
 					}		
-				} else {
-					cat('\nProposal covariances are not enlisted or are enlisted but the number of covariance matrices is other than the number of temperatures.\n')
-				}
-			} else
-			{	
-				if(	class(proposalCovariances) == 'list' &
-					length(proposalCovariances)== chainsNo)
-				{
-					if (
+				},
+				'list'		= {
+					if( 
 						all(
 							sapply(
 								proposalCovariances,
-								function( x ) 
-									ifelse( 
-										(class(x) == 'matrix'), 
-										nrow(x)==spaceDim & ncol(x)==spaceDim, 
-										FALSE
-									) 
+								checkCovariance	
 							)
-						)
-					)	
-					{
-						proposalCovariancesCholeskised <<-
+						) & 
+						length(proposalCovariances) == chainsNo
+					){
+						proposalCholCovariances <<-
 							do.call( 
 								cbind, 
 								lapply( 
@@ -216,41 +199,51 @@ realStateSpace <- setRefClass(
 									chol 
 								) 
 							)
+
 						simpleProposalCovariance 	<<- FALSE
-					} else
-					{
-						cat('Your covariances are either not matrices or their size do not conform to problem dimension.\n Proceeding with identity covariances.\n')
+					} else {
+						cat('Your covariances are either not matrices 
+							or their size do not conform to problem dimension
+							or you provided a number of them that is different
+							from the number of temperatures.\n\n
+							Proceeding with identity covariances.\n' 
+						)
 
-						proposalCovariancesCholeskised <<- 
-							diag(
-								rep.int(x =1, times=spaceDim)
-							)
-						simpleProposalCovariance <<- TRUE	
+						proposalCholCovariances <<- 
+							diag( rep.int(1, times=spaceDim) )
+						simpleProposalCovariance<<- TRUE
 					}
-				} else
-				{
-						cat('\nProposal covariances are not enlisted or are enlisted but the number of covariance matrices is other than the number of temperatures.\n Proceeding with identity covariances.\n')
-
-						proposalCovariancesCholeskised <<- 
-							diag(
-								rep.int(1, times=spaceDim)
-							)
-						simpleProposalCovariance <<- TRUE	
-				}		
-			}
+				},	
+				stop('Wrong format of the proposal covariances.')
+			)
 		},
+
+
+		checkCovariance = function(
+			covarianceMatrix
+		){
+			return(
+				ifelse(
+					class(covarianceMatrix) == 'matrix',
+					nrow( covarianceMatrix )==spaceDim & 
+					ncol(covarianceMatrix )	==spaceDim, 
+					FALSE
+				)
+			)
+		},
+
 
 		############################################################
 				# Data structure methods.
 
-#<method>
+
 		simulationTerminated = function()
 			#### Checks whether simulation is terminated.
 		{
 			return( freeSlotNo == slotsNo + 1L )
 		},
 
-#<method>
+
 		insertStates	= function() 
 			#### Inserts current states to the data history (field: simulatedStates).
 		{
@@ -266,7 +259,7 @@ realStateSpace <- setRefClass(
 			cat('The computer tried to make more steps than the user wanted him to. That is truly weird...') 
 		},
 
-#<method>
+
 		getStates = function(
 			whichSlotNo
 		)
@@ -280,7 +273,7 @@ realStateSpace <- setRefClass(
 			)
 		},
 
-#<method>
+
 		getIteration = function(
 			iteration 	= 1L,
 			type 		= 'initial states' 
@@ -312,7 +305,7 @@ realStateSpace <- setRefClass(
 			return( result )
 		},
 
-#<method>
+
 		updateStatesAfterRandomWalk = function(
 			anyUpdate,
 			indicesOfStatesUpdatedInRandomWalk	
@@ -331,7 +324,7 @@ realStateSpace <- setRefClass(
 		############################################################
 				# Visualisation
 
-#<method>
+
 		showRealStateSpace = function()
 		{
 			cat('\nThe real-state-space inputs are here: \n')
@@ -343,27 +336,27 @@ realStateSpace <- setRefClass(
 			cat("\n")
 
 			cat('Proposal covariances after Cholesky decomposition:\n')
-			print( proposalCovariancesCholeskised )
+			print( proposalCholCovariances )
 			cat("\n")
 
 			if( simulationTerminated() )
 			{
 				cat('Genarated states:\n')
-				print( proposalCovariancesCholeskised )
+				print( proposalCholCovariances )
 				cat("\n")
 
 				print( plotBaseTemperature() )
 			}
 		},
 
-#<method>
+
 		show = function()
 		{
 			showStateSpace()
 			showRealStateSpace()
 		},
 
-#<method>
+
 		showState = function( 
 			iteration 	= 0L,
 			type 		= 'initial states'
@@ -381,7 +374,7 @@ realStateSpace <- setRefClass(
 			return(tmpStates)
 		},		
 
-#<method>
+
 		# prepareDataForPlot = function()
 		# 	#### Reshuffles the entire history of states so that the entire result conforms to the data frame templates of ggplot2.
 		# {
@@ -433,7 +426,7 @@ realStateSpace <- setRefClass(
 		# 	}
 		# }, 
 
-#<method>
+
 		plotAllChains = function()
 			#### Performs a plot of all simulated chains with an overlayed map of the real density from the Liang example.
 		{
@@ -467,7 +460,7 @@ realStateSpace <- setRefClass(
 				cat( "\n It is highly non-trivial to plot a non-2D example \n.")
 		},
 
-#<method>
+
 		plotBaseTemperature = function()
 			#### Performs a plot of the base level temperature chain of main interest with an overlayed map of the real density from the Liang example.
 
@@ -506,7 +499,7 @@ realStateSpace <- setRefClass(
 		############################################################
 				# Algorithmic Methods
 
-#<method>
+
 		proposeLogsOfUMeasures = function()
 			#### Calculates logs of unnormalised densities in all the proposed states. 
 		{
@@ -524,7 +517,7 @@ realStateSpace <- setRefClass(
 			)
 		},
 
-#<method>
+
 		randomWalkProposal = function()
 			#### Generates new current states and logs of their unnormalised densities.
 		{
@@ -532,7 +525,7 @@ realStateSpace <- setRefClass(
 				lastStates +
 				if(	simpleProposalCovariance )
 				{
-					proposalCovariancesCholeskised %*% 
+					proposalCholCovariances %*% 
 					matrix( 
 						rnorm( 
 							n = spaceDim*chainsNo 
@@ -546,7 +539,7 @@ realStateSpace <- setRefClass(
 						1:chainsNo,
 						function( covarianceMatrixNo )
 						{
-							proposalCovariancesCholeskised[, 
+							proposalCholCovariances[, 
 								((covarianceMatrixNo-1)*spaceDim+1):
 								(covarianceMatrixNo*spaceDim)
 							] %*%

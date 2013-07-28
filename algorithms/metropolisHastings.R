@@ -45,7 +45,7 @@ metropolisHastings <- setRefClass(
 		############################################################
 				# Initialisation
 				
-#<method>
+
 		initializeMetropolisHastings	= function(
 			chainsNo 		= 0L,
 			detailedOutput	= FALSE
@@ -58,7 +58,7 @@ metropolisHastings <- setRefClass(
 			detailedOutput			<<- detailedOutput
 		},
 
-#<method>
+
 		initialize = function(
 			iterationsNo 	= 0L,
 			chainsNo 	  	= 0L,
@@ -78,7 +78,7 @@ metropolisHastings <- setRefClass(
 			insertChainNames()
 		},
 
-#<method>
+
 		insertChainNames = function() {
 			tmpNames <- character( chainsNo )
 
@@ -89,12 +89,14 @@ metropolisHastings <- setRefClass(
 			chainNames <<- tmpNames
 		},
 
-#<method>
+
 		prepareSimulation = function()
 			#### Initialises values needed before the simulation.
 		{
 				# Initially everything is new.
 			updatedStates <<- rep( TRUE, chainsNo)
+
+#			cat('\n\nBla',updatedStates)
 
 				# Current states must get at least once calculated all without any updates.
 			lastStatesLogUDensities <<-  
@@ -104,7 +106,7 @@ metropolisHastings <- setRefClass(
 		############################################################
 				# Visualisation
 
-#<method>
+
 		showMetropolisHastings	= function()
 			#### Shows the initialised fields before the simulation.
 		{
@@ -129,7 +131,7 @@ metropolisHastings <- setRefClass(
 			}
 		},
 
-#<method>	
+	
 		show	= function()
 			#### Calls the father-class show method followed by its own show method.
 		{
@@ -140,7 +142,7 @@ metropolisHastings <- setRefClass(
 		############################################################
 				# Algorithmic Methods
 					
-#<method>
+
 		makeStepOfTheAlgorithm	= function( 
 			iteration 
 		)
@@ -154,7 +156,7 @@ metropolisHastings <- setRefClass(
 		},
 				###### random walk sphere ######
 
-#<method>
+
 		randomWalk = function()
 			#### Performs the random walk step: it asks the state-space to generate the logs of unnormalised probabilities evaluated in the proposed points and then performs the usual rejection part. All this could be done parallely if it was needed - this feature will be shipped with version 2.0.
 		{
@@ -175,51 +177,48 @@ metropolisHastings <- setRefClass(
 			triggerUpdateAfterRandomWalk() # both logdensities and current states.
 		},
 
-#<method>
+
 		randomWalkRejection = function()
 			#### Here the Hastings quotients get compared with randomly generated values from the unit interval. All values are taken in logs for numerical stability.
 		{
 			Ulog <- log( runif( chainsNo ) )
 
-			logAlpha <- 
-				sapply(
-					1:chainsNo,
-					function( k )
-					{
-						inverseTemperatures[k]*
-						(
-							proposalLogUDensities[k] -
-							lastStatesLogUDensities[k]
-						)
+			logAlpha <- getLogAlpha()
 
-					}
-				)
+			updatedStates <<- Ulog < logAlpha
+
 
 			if ( detailedOutput ) 
+			{
 				cat(
+					"\nLast states log udensities: \n",
+					lastStatesLogUDensities,
 					"\nQuantities to be Compared with Log Uniform RV:\n",
 					logAlpha,
 					"\nlog(U):\n",
 					Ulog,
-					"\n"
-				)	
-
-			updatedStates <<- 
-				Ulog < logAlpha
-
-			if ( detailedOutput ) 
-				cat(
+					"\n",
 					"\nUpdated Steps:\n",
 					updatedStates,
 					"\n"
 				)
+			}	
 		},
 
-#<method>
+
+		getLogAlpha = function()
+		{
+			return( proposalLogUDensities - lastStatesLogUDensities )
+		},
+
+
 		triggerUpdateAfterRandomWalk = function()
 			#### This procedure updates the state space after an operation consisting of accepting any new proposal in the random-walk phase of the algorithm. Updates are also needed in the probabilities of the last states stored in a field in the parallel-tempering object.
 		{
+			cat('\n\nHello ', updatedStates, '\n\n')
+
 			anyUpdate <- any( updatedStates )
+
 
 			if ( anyUpdate ) {	
 				updateAfterRandomWalk()
