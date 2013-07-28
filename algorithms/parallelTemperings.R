@@ -74,8 +74,8 @@ parallelTempering <- setRefClass(
 			insertTranspositions()
 			insertStrategyNo( strategyNo )
 
-			acceptedRandomWalksNo	<<- rep.int(0L, times = temperaturesNo)
-			rejectedRandomWalksNo	<<- rep.int(0L, times = temperaturesNo)
+			acceptedRandomWalksNo	<<- rep.int(0L, times = chainsNo)
+			rejectedRandomWalksNo	<<- rep.int(0L, times = chainsNo)
 			detailedOutput			<<- detailedOutput
 		},
 
@@ -117,10 +117,10 @@ parallelTempering <- setRefClass(
 		{
 			return( 
 				sapply(
-					1:(temperaturesNo-1),
+					1:(chainsNo-1),
 					function( chainNo ) {				
 						as.integer(
-							(chainNo - 1)*( temperaturesNo - chainNo/2 ) + 1
+							(chainNo - 1)*( chainsNo - chainNo/2 ) + 1
 						)
 					}	
 				)
@@ -233,7 +233,7 @@ parallelTempering <- setRefClass(
 
 				row.names(acceptance) 	<- 
 					c("temperatures","accepted", "rejected")
-				colnames(acceptance) 	<- 1:temperaturesNo
+				colnames(acceptance) 	<- 1:chainsNo
 				print( acceptance )
 				cat("\n")
 			}
@@ -393,7 +393,7 @@ parallelTempering <- setRefClass(
 			swapProposal <<- 	
 				translateLexicToTranspositions( swapProposalLexic )
 
-			tmpUpdatedStates 				<- rep(FALSE, temperaturesNo)
+			tmpUpdatedStates 				<- rep(FALSE, chainsNo)
 		
 				# The pair of states get the update tag here.
 			tmpUpdatedStates[swapProposal] 	<- TRUE

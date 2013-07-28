@@ -22,19 +22,17 @@ stateSpace <- setRefClass(
 				# Initialisation
 
 		initializeStateSpace = function(
-			iterationsNo 	= 0L
-		)
-		{	
-			iterationsNo <<- iterationsNo
+			iterationsNo 	= NULL
+		){	
+			iterationsNo <<- as.integer(iterationsNo)
 		},
 
 		initialize 	= function(
-			iterationsNo 	= 0L
-		)
-		{
+			iterationsNo 	= NULL
+		){
 			if ( !is.null(iterationsNo)){
 				initializeStateSpace(
-					iterationsNo 			= iterationsNo
+					iterationsNo = iterationsNo
 				)
 			}	
 		},

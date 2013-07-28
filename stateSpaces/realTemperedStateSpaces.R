@@ -308,7 +308,8 @@ realTemperedStateSpace <- setRefClass(
 			#### Performs a plot of the base level temperature chain of main interest with an overlayed map of the real density from the Liang example.
 		{
 			require( ggplot2 )
-
+			contourData 	<- 	targetMeasure$realDensityValues
+			
 			switch(
 				spaceDim, 
 				'1L'= cat('To be implemented'),
@@ -327,10 +328,24 @@ realTemperedStateSpace <- setRefClass(
 							high 	= "black"
 						) +
 						stat_contour(
-							data 	= targetMeasure$realDensityValues, 
+							data 	= contourData, 
 							aes( x, y, z =z ), 
-							bins 	= 5, 
+							breaks = targetMeasure$quantiles[1],
 							size 	= .5, 
+							colour 	= "yellow"
+						) +
+						stat_contour(
+							data 	= contourData, 
+							aes( x, y, z =z), 
+							breaks = targetMeasure$quantiles[2],
+							size 	= .5,
+							colour 	= "orange"
+						) +
+						stat_contour(
+							data 	= contourData, 
+							aes( x, y, z =z), 
+							breaks = targetMeasure$quantiles[3:5],
+							size 	= .5,
 							colour 	= "red"
 						) +
 						ggtitle( 

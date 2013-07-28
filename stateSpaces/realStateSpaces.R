@@ -415,7 +415,7 @@ realStateSpace <- setRefClass(
 		},
 
 
-				plotBasics = function(
+		plotBasics = function(
 			algorithmName 
 		)
 			#### Performs a plot of the base level temperature chain of main interest with an overlayed map of the real density from the Liang example.

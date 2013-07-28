@@ -26,11 +26,11 @@ algorithm <- setRefClass(
 
 		initializeAlgorithm	= function(
 			iterationsNo 	= NULL
-			)
-		{
+		){
 			simulationFinished	<<- FALSE
 			tmpIterationsNo 	<- as.integer(iterationsNo)
-			
+		
+	cat('\n\nfuck\n\n')	
 			if ( is.na(tmpIterationsNo) || (iterationsNo < 0) ) 
 			{
 				stop("Inappropriate number of steps. Please enter an integer value.")
@@ -42,7 +42,7 @@ algorithm <- setRefClass(
 
 
 		initialize = function(
-			iterationsNo 	= 0L
+			iterationsNo 	= NULL
 			)
 		{
 			if ( !is.null(iterationsNo)){

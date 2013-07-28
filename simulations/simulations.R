@@ -30,7 +30,8 @@ simulation <- setRefClass(
 	    	## Names of used objects
 	    algorithmName 		= "character",
 	    stateSpaceName 		= "character",
-	    targetMeasureName 	= "character"
+	    targetMeasureName 	= "character",
+	    iterationsNo 		= "integer"
     ),
 
 ###########################################################################
@@ -59,138 +60,138 @@ simulation <- setRefClass(
 			save 				= FALSE
       )
 		{
-			cat("Thank you for choosing our software. We wish you a pleasent day.")
+			if (!is.null(iterationsNo)){
+				cat("Thank you for choosing our software. We wish you a pleasent day.")
+	
+				setIterationsNo( iterationsNo=iterationsNo )
 
-			iterationsNo 	<- checkIterationsNo( iterationsNo )
-      		save 			<<- save
-
-      		stateSpaceName 		<<- stateSpaceName
-      		targetMeasureName 	<<- targetMeasureName
-			algorithmName 		<<- algorithmName
-
-			if( example )
-			{
-				temperatures 			<- c(1, 2.8, 7.7, 21.6, 60)
-				tmpProposalCovariances 	<- vector( "list", 5L )
-
-				# for (i in 1:5 )
-				#  {
-				#  	tmpProposalCovariances[[i]] <- 
-				#  		diag( temperatures[i]^2, nrow=2, ncol=2 ) 				
-				#  }
-
-				for (i in 1:5 )
+	      		save 				<<- save
+	      		stateSpaceName 		<<- stateSpaceName
+	      		targetMeasureName 	<<- targetMeasureName
+				algorithmName 		<<- algorithmName
+	
+				if( example )
 				{
-					tmpProposalCovariances[[i]] <- 
-						diag( 
-							ifelse(i <=3, .05, .01)*temperatures[i]^2,
-							nrow=2, 
-							ncol=2 
-						) 				
-				}
-
-				chainsNo			<- 5L
-				spaceDim			<- 2L
-
-				targetMeasureName 	<<- 'Liang-Wang'
-				algorithmName 		<<- 'parallel tempering'					
-				proposalCovariances <- tmpProposalCovariances
-			}  
-			
-			if( algorithmName == 'parallel tempering') {
-				temperatures 	<- checkTemperatures( temperatures )
-
-				if ( 
-					!( stateSpaceName %in% c(
-							'real tempered'
+					temperatures 			<- c(1, 2.8, 7.7, 21.6, 60)
+					tmpProposalCovariances 	<- vector( "list", 5L )
+	
+					# for (i in 1:5 )
+					#  {
+					#  	tmpProposalCovariances[[i]] <- 
+					#  		diag( temperatures[i]^2, nrow=2, ncol=2 ) 	
+					#  }
+	
+					for (i in 1:5 )
+					{
+						tmpProposalCovariances[[i]] <- 
+							diag( 
+								ifelse(i <=3, .05, .01)*temperatures[i]^2,
+								nrow=2, 
+								ncol=2 
+							) 				
+					}
+	
+					chainsNo			<- 5L
+					spaceDim			<- 2L
+	
+					targetMeasureName 	<<- 'Liang-Wang'
+					algorithmName 		<<- 'parallel tempering'					
+					proposalCovariances <- tmpProposalCovariances
+				}  
+				
+				if( algorithmName == 'parallel tempering') {
+					temperatures 	<- checkTemperatures( temperatures )
+	
+					if ( 
+						!( stateSpaceName %in% c(
+								'real tempered'
+							) 
 						) 
-					) 
-				){ 
-				stop("We have not yet developped the required state-space.")
+					){ 
+					stop("We have not yet developped the required state-space.")
+					}
+	
 				}
-
-			}
-
-			switch(
-				targetMeasureName,
-				'Liang-Wang'={
-					targetMeasure 	<<- targetLiangDensity$new()
-				},
-				'Matteo'={
-					targetMeasure 	<<- targetMatteoDensity$new()
-				},
-				'any density'={
-					targetMeasure 	<<- targetUDensity$new(
-						targetDensity 	= targetDensity
-					)
-				},
-				stop("You must supply a target measure.")
-			)
-
-			switch(
-				stateSpaceName,
-				'real'	= 
-				{
-					stateSpace <<- realStateSpace$new(
-						iterationsNo 		= iterationsNo,
-						chainsNo 			= chainsNo,
-						spaceDim			= spaceDim,
-						initialStates		= initialStates,
-						proposalCovariances = proposalCovariances
-					)
-				},	
-				'real tempered'	= 
-				{
-					stateSpace <<- realTemperedStateSpace$new(
-						iterationsNo 		= iterationsNo,
-						temperatures 		= temperatures,
-						chainsNo 			= chainsNo,
-						spaceDim			= spaceDim,
-						initialStates		= initialStates,
-						quasiMetric 		= quasiMetric,
-						proposalCovariances = proposalCovariances
-					)	
-				},
-				cat("That kind of state-space is currently the only one unavailable.")
-			)
-
-
-			stateSpace$targetMeasure  <<- targetMeasure
-
-
-			switch(
-				algorithmName,
-				'Metropolis-Hastings' 	=
-				{
-					algorithm <<- metropolisHastings$new(
-						iterationsNo 	= iterationsNo,
-						strategyNo		= strategyNo,
-						detailedOutput	= detailedOutput,
-						chainsNo 		= chainsNo
-					)	
-				},
-				'parallel tempering'	= 
-				{
-					algorithm <<- parallelTempering$new(
-						iterationsNo 	= iterationsNo,
-						temperatures 	= temperatures,
-						strategyNo		= strategyNo,
-						detailedOutput	= detailedOutput,
-						chainsNo 		= chainsNo
-					)
-				},
-
-				cat("That kind of algorithm is currently unavailable.")
-			)
-
-			algorithm$stateSpace <<- stateSpace			
+	
+				switch(
+					targetMeasureName,
+					'Liang-Wang'={
+						targetMeasure 	<<- targetLiangDensity$new()
+					},
+					'Matteo'={
+						targetMeasure 	<<- targetMatteoDensity$new()
+					},
+					'any density'={
+						targetMeasure 	<<- targetUDensity$new(
+							targetDensity 	= targetDensity
+						)
+					},
+					stop("You must supply a target measure.")
+				)
+	
+				switch(
+					stateSpaceName,
+					'real'	= 
+					{
+						stateSpace <<- realStateSpace$new(
+							iterationsNo 		= iterationsNo,
+							chainsNo 			= chainsNo,
+							spaceDim			= spaceDim,
+							initialStates		= initialStates,
+							proposalCovariances = proposalCovariances
+						)
+					},	
+					'real tempered'	= 
+					{
+						stateSpace <<- realTemperedStateSpace$new(
+							iterationsNo 		= iterationsNo,
+							temperatures 		= temperatures,
+							chainsNo 			= chainsNo,
+							spaceDim			= spaceDim,
+							initialStates		= initialStates,
+							quasiMetric 		= quasiMetric,
+							proposalCovariances = proposalCovariances
+						)	
+					},
+					cat("That kind of state-space is currently the only one unavailable.")
+				)
+	
+	
+				stateSpace$targetMeasure  <<- targetMeasure
+	
+	
+				switch(
+					algorithmName,
+					'Metropolis-Hastings' 	=
+					{
+						algorithm <<- metropolisHastings$new(
+							iterationsNo 	= iterationsNo,
+							strategyNo		= strategyNo,
+							detailedOutput	= detailedOutput,
+							chainsNo 		= chainsNo
+						)	
+					},
+					'parallel tempering'	= 
+					{
+						algorithm <<- parallelTempering$new(
+							iterationsNo 	= iterationsNo,
+							temperatures 	= temperatures,
+							strategyNo		= strategyNo,
+							detailedOutput	= detailedOutput,
+							chainsNo 		= chainsNo
+						)
+					},
+	
+					cat("That kind of algorithm is currently unavailable.")
+				)
+	
+				algorithm$stateSpace <<- stateSpace			}
 		},
 
 
 		checkTemperatures = function(
 			temperatures
-		)
-		{
+		){
 			if (length(temperatures) == 0)
 			{
 				cat(
@@ -216,17 +217,17 @@ simulation <- setRefClass(
 			return( temperatures )
 		},	
 
-
-		checkIterationsNo = function( iterationsNo )
+	
+		setIterationsNo = function( iterationsNo )
 		{
-			if ( !is.null(iterationsNo) ){	
-				iterationsNo 	<- as.integer( iterationsNo )
-		
-				if ( is.na( iterationsNo ) || ( iterationsNo < 0) ) stop("Inappropriate no of steps. Please enter an integer value.")	
-			}	
-			
-			return( iterationsNo )
+			if ( is.na( iterationsNo ) || ( iterationsNo < 0) ) 
+			{
+				stop("Inappropriate no of steps. Please enter an integer value.")	
+			} else {	
+				iterationsNo <<- as.integer( iterationsNo )
+			}
 		},
+
 
 		############################################################
 				# Visualisation
@@ -252,7 +253,20 @@ simulation <- setRefClass(
 			if( save ){
         		write.csv2(
 	  				stateSpace$simulatedStates,
-	  				file = paste(path,"simulatedStates",Sys.time(),".csv", sep="",colapse=""),
+	  				file = paste(
+	  					getwd(),
+	  					"/data/",
+	  					algorithmName,
+	  					'[]',
+	  					stateSpaceName,
+	  					'[]',
+	  					targetMeasureName,
+	  					'[]',
+	  					iterationsNo,
+	  					"iterations.csv", 
+	  					sep="",
+	  					colapse=""
+	  				),
 	  				row.names=FALSE
 	  			)	
 			}  

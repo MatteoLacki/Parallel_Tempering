@@ -17,9 +17,10 @@ source("./simulations/simulations.R")
 
 ############################### State-dependent simulation ###################
 LiangWangExample <- simulation$new(
-	iterationsNo	= 100,
+	iterationsNo	= 1000,
 	strategyNo 	= 1,
-	example 	= TRUE
+	example 	= TRUE,
+	save		= TRUE
 )
 
 LiangWangExample
