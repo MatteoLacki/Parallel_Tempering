@@ -17,9 +17,11 @@ targetUDensity <- setRefClass(
 				# Initialisation
 
 		initialize 	= function(
-			targetDensity = function(){}
+			targetDensity = function(){},
+			...
 		)
 		{
+			callSuper(...)	
 			targetUDensity <<- targetDensity 
 		},
 

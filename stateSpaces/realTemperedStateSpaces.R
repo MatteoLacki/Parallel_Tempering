@@ -24,17 +24,17 @@ realTemperedStateSpace <- setRefClass(
 				# Initialisation
 
 
-		initializeTemperedRealStateSpace = function(
-			temperatures 		= numeric(0),
-			quasiMetric 		= function(){} 
-		)
-			#### Initialises temperatures and quasi-metric.
-		{
-			insertTemperatures( 
-				temperatures = temperatures 
-			)
-			quasiMetric <<- quasiMetric
-		},
+		# initializeTemperedRealStateSpace = function(
+		# 	temperatures 		= numeric(0),
+		# 	quasiMetric 		= function(){} 
+		# )
+		# 	#### Initialises temperatures and quasi-metric.
+		# {
+		# 	insertTemperatures( 
+		# 		temperatures = temperatures 
+		# 	)
+		# 	quasiMetric <<- quasiMetric
+		# },
 
 
 		initialize	= function(
@@ -44,28 +44,57 @@ realTemperedStateSpace <- setRefClass(
 			initialStates 		= matrix(ncol=0, nrow=0),
 			proposalCovariances = matrix(ncol=0, nrow=0),
 			quasiMetric 		= function(){},
-			temperatures 		= numeric(0)
+			temperatures 		= numeric(0),
+			...
 		)
 			#### Splits the initialization to general state-space initialization and real-state-space-specific initialization.
 		{
 			if ( !is.null(iterationsNo)){		
-				initializeStateSpace(
-					iterationsNo 		= iterationsNo
-				)
-				
-				initializeRealStateSpace(
+				callSuper(
+					iterationsNo 		= iterationsNo,
 					chainsNo  			= chainsNo,
 					spaceDim  			= spaceDim,
 					initialStates 	 	= initialStates,
 					proposalCovariances = proposalCovariances
 				)
 				
-				initializeTemperedRealStateSpace(
-					temperatures 	  	= temperatures,
-					quasiMetric 	 	= quasiMetric
+				insertTemperatures( 
+					temperatures = temperatures 
 				)
+
+				quasiMetric <<- quasiMetric			
 			}
 		},
+
+		# initialize	= function(
+		# 	iterationsNo 		= NULL,  
+		# 	chainsNo 			= 0L,
+		# 	spaceDim			= 0L,
+		# 	initialStates 		= matrix(ncol=0, nrow=0),
+		# 	proposalCovariances = matrix(ncol=0, nrow=0),
+		# 	quasiMetric 		= function(){},
+		# 	temperatures 		= numeric(0)
+		# )
+		# 	#### Splits the initialization to general state-space initialization and real-state-space-specific initialization.
+		# {
+		# 	if ( !is.null(iterationsNo)){		
+		# 		initializeStateSpace(
+		# 			iterationsNo 		= iterationsNo
+		# 		)
+				
+		# 		initializeRealStateSpace(
+		# 			chainsNo  			= chainsNo,
+		# 			spaceDim  			= spaceDim,
+		# 			initialStates 	 	= initialStates,
+		# 			proposalCovariances = proposalCovariances
+		# 		)
+				
+		# 		initializeTemperedRealStateSpace(
+		# 			temperatures 	  	= temperatures,
+		# 			quasiMetric 	 	= quasiMetric
+		# 		)
+		# 	}
+		# },
 
 		createDataStorage = function()
 		{

@@ -40,9 +40,12 @@ targetMatteoDensity <- setRefClass(
 				# Initialisation
 
 		initialize 	= function(
-			quantileSimulationsNo = 10000
+			quantileSimulationsNo = 10000,
+			...
 		)
 		{
+			callSuper(...)
+
 			mixturesNo 		<<- 2L
 
 			mixturesWeight 	<<- c(1/10, 9/10)

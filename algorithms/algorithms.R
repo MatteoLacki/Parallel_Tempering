@@ -24,33 +24,6 @@ algorithm <- setRefClass(
 		############################################################
 				# Initialisation
 
-		# initializeAlgorithm	= function(
-		# 	iterationsNo 	= NULL
-		# ){
-		# 	simulationFinished	<<- FALSE
-		# 	tmpIterationsNo 	<- as.integer(iterationsNo)
-		
-		# 	if ( is.na(tmpIterationsNo) || (iterationsNo < 0) ) 
-		# 	{
-		# 		stop("Inappropriate number of steps. Please enter an integer value.")
-		# 	} else
-		# 	{	
-		# 		iterationsNo 	<<- tmpIterationsNo
-		# 	}
-		# },	
-
-
-		# initialize = function(
-		# 	iterationsNo 	= NULL
-		# 	)
-		# {
-		# 	if ( !is.null(iterationsNo)){
-		# 		initializeAlgorithm(
-		# 			iterationsNo 	= iterationsNo			
-		# 		)
-		# 	}
-		# },
-
 		initialize = function(
 			iterationsNo 	= NULL,
 			...
@@ -66,7 +39,6 @@ algorithm <- setRefClass(
 				}	
 			}
 		},
-
 			
 
 		prepareSimulation = function()
@@ -75,24 +47,19 @@ algorithm <- setRefClass(
 		############################################################
 				# Visualisation
 
-		# showAlgorithm = function()
-		# {
-		# 	cat('\n Welcome to our algorithm! \n')
-		# 	cat('Number of steps: ', iterationsNo, '\n')
-		# },	
-
-
 		show = function( ... )
 		{
 			anteSimulationShow()
 			postSimulationShow()
 		},
 
+
 		anteSimulationShow = function(...)
 		{
 			cat('\n Welcome to our algorithm! \n')
 			cat('Number of steps: ', iterationsNo, '\n')		
 		},
+
 
 		postSimulationShow = function(...)
 		{
@@ -101,10 +68,6 @@ algorithm <- setRefClass(
 				has finished. ')		
 		},
 
-		# show = function()
-		# {
-		# 	showAlgorithm()
-		# },
 
 		getDataForVisualisation = function()
 		{

@@ -21,21 +21,32 @@ stateSpace <- setRefClass(
 		############################################################
 				# Initialisation
 
-		initializeStateSpace = function(
-			iterationsNo 	= NULL
-		){	
-			iterationsNo <<- as.integer(iterationsNo)
-		},
+		# initializeStateSpace = function(
+		# 	iterationsNo 	= NULL
+		# ){	
+		# 	iterationsNo <<- as.integer(iterationsNo)
+		# },
+
 
 		initialize 	= function(
-			iterationsNo 	= NULL
+			iterationsNo 	= NULL,
+			...
 		){
-			if ( !is.null(iterationsNo)){
-				initializeStateSpace(
-					iterationsNo = iterationsNo
-				)
+			if ( !is.null(iterationsNo)){			
+				iterationsNo <<- as.integer(iterationsNo)
 			}	
 		},
+
+
+		# initialize 	= function(
+		# 	iterationsNo 	= NULL
+		# ){
+		# 	if ( !is.null(iterationsNo)){
+		# 		initializeStateSpace(
+		# 			iterationsNo = iterationsNo
+		# 		)
+		# 	}	
+		# },
 
 		############################################################
 				# Visualisation

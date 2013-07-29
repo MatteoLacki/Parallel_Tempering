@@ -18,7 +18,9 @@ targetMeasure <- setRefClass(
 		############################################################
 				# Initialisation
 
-		initialize 	= function()
+		initialize 	= function(
+			...
+		)
 		{},
 
 		############################################################

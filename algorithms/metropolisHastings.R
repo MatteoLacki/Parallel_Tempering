@@ -44,19 +44,6 @@ metropolisHastings <- setRefClass(
 		############################################################
 				# Initialisation
 				
-
-		# initializeMetropolisHastings	= function(
-		# 	chainsNo 		= 0L,
-		# 	detailedOutput	= FALSE
-		# 	)
-		# 	#### Initializes the parallel-tempering-specific fields.
-		# {
-		# 	chainsNo 				<<- chainsNo
-		# 	acceptedRandomWalksNo	<<- rep.int(0L, times = chainsNo)
-		# 	rejectedRandomWalksNo	<<- rep.int(0L, times = chainsNo)
-		# 	detailedOutput			<<- detailedOutput
-		# },
-
 		initialize = function(
 			iterationsNo 	= 0L,
 			chainsNo 	  	= 0L,
@@ -82,26 +69,6 @@ metropolisHastings <- setRefClass(
 		},
 
 
-		# initialize = function(
-		# 	iterationsNo 	= 0L,
-		# 	chainsNo 	  	= 0L,
-		# 	detailedOutput	= FALSE
-		# 	)
-		# 	#### Splits the initialization to general Simulations initialization and parallel-tempering-specific initialization.
-		# {
-		# 	initializeAlgorithm(
-		# 		iterationsNo = iterationsNo 
-		# 	)
-
-		# 	initializeMetropolisHastings( 
-		# 		chainsNo		= chainsNo,
-		# 		detailedOutput	= detailedOutput
-		# 	)
-
-		# 	insertChainNames()
-		# },
-
-
 		insertChainNames = function() {
 			tmpNames <- character( chainsNo )
 
@@ -119,8 +86,6 @@ metropolisHastings <- setRefClass(
 				# Initially everything is new.
 			updatedStates <<- rep( TRUE, chainsNo)
 
-#			cat('\n\nBla',updatedStates)
-
 				# Current states must get at least once calculated all without any updates.
 			lastStatesLogUDensities <<-  
 				stateSpace$proposeLogsOfUMeasures()
@@ -129,32 +94,6 @@ metropolisHastings <- setRefClass(
 		############################################################
 				# Visualisation
 
-
-		# showMetropolisHastings	= function()
-		# 	#### Shows the initialised fields before the simulation.
-		# {
-		# 	cat('\nThe Metropolis-Hastings algorithm inputs are here: \n')
-		# 	cat('Number of chains: ', chainsNo, '\n')	
-
-		# 	if( simulationFinished )
-		# 	{
-		# 		cat("Percentage of accepted-rejected random-walks:\n")
-		# 		acceptance <- 
-		# 			rbind( chainNames, acceptedRandomWalksNo/iterationsNo, rejectedRandomWalksNo/iterationsNo)
-		# 		acceptance <- as.data.frame( acceptance )
-
-		# 		row.names(acceptance) 	<- 
-		# 			c("chain","accepted", "rejected")
-		# 		colnames(acceptance) 	<- 1:chainsNo
-		# 		print( acceptance )
-		# 		cat("\n")
-				
-				
-		# 		cat("\n")
-		# 	}
-		# },
-
-	
 		show	= function( ... )
 			#### Calls the father-class show method followed by its own show method.
 		{
@@ -191,14 +130,6 @@ metropolisHastings <- setRefClass(
 				cat("\n")
 			}	
 		},
-		# show	= function( ... )
-		# 	#### Calls the father-class show method followed by its own show method.
-		# {
-		# 	insertChainNames()
-		# 	callSuper( ... ) 
-		# 	showMetropolisHastings()			
-		# },
-
 		############################################################
 				# Algorithmic Methods
 					
@@ -214,8 +145,7 @@ metropolisHastings <- setRefClass(
 			
 			randomWalk()
 		},
-				###### random walk sphere ######
-
+			###### random walk sphere ######
 
 		randomWalk = function()
 			#### Performs the random walk step: it asks the state-space to generate the logs of unnormalised probabilities evaluated in the proposed points and then performs the usual rejection part. All this could be done parallely if it was needed - this feature will be shipped with version 2.0.

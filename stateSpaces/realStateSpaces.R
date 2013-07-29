@@ -51,52 +51,82 @@ realStateSpace <- setRefClass(
 				# Initialisation
 
 
-		initializeRealStateSpace = function(
-			chainsNo 			= 0L,
-			spaceDim			= 0L,
-			initialStates 		= matrix(ncol=0, nrow=0),
-			proposalCovariances = matrix(ncol=0, nrow=0)
-		)
-			#### Initializes the real-state-space-specific fields.
-		{
-			insertInitialStates( 
-				initialStates 	= initialStates,
-				spaceDim 		= spaceDim,
-				chainsNo		= chainsNo
-			)				
+		# initializeRealStateSpace = function(
+		# 	chainsNo 			= 0L,
+		# 	spaceDim			= 0L,
+		# 	initialStates 		= matrix(ncol=0, nrow=0),
+		# 	proposalCovariances = matrix(ncol=0, nrow=0)
+		# )
+		# 	#### Initializes the real-state-space-specific fields.
+		# {
+		# 	insertInitialStates( 
+		# 		initialStates 	= initialStates,
+		# 		spaceDim 		= spaceDim,
+		# 		chainsNo		= chainsNo
+		# 	)				
 
 
-			if( spaceDim > 0 & chainsNo > 0 ) { createDataStorage() }			
-			if (length(slotsNo) > 0) {	insertStates()	}
+		# 	if( spaceDim > 0 & chainsNo > 0 ) { createDataStorage() }			
+		# 	if (length(slotsNo) > 0) {	insertStates()	}
 
-			insertProposalCovariances(
-				proposalCovariances = proposalCovariances
-			)
-		},
-
+		# 	insertProposalCovariances(
+		# 		proposalCovariances = proposalCovariances
+		# 	)
+		# },
 
 		initialize	= function(
 			iterationsNo 		= NULL,  
 			chainsNo 			= 0L,
 			spaceDim			= 0L,
 			initialStates 		= matrix(ncol=0, nrow=0),
-			proposalCovariances = matrix(ncol=0, nrow=0)
+			proposalCovariances = matrix(ncol=0, nrow=0),
+			...
 		)
 			#### Splits the initialization to general state-space initialization and real-state-space-specific initialization.
 		{
-			if ( !is.null(iterationsNo)){			
-				initializeStateSpace(
+			if( !is.null(iterationsNo) ){			
+				callSuper(
 					iterationsNo 		= iterationsNo
 				)
 	
-				initializeRealStateSpace(
-					initialStates 	 	= initialStates,
-					spaceDim  			= spaceDim,
-					chainsNo  			= chainsNo,
+				insertInitialStates( 
+					initialStates 	= initialStates,
+					spaceDim 		= spaceDim,
+					chainsNo		= chainsNo
+				)				
+
+				if( spaceDim > 0 & chainsNo > 0 ){	createDataStorage() }			
+				if( length(slotsNo) > 0 ){	insertStates()	}
+
+				insertProposalCovariances(
 					proposalCovariances = proposalCovariances
-				)
+				)			
 			}
 		},
+
+
+		# initialize	= function(
+		# 	iterationsNo 		= NULL,  
+		# 	chainsNo 			= 0L,
+		# 	spaceDim			= 0L,
+		# 	initialStates 		= matrix(ncol=0, nrow=0),
+		# 	proposalCovariances = matrix(ncol=0, nrow=0)
+		# )
+		# 	#### Splits the initialization to general state-space initialization and real-state-space-specific initialization.
+		# {
+		# 	if ( !is.null(iterationsNo)){			
+		# 		initializeStateSpace(
+		# 			iterationsNo 		= iterationsNo
+		# 		)
+	
+		# 		initializeRealStateSpace(
+		# 			initialStates 	 	= initialStates,
+		# 			spaceDim  			= spaceDim,
+		# 			chainsNo  			= chainsNo,
+		# 			proposalCovariances = proposalCovariances
+		# 		)
+		# 	}
+		# },
 
 
 		insertInitialStates	= function( 

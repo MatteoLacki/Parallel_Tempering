@@ -37,9 +37,12 @@ targetLiangDensity <- setRefClass(
 				# Initialisation
 
 		initialize 	= function(
-			quantileSimulationsNo = 10000
+			quantileSimulationsNo = 10000,
+			...
 		)
 		{
+			callSuper(...)
+
 			mixturesNo 		<<- 20L
 
 			mixturesWeight 	<<- 1/mixturesNo
