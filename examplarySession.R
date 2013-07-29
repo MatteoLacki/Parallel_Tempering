@@ -14,8 +14,10 @@ source("./algorithms/algorithms.R")
 source("./algorithms/metropolisHastings.R")
 source("./algorithms/parallelTemperings.R")
 source("./simulations/simulations.R")
+source("./controllers/controllers.R")
 
 ############################### State-dependent simulation ###################
+
 
 LiangWangExample <- simulation$new(
 	iterationsNo	= 100,
@@ -177,6 +179,22 @@ LiangWangExample <- simulation$new(
 	covariances	= tmpProposalCovariances,
 	spaceDim	= 2,
 	chainsNo 	= 5	 
+)
+
+LiangWangExample <- Metro(
+	n		= 1000,
+	strategyNo 	= 6,
+	space 	 	= 'real',
+	target 		= 'Liang-Wang',
+	covariances	= tmpProposalCovariances,
+	spaceDim	= 2,
+	chainsNo 	= 5	 
+)
+
+LiangWangExample <- PT(
+	n		= 1000,
+	strategyNo 	= 6,
+	example	 	= TRUE
 )
 
 LiangWangExample

@@ -57,7 +57,8 @@ simulation <- setRefClass(
 			quasiMetric 		= function(){},
 			covariances 		= matrix(ncol=0, nrow=0),
 			detailedOutput		= FALSE,
-			save 				= FALSE
+			save 				= FALSE,
+			...
       )
 		{
 			if (!is.null(iterationsNo)){
