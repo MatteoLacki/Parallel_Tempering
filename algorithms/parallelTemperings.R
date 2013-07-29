@@ -42,8 +42,8 @@ parallelTempering <- setRefClass(
 
 		acceptedSwapsNo			= "integer",
 
-			## Triggers detailed output during the simulation.
-		detailedOutput			= "logical",
+		# 	## Triggers detailed output during the simulation.
+		# detailedOutput			= "logical",
 
 			## Is the swap probability independent of point in space?	
 		simpleSwap				= "logical",
@@ -62,22 +62,22 @@ parallelTempering <- setRefClass(
 				# Initialisation
 				
 
-		initializeParallelTempering	= function(
-			temperatures 		= numeric(0),
-			strategyNo			= 1L
-			)
-			#### Initializes the parallel-tempering-specific fields.
-		{
-			temperatures 		<<- temperatures
-			inverseTemperatures <<- 1/temperatures
+		# initializeParallelTempering	= function(
+		# 	temperatures 		= numeric(0),
+		# 	strategyNo			= 1L
+		# 	)
+		# 	#### Initializes the parallel-tempering-specific fields.
+		# {
+		# 	temperatures 		<<- temperatures
+		# 	inverseTemperatures <<- 1/temperatures
 
-			insertTranspositions()
-			insertStrategyNo( strategyNo )
+		# 	insertTranspositions()
+		# 	insertStrategyNo( strategyNo )
 
-			acceptedRandomWalksNo	<<- rep.int(0L, times = chainsNo)
-			rejectedRandomWalksNo	<<- rep.int(0L, times = chainsNo)
-			detailedOutput			<<- detailedOutput
-		},
+		# 	acceptedRandomWalksNo	<<- rep.int(0L, times = chainsNo)
+		# 	rejectedRandomWalksNo	<<- rep.int(0L, times = chainsNo)
+		# 	detailedOutput			<<- detailedOutput
+		# },
 
 
 		insertStrategyNo = function(
@@ -86,13 +86,11 @@ parallelTempering <- setRefClass(
 		{
 			tmpStrategyNo	<- as.integer( strategyNo )
 
-			if ( is.na( tmpStrategyNo ) || tmpStrategyNo < 0 )
-			{		 
+			if ( is.na( tmpStrategyNo ) || tmpStrategyNo < 0 ){		 
 				stop(
 					"Inappropriate stregy number. Right now you can choose among strategies from 1 to 4."
 				)
-			} else
-			{	
+			} else {	
 				strategyNo	<<- tmpStrategyNo
 			}
 
@@ -100,14 +98,12 @@ parallelTempering <- setRefClass(
 			simpleSwap 	<<- ifelse( strategyNo %in% c(5,6) , TRUE, FALSE )
 
 				# Uniform swaps on all possible transpositions
-			if ( strategyNo == 5)
-			{
+			if ( strategyNo == 5){
 				possibleSwaps 	<<- 1:transpositionsNo 
 			}
 
 				# Uniform swaps on neighbouring transpositions
-			if ( strategyNo == 6)
-			{
+			if ( strategyNo == 6){
 				possibleSwaps 	<<- getNeighbours()
 			}
 		},
@@ -148,34 +144,62 @@ parallelTempering <- setRefClass(
 			transpositionHistory<<-	tmpTranspositionHistory
 		},
 
-
+		
 		initialize = function(
 			iterationsNo 	= NULL,
 			temperatures 	= numeric(0),
 			strategyNo		= 1L,
 			detailedOutput	= FALSE,
-			chainsNo 		= 0L
-			)
-			#### Splits the initialization to general Simulations initialization and parallel-tempering-specific initialization.
-		{
+			chainsNo 		= 0L,
+			...
+		){
 			if ( !is.null(iterationsNo)){
-				initializeAlgorithm(
-					iterationsNo 	= iterationsNo 
+
+				temperatures 		<<- temperatures
+				inverseTemperatures <<- 1/temperatures
+
+				callSuper( 
+					iterationsNo 	= iterationsNo,
+					chainsNo 		= chainsNo,
+					detailedOutput 	= detailedOutput,
+					...
 				)
-	
-				initializeMetropolisHastings( 
-					chainsNo		= chainsNo,
-					detailedOutput	= detailedOutput
-				)
-	
-				initializeParallelTempering(
-					temperatures 	= temperatures,
-					strategyNo		= strategyNo
-				)
-	
-				insertChainNames()
+
+				acceptedRandomWalksNo	<<- rep.int(0L, times = chainsNo)
+				rejectedRandomWalksNo	<<- rep.int(0L, times = chainsNo)
+				
+				insertTranspositions()
+				insertStrategyNo( strategyNo )
 			}
 		},
+
+		# initialize = function(
+		# 	iterationsNo 	= NULL,
+		# 	temperatures 	= numeric(0),
+		# 	strategyNo		= 1L,
+		# 	detailedOutput	= FALSE,
+		# 	chainsNo 		= 0L
+		# 	)
+		# 	#### Splits the initialization to general Simulations initialization and parallel-tempering-specific initialization.
+		# {
+		# 	if ( !is.null(iterationsNo)){
+		# 		initializeAlgorithm(
+		# 			iterationsNo 	= iterationsNo 
+		# 		)
+	
+		# 		initializeMetropolisHastings( 
+		# 			chainsNo		= chainsNo,
+		# 			detailedOutput	= detailedOutput
+		# 		)
+	
+		# 		initializeParallelTempering(
+		# 			temperatures 	= temperatures,
+		# 			strategyNo		= strategyNo
+		# 		)
+	
+		# 		insertChainNames()
+		# 	}
+		# },
 
 
 		insertChainNames = function() 
@@ -211,24 +235,59 @@ parallelTempering <- setRefClass(
 				# Visualisation
 
 
-		showParallelTempering = function()
-			#### Shows the initialised fields before the simulation.
-		{
-			cat('\nThe Parallel Tempering inputs are here: \n')
-			cat('Temperatures: ', temperatures, '\n')
-			cat('Chosen swap-strategy number: ', strategyNo, '\n')
-			cat('Number of transpositions: ', transpositionsNo, '\n')	
-			cat('State-independent swaps: ', ifelse( simpleSwap, ' yes',' no'), '\n')	
+		# showParallelTempering = function()
+		# 	#### Shows the initialised fields before the simulation.
+		# {
+		# 	cat('\nThe Parallel Tempering inputs are here: \n')
+		# 	cat('Temperatures: ', temperatures, '\n')
+		# 	cat('Chosen swap-strategy number: ', strategyNo, '\n')
+		# 	cat('Number of transpositions: ', transpositionsNo, '\n')	
+		# 	cat('State-independent swaps: ', ifelse( simpleSwap, ' yes',' no'), '\n')	
 
+		# 	if( simulationFinished )
+		# 	{
+		# 		cat("Transpostion history:\n")
+		# 		print( transpositionHistory )
+		# 		cat("\n")
+
+		# 		cat("Percentage of accepted-rejected random-walks:\n")
+		# 		acceptance <- 
+		# 			rbind( temperatures, acceptedRandomWalksNo/iterationsNo, rejectedRandomWalksNo/iterationsNo)
+		# 		acceptance <- as.data.frame( acceptance )
+
+		# 		row.names(acceptance) 	<- 
+		# 			c("temperatures","accepted", "rejected")
+		# 		colnames(acceptance) 	<- 1:chainsNo
+		# 		print( acceptance )
+		# 		cat("\n")
+		# 	}
+		# },
+
+	
+		anteSimulationShow = function(...)
+		{
+			cat('\nUsing Parallel Tempering Algorithm\n')
+			cat('\tNumber of steps: ', iterationsNo, '\n')		
+			cat('\tTemperatures: ', temperatures, '\n')
+			cat('\tChosen swap-strategy number: ', strategyNo, '\n')
+			cat('\tNumber of transpositions: ', transpositionsNo, '\n')	
+			cat('You use a swapping strategy that is ', 
+				ifelse( simpleSwap, 'state-independent','state-dependent'), 
+				'\n'
+			)	
+		},
+
+		postSimulationShow = function(...)
+		{
 			if( simulationFinished )
 			{
-				cat("Transpostion history:\n")
-				print( transpositionHistory )
-				cat("\n")
+				cat("\n\n\tPercentage of accepted-rejected random-walks:\n")
+				acceptance <- rbind( 
+					chainNames, 
+					acceptedRandomWalksNo/iterationsNo, 
+					rejectedRandomWalksNo/iterationsNo
+				)
 
-				cat("Percentage of accepted-rejected random-walks:\n")
-				acceptance <- 
-					rbind( temperatures, acceptedRandomWalksNo/iterationsNo, rejectedRandomWalksNo/iterationsNo)
 				acceptance <- as.data.frame( acceptance )
 
 				row.names(acceptance) 	<- 
@@ -236,18 +295,16 @@ parallelTempering <- setRefClass(
 				colnames(acceptance) 	<- 1:chainsNo
 				print( acceptance )
 				cat("\n")
-			}
+			}		
 		},
 
-	
-		show	= function()
-			#### Calls the father-class show method followed by its own show method.
-		{
-			showAlgorithm()
-			showMetropolisHastings()
-			showParallelTempering()			
-		},
-
+# show	= function()
+# 			#### Calls the father-class show method followed by its own show method.
+# 		{
+# 			showAlgorithm()
+# 			showMetropolisHastings()
+# 			showParallelTempering()			
+# 		},
 
 		plotHistory = function()
 		{

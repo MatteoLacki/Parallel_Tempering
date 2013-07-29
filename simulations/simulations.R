@@ -43,9 +43,9 @@ simulation <- setRefClass(
 				# Initialisation
 
 		initialize = function(
-			stateSpaceName		= "real tempered",
-			algorithmName		= "parallel tempering",
-			targetMeasureName	= "Liang-Wang",	
+			space 	 			= "real tempered",
+			algo 				= "parallel tempering",
+			target 		 		= "Liang-Wang",	
 			example 			= FALSE,
 			iterationsNo 		= NULL,
 			chainsNo 			= 0L,
@@ -55,26 +55,28 @@ simulation <- setRefClass(
 			temperatures 		= numeric(0),
 			strategyNo			= 1L,
 			quasiMetric 		= function(){},
-			proposalCovariances = matrix(ncol=0, nrow=0),
+			covariances 		= matrix(ncol=0, nrow=0),
 			detailedOutput		= FALSE,
 			save 				= FALSE
       )
 		{
 			if (!is.null(iterationsNo)){
+
 				cat("Thank you for choosing our software. We wish you a pleasent day.")
 	
 				setIterationsNo( iterationsNo=iterationsNo )
 
 	      		save 				<<- save
-	      		stateSpaceName 		<<- stateSpaceName
-	      		targetMeasureName 	<<- targetMeasureName
-				algorithmName 		<<- algorithmName
-	
+	      		stateSpaceName 		<<- space
+	      		targetMeasureName 	<<- target
+				algorithmName 		<<- algo
+				proposalCovariances <- covariances
+
 				if( example )
 				{
 					temperatures 			<- c(1, 2.8, 7.7, 21.6, 60)
 					tmpProposalCovariances 	<- vector( "list", 5L )
-	
+					
 					# for (i in 1:5 )
 					#  {
 					#  	tmpProposalCovariances[[i]] <- 
@@ -135,7 +137,7 @@ simulation <- setRefClass(
 					{
 						stateSpace <<- realStateSpace$new(
 							iterationsNo 		= iterationsNo,
-							chainsNo 			= chainsNo,
+							chainsNo 			= as.integer(chainsNo),
 							spaceDim			= spaceDim,
 							initialStates		= initialStates,
 							proposalCovariances = proposalCovariances
@@ -146,7 +148,7 @@ simulation <- setRefClass(
 						stateSpace <<- realTemperedStateSpace$new(
 							iterationsNo 		= iterationsNo,
 							temperatures 		= temperatures,
-							chainsNo 			= chainsNo,
+							chainsNo 			= as.integer(chainsNo),
 							spaceDim			= spaceDim,
 							initialStates		= initialStates,
 							quasiMetric 		= quasiMetric,
@@ -168,7 +170,7 @@ simulation <- setRefClass(
 							iterationsNo 	= iterationsNo,
 							strategyNo		= strategyNo,
 							detailedOutput	= detailedOutput,
-							chainsNo 		= chainsNo
+							chainsNo 		= as.integer(chainsNo)
 						)	
 					},
 					'parallel tempering'	= 
@@ -178,7 +180,7 @@ simulation <- setRefClass(
 							temperatures 	= temperatures,
 							strategyNo		= strategyNo,
 							detailedOutput	= detailedOutput,
-							chainsNo 		= chainsNo
+							chainsNo 		= as.integer(chainsNo)
 						)
 					},
 	
@@ -235,9 +237,11 @@ simulation <- setRefClass(
 
 		show = function()
 		{
+			algorithm$show()
 			stateSpace$show( 
 				algorithmName = algorithmName 
 			)
+			targetMeasure$show()
 		},
 
 		############################################################

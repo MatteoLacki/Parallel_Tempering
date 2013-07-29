@@ -16,8 +16,9 @@ source("./algorithms/parallelTemperings.R")
 source("./simulations/simulations.R")
 
 ############################### State-dependent simulation ###################
+
 LiangWangExample <- simulation$new(
-	iterationsNo	= 1000,
+	iterationsNo	= 100,
 	strategyNo 	= 1,
 	example 	= TRUE,
 	save		= TRUE
@@ -28,6 +29,7 @@ system.time(
   LiangWangExample$simulate()  
 ) 
 LiangWangExample
+LiangWangExample$algorithm
 
 
 
@@ -151,4 +153,35 @@ dev.off()
 svg("MatteoDistributionStrategyWithQuasiMetricTranspositionHistory.svg", width=12, height=8)
 	LiangWangExample$algorithm$plotHistory()
 dev.off()
+
+################################################
+
+tmpProposalCovariances 	<- vector( "list", 5L )
+
+for (i in 1:5 )
+{
+	tmpProposalCovariances[[i]] <- 
+		diag( 
+			ifelse(i <=3, .05, .01)*1,
+			nrow=2, 
+			ncol=2 
+		) 				
+}
+
+LiangWangExample <- simulation$new(
+	iterationsNo	= 1000,
+	strategyNo 	= 6,
+	algo 	 	= 'Metropolis-Hastings',
+	space 	 	= 'real',
+	target 		= 'Liang-Wang',
+	covariances	= tmpProposalCovariances,
+	spaceDim	= 2,
+	chainsNo 	= 5	 
+)
+
+LiangWangExample
+system.time(
+  LiangWangExample$simulate()  
+) 
+LiangWangExample	
 

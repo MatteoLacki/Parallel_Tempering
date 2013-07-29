@@ -45,37 +45,61 @@ metropolisHastings <- setRefClass(
 				# Initialisation
 				
 
-		initializeMetropolisHastings	= function(
-			chainsNo 		= 0L,
-			detailedOutput	= FALSE
-			)
-			#### Initializes the parallel-tempering-specific fields.
-		{
-			chainsNo 				<<- chainsNo
-			acceptedRandomWalksNo	<<- rep.int(0L, times = chainsNo)
-			rejectedRandomWalksNo	<<- rep.int(0L, times = chainsNo)
-			detailedOutput			<<- detailedOutput
-		},
-
+		# initializeMetropolisHastings	= function(
+		# 	chainsNo 		= 0L,
+		# 	detailedOutput	= FALSE
+		# 	)
+		# 	#### Initializes the parallel-tempering-specific fields.
+		# {
+		# 	chainsNo 				<<- chainsNo
+		# 	acceptedRandomWalksNo	<<- rep.int(0L, times = chainsNo)
+		# 	rejectedRandomWalksNo	<<- rep.int(0L, times = chainsNo)
+		# 	detailedOutput			<<- detailedOutput
+		# },
 
 		initialize = function(
 			iterationsNo 	= 0L,
 			chainsNo 	  	= 0L,
-			detailedOutput	= FALSE
-			)
+			detailedOutput	= FALSE,
+			...
+		)
 			#### Splits the initialization to general Simulations initialization and parallel-tempering-specific initialization.
 		{
-			initializeAlgorithm(
-				iterationsNo = iterationsNo 
-			)
-
-			initializeMetropolisHastings( 
-				chainsNo		= chainsNo,
-				detailedOutput	= detailedOutput
-			)
-
-			insertChainNames()
+			if (!is.null(iterationsNo)){
+			
+				callSuper(
+					iterationsNo = iterationsNo,
+					... 
+				)
+	
+				chainsNo 				<<- chainsNo
+				acceptedRandomWalksNo	<<- rep.int(0L, times = chainsNo)
+				rejectedRandomWalksNo	<<- rep.int(0L, times = chainsNo)
+				detailedOutput			<<- detailedOutput				
+	
+				# insertChainNames()
+			}
 		},
+
+
+		# initialize = function(
+		# 	iterationsNo 	= 0L,
+		# 	chainsNo 	  	= 0L,
+		# 	detailedOutput	= FALSE
+		# 	)
+		# 	#### Splits the initialization to general Simulations initialization and parallel-tempering-specific initialization.
+		# {
+		# 	initializeAlgorithm(
+		# 		iterationsNo = iterationsNo 
+		# 	)
+
+		# 	initializeMetropolisHastings( 
+		# 		chainsNo		= chainsNo,
+		# 		detailedOutput	= detailedOutput
+		# 	)
+
+		# 	insertChainNames()
+		# },
 
 
 		insertChainNames = function() {
@@ -106,17 +130,58 @@ metropolisHastings <- setRefClass(
 				# Visualisation
 
 
-		showMetropolisHastings	= function()
-			#### Shows the initialised fields before the simulation.
-		{
-			cat('\nThe Metropolis-Hastings algorithm inputs are here: \n')
-			cat('Number of chains: ', chainsNo, '\n')	
+		# showMetropolisHastings	= function()
+		# 	#### Shows the initialised fields before the simulation.
+		# {
+		# 	cat('\nThe Metropolis-Hastings algorithm inputs are here: \n')
+		# 	cat('Number of chains: ', chainsNo, '\n')	
 
+		# 	if( simulationFinished )
+		# 	{
+		# 		cat("Percentage of accepted-rejected random-walks:\n")
+		# 		acceptance <- 
+		# 			rbind( chainNames, acceptedRandomWalksNo/iterationsNo, rejectedRandomWalksNo/iterationsNo)
+		# 		acceptance <- as.data.frame( acceptance )
+
+		# 		row.names(acceptance) 	<- 
+		# 			c("chain","accepted", "rejected")
+		# 		colnames(acceptance) 	<- 1:chainsNo
+		# 		print( acceptance )
+		# 		cat("\n")
+				
+				
+		# 		cat("\n")
+		# 	}
+		# },
+
+	
+		show	= function( ... )
+			#### Calls the father-class show method followed by its own show method.
+		{
+			anteSimulationShow()
+			insertChainNames()
+			postSimulationShow()			
+		},
+
+
+		anteSimulationShow = function(...)
+		{
+			cat('\nUsing Metropolis-Hastings Algorithm\n')
+			cat('\tNumber of steps: ', iterationsNo, '\n')		
+		},
+
+
+		postSimulationShow = function(...)
+		{
 			if( simulationFinished )
 			{
-				cat("Percentage of accepted-rejected random-walks:\n")
-				acceptance <- 
-					rbind( chainNames, acceptedRandomWalksNo/iterationsNo, rejectedRandomWalksNo/iterationsNo)
+				cat("\tPercentage of accepted-rejected random-walks:\n")
+				acceptance <- rbind( 
+					chainNames, 
+					acceptedRandomWalksNo/iterationsNo, 
+					rejectedRandomWalksNo/iterationsNo
+				)
+
 				acceptance <- as.data.frame( acceptance )
 
 				row.names(acceptance) 	<- 
@@ -124,19 +189,15 @@ metropolisHastings <- setRefClass(
 				colnames(acceptance) 	<- 1:chainsNo
 				print( acceptance )
 				cat("\n")
-				
-				
-				cat("\n")
-			}
+			}	
 		},
-
-	
-		show	= function()
-			#### Calls the father-class show method followed by its own show method.
-		{
-			showAlgorithm()
-			showMetropolisHastings()			
-		},
+		# show	= function( ... )
+		# 	#### Calls the father-class show method followed by its own show method.
+		# {
+		# 	insertChainNames()
+		# 	callSuper( ... ) 
+		# 	showMetropolisHastings()			
+		# },
 
 		############################################################
 				# Algorithmic Methods

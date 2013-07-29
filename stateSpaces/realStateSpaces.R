@@ -304,8 +304,8 @@ realStateSpace <- setRefClass(
 				tmpNames[i] <- paste( 'chain ', i, sep="", collapse="" )
 			}
 
-			colnames(tmpStates) <- tmpNames
-			rownames(tmpStates) <- 1:spaceDim	
+			colnames(result) <- tmpNames
+			rownames(result) <- 1:spaceDim	
 
 			return( result )
 		},
@@ -346,11 +346,9 @@ realStateSpace <- setRefClass(
 		},
 
 
-		show = function( 
-			algorithmName 
-		){
+		show = function( algorithmName ){
 			showStateSpace()
-			showRealStateSpace( algorithmName )
+			showRealStateSpace()
 
 			if( simulationTerminated()) 
 			{

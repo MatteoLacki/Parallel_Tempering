@@ -24,34 +24,50 @@ algorithm <- setRefClass(
 		############################################################
 				# Initialisation
 
-		initializeAlgorithm	= function(
-			iterationsNo 	= NULL
-		){
-			simulationFinished	<<- FALSE
-			tmpIterationsNo 	<- as.integer(iterationsNo)
+		# initializeAlgorithm	= function(
+		# 	iterationsNo 	= NULL
+		# ){
+		# 	simulationFinished	<<- FALSE
+		# 	tmpIterationsNo 	<- as.integer(iterationsNo)
 		
-	cat('\n\nfuck\n\n')	
-			if ( is.na(tmpIterationsNo) || (iterationsNo < 0) ) 
-			{
-				stop("Inappropriate number of steps. Please enter an integer value.")
-			} else
-			{	
-				iterationsNo 	<<- tmpIterationsNo
-			}
-		},	
+		# 	if ( is.na(tmpIterationsNo) || (iterationsNo < 0) ) 
+		# 	{
+		# 		stop("Inappropriate number of steps. Please enter an integer value.")
+		# 	} else
+		# 	{	
+		# 		iterationsNo 	<<- tmpIterationsNo
+		# 	}
+		# },	
 
+
+		# initialize = function(
+		# 	iterationsNo 	= NULL
+		# 	)
+		# {
+		# 	if ( !is.null(iterationsNo)){
+		# 		initializeAlgorithm(
+		# 			iterationsNo 	= iterationsNo			
+		# 		)
+		# 	}
+		# },
 
 		initialize = function(
-			iterationsNo 	= NULL
-			)
-		{
+			iterationsNo 	= NULL,
+			...
+		){
 			if ( !is.null(iterationsNo)){
-				initializeAlgorithm(
-					iterationsNo 	= iterationsNo			
-				)
+				simulationFinished	<<- FALSE
+				tmpIterationsNo 	<- as.integer(iterationsNo)
+			
+				if ( is.na(tmpIterationsNo) || (iterationsNo < 0) ){
+					stop("Inappropriate number of steps. Please enter an integer value.")
+				} else {	
+					iterationsNo 	<<- tmpIterationsNo
+				}	
 			}
 		},
 
+			
 
 		prepareSimulation = function()
 		{},
@@ -59,18 +75,36 @@ algorithm <- setRefClass(
 		############################################################
 				# Visualisation
 
-		showAlgorithm = function()
-		{
-			cat('\n Welcome to our algorithm! \n')
-			cat('Number of steps: ', iterationsNo, '\n')
-		},	
+		# showAlgorithm = function()
+		# {
+		# 	cat('\n Welcome to our algorithm! \n')
+		# 	cat('Number of steps: ', iterationsNo, '\n')
+		# },	
 
 
-		show = function()
+		show = function( ... )
 		{
-			showAlgorithm()
+			anteSimulationShow()
+			postSimulationShow()
 		},
 
+		anteSimulationShow = function(...)
+		{
+			cat('\n Welcome to our algorithm! \n')
+			cat('Number of steps: ', iterationsNo, '\n')		
+		},
+
+		postSimulationShow = function(...)
+		{
+			cat('Do not forget to define 
+				what I show after the simulation
+				has finished. ')		
+		},
+
+		# show = function()
+		# {
+		# 	showAlgorithm()
+		# },
 
 		getDataForVisualisation = function()
 		{
