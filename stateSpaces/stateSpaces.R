@@ -10,7 +10,9 @@ stateSpace <- setRefClass(
 		iterationsNo	= "integer",
 
 			## The sub-object storing information needed for evaluation of the unnormalised density.
-		targetMeasure	= "TargetMeasures"	
+		targetMeasure	= "TargetMeasures",
+
+		spaceName 		= "character"	
 	),
 
 ###########################################################################
@@ -21,32 +23,15 @@ stateSpace <- setRefClass(
 		############################################################
 				# Initialisation
 
-		# initializeStateSpace = function(
-		# 	iterationsNo 	= NULL
-		# ){	
-		# 	iterationsNo <<- as.integer(iterationsNo)
-		# },
-
-
 		initialize 	= function(
 			iterationsNo 	= NULL,
 			...
 		){
 			if ( !is.null(iterationsNo)){			
 				iterationsNo <<- as.integer(iterationsNo)
+				spaceName 	 <<- 'General State Space'
 			}	
 		},
-
-
-		# initialize 	= function(
-		# 	iterationsNo 	= NULL
-		# ){
-		# 	if ( !is.null(iterationsNo)){
-		# 		initializeStateSpace(
-		# 			iterationsNo = iterationsNo
-		# 		)
-		# 	}	
-		# },
 
 		############################################################
 				# Visualisation
@@ -57,16 +42,38 @@ stateSpace <- setRefClass(
 		prepareDataForPlot = function()
 		{},
 
-		showStateSpace 	= function()
+		# showStateSpace 	= function()
+		# {
+		# 	cat('\nThe general state-space inputs are here: \n')
+		# 	cat('Number of iterations of the algorithm: ', iterationsNo, '\n\n')
+		# },
+
+
+		show = function(...)
 		{
-			cat('\nThe general state-space inputs are here: \n')
-			cat('Number of iterations of the algorithm: ', iterationsNo, '\n\n')
+			anteSimulationShow()
+			postSimulationShow()	
 		},
 
-		show = function()
+
+		anteSimulationShow = function(...)
 		{
-			showStateSpace()
+			cat('\nUsing General State Space.\n')
+			cat('\tNumber of iterations of the algorithm: ', iterationsNo, '\n\n')
 		},
+
+
+		postSimulationShow = function(...)
+		{
+			cat('Do not forget to define 
+				what I show after the simulation
+				has finished. ')		
+		},
+
+		# show = function()
+		# {
+		# 	showStateSpace()
+		# },
 
 		############################################################
 				# Algorithmic Methods				

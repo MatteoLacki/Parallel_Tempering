@@ -23,20 +23,6 @@ realTemperedStateSpace <- setRefClass(
 		############################################################
 				# Initialisation
 
-
-		# initializeTemperedRealStateSpace = function(
-		# 	temperatures 		= numeric(0),
-		# 	quasiMetric 		= function(){} 
-		# )
-		# 	#### Initialises temperatures and quasi-metric.
-		# {
-		# 	insertTemperatures( 
-		# 		temperatures = temperatures 
-		# 	)
-		# 	quasiMetric <<- quasiMetric
-		# },
-
-
 		initialize	= function(
 			iterationsNo 		= NULL,  
 			chainsNo 			= 0L,
@@ -58,6 +44,8 @@ realTemperedStateSpace <- setRefClass(
 					proposalCovariances = proposalCovariances
 				)
 				
+				spaceName 	 <<- 'Real Tempered State Space'
+
 				insertTemperatures( 
 					temperatures = temperatures 
 				)
@@ -65,36 +53,7 @@ realTemperedStateSpace <- setRefClass(
 				quasiMetric <<- quasiMetric			
 			}
 		},
-
-		# initialize	= function(
-		# 	iterationsNo 		= NULL,  
-		# 	chainsNo 			= 0L,
-		# 	spaceDim			= 0L,
-		# 	initialStates 		= matrix(ncol=0, nrow=0),
-		# 	proposalCovariances = matrix(ncol=0, nrow=0),
-		# 	quasiMetric 		= function(){},
-		# 	temperatures 		= numeric(0)
-		# )
-		# 	#### Splits the initialization to general state-space initialization and real-state-space-specific initialization.
-		# {
-		# 	if ( !is.null(iterationsNo)){		
-		# 		initializeStateSpace(
-		# 			iterationsNo 		= iterationsNo
-		# 		)
-				
-		# 		initializeRealStateSpace(
-		# 			chainsNo  			= chainsNo,
-		# 			spaceDim  			= spaceDim,
-		# 			initialStates 	 	= initialStates,
-		# 			proposalCovariances = proposalCovariances
-		# 		)
-				
-		# 		initializeTemperedRealStateSpace(
-		# 			temperatures 	  	= temperatures,
-		# 			quasiMetric 	 	= quasiMetric
-		# 		)
-		# 	}
-		# },
+		
 
 		createDataStorage = function()
 		{
@@ -185,26 +144,36 @@ realTemperedStateSpace <- setRefClass(
 				# Visualisation
 
 
-		showRealTemperedStateSpace = function()
-		{
-			cat("Temperatures:\n")
-			print(temperatures)
-			cat("\n")
+		# showRealTemperedStateSpace = function()
+		# {
+		# 	cat("Temperatures:\n")
+		# 	print(temperatures)
+		# 	cat("\n")
 
+		# 	cat('The Quasi-Metric:\n')
+		# 	print( quasiMetric )
+		# 	cat("\n")
+		# },
+
+
+		anteSimulationShow = function(...)
+		{
+			callSuper()
+			
 			cat('The Quasi-Metric:\n')
 			print( quasiMetric )
 			cat("\n")
 		},
 
 
-		show = function( algorithmName )
-		{
-			showStateSpace()
-			showRealStateSpace()
-			showRealTemperedStateSpace()
+		# show = function( algorithmName )
+		# {
+		# 	showStateSpace()
+		# 	showRealStateSpace()
+		# 	showRealTemperedStateSpace()
 
-			if( simulationTerminated()) print( plotBasics( algorithmName ) )
-		},
+		# 	if( simulationTerminated()) print( plotBasics( algorithmName ) )
+		# },
 
 
 		prepareDataForPlot = function()

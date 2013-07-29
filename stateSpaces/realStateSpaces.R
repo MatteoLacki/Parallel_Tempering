@@ -22,9 +22,6 @@ realStateSpace <- setRefClass(
 			## Matrix containing points simulated in the last step of the algorithm: after random walk phase it is composed of previous current states with updates being the accepted proposals.
 		lastStates 			= "matrix",
 
-		# 	## Quasi metric between two points from the state space.
-		# quasiMetric  		= "function",
-
 			## The number of the last cell complex in the data metrix where something was inserted. If zero then nothing was inserted.
 		freeSlotNo 			= "integer",
 
@@ -50,30 +47,6 @@ realStateSpace <- setRefClass(
 		############################################################
 				# Initialisation
 
-
-		# initializeRealStateSpace = function(
-		# 	chainsNo 			= 0L,
-		# 	spaceDim			= 0L,
-		# 	initialStates 		= matrix(ncol=0, nrow=0),
-		# 	proposalCovariances = matrix(ncol=0, nrow=0)
-		# )
-		# 	#### Initializes the real-state-space-specific fields.
-		# {
-		# 	insertInitialStates( 
-		# 		initialStates 	= initialStates,
-		# 		spaceDim 		= spaceDim,
-		# 		chainsNo		= chainsNo
-		# 	)				
-
-
-		# 	if( spaceDim > 0 & chainsNo > 0 ) { createDataStorage() }			
-		# 	if (length(slotsNo) > 0) {	insertStates()	}
-
-		# 	insertProposalCovariances(
-		# 		proposalCovariances = proposalCovariances
-		# 	)
-		# },
-
 		initialize	= function(
 			iterationsNo 		= NULL,  
 			chainsNo 			= 0L,
@@ -88,6 +61,8 @@ realStateSpace <- setRefClass(
 				callSuper(
 					iterationsNo 		= iterationsNo
 				)
+
+				spaceName 	 <<- 'Real State Space'
 	
 				insertInitialStates( 
 					initialStates 	= initialStates,
@@ -103,30 +78,6 @@ realStateSpace <- setRefClass(
 				)			
 			}
 		},
-
-
-		# initialize	= function(
-		# 	iterationsNo 		= NULL,  
-		# 	chainsNo 			= 0L,
-		# 	spaceDim			= 0L,
-		# 	initialStates 		= matrix(ncol=0, nrow=0),
-		# 	proposalCovariances = matrix(ncol=0, nrow=0)
-		# )
-		# 	#### Splits the initialization to general state-space initialization and real-state-space-specific initialization.
-		# {
-		# 	if ( !is.null(iterationsNo)){			
-		# 		initializeStateSpace(
-		# 			iterationsNo 		= iterationsNo
-		# 		)
-	
-		# 		initializeRealStateSpace(
-		# 			initialStates 	 	= initialStates,
-		# 			spaceDim  			= spaceDim,
-		# 			chainsNo  			= chainsNo,
-		# 			proposalCovariances = proposalCovariances
-		# 		)
-		# 	}
-		# },
 
 
 		insertInitialStates	= function( 
@@ -360,31 +311,68 @@ realStateSpace <- setRefClass(
 				# Visualisation
 
 
-		showRealStateSpace = function()
-		{
-			cat('\nThe real-state-space inputs are here: \n')
-			cat('Space dimension: ', spaceDim, '\n')
-			cat('Number of chains: ', chainsNo, '\n')
+		# showRealStateSpace = function()
+		# {
+		# 	cat('\nThe real-state-space inputs are here: \n')
+		# 	cat('Space dimension: ', spaceDim, '\n')
+		# 	cat('Number of chains: ', chainsNo, '\n')
 			
-			cat('Initial States:\n')
+		# 	cat('Initial States:\n')
+		# 	print( getIteration() )
+		# 	cat("\n")
+
+		# 	cat('Proposal covariances after Cholesky decomposition:\n')
+		# 	print( proposalCholCovariances )
+		# 	cat("\n")		
+		# },
+
+
+		show = function(
+			algorithmName,
+			...
+		){
+			anteSimulationShow()
+			postSimulationShow(algorithmName = algorithmName)	
+		},
+
+
+		anteSimulationShow = function(...)
+		{
+			cat('\nUsing', spaceName ,'.\n')
+			cat('\tNumber of iterations of the algorithm: ', iterationsNo, '\n')
+			cat('\tSpace dimension: ', spaceDim, '\n')
+			cat('\tNumber of chains: ', chainsNo, '\n')
+			
+			cat('\tInitial States:\n')
 			print( getIteration() )
 			cat("\n")
 
-			cat('Proposal covariances after Cholesky decomposition:\n')
+			cat('\tProposal covariances after Cholesky decomposition:\n')
 			print( proposalCholCovariances )
 			cat("\n")		
 		},
 
 
-		show = function( algorithmName ){
-			showStateSpace()
-			showRealStateSpace()
-
+		postSimulationShow = function(
+			algorithmName,
+			...
+		)
+		{
 			if( simulationTerminated()) 
 			{
 				print( plotBasics( algorithmName = algorithmName ) )
 			}
 		},
+
+		# show = function( algorithmName ){
+		# 	showStateSpace()
+		# 	showRealStateSpace()
+
+		# 	if( simulationTerminated()) 
+		# 	{
+		# 		print( plotBasics( algorithmName = algorithmName ) )
+		# 	}
+		# },
 
 
 		showState = function( 

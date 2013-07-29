@@ -47,7 +47,7 @@ algorithm <- setRefClass(
 		############################################################
 				# Visualisation
 
-		show = function( ... )
+		show = function(...)
 		{
 			anteSimulationShow()
 			postSimulationShow()
