@@ -35,7 +35,9 @@ realStateSpace <- setRefClass(
 		simpleProposalCovariance	= "logical",
 
 			## Dataframe containing data that can be manipulated by the ggplot2.
-		dataForPlot 		= "data.frame"		
+		dataForPlot 		= "data.frame",
+
+		ecdfData	 		= "data.frame"				
 	),	
 	
 ###########################################################################
@@ -310,23 +312,6 @@ realStateSpace <- setRefClass(
 		############################################################
 				# Visualisation
 
-
-		# showRealStateSpace = function()
-		# {
-		# 	cat('\nThe real-state-space inputs are here: \n')
-		# 	cat('Space dimension: ', spaceDim, '\n')
-		# 	cat('Number of chains: ', chainsNo, '\n')
-			
-		# 	cat('Initial States:\n')
-		# 	print( getIteration() )
-		# 	cat("\n")
-
-		# 	cat('Proposal covariances after Cholesky decomposition:\n')
-		# 	print( proposalCholCovariances )
-		# 	cat("\n")		
-		# },
-
-
 		show = function(
 			algorithmName,
 			...
@@ -363,16 +348,6 @@ realStateSpace <- setRefClass(
 				print( plotBasics( algorithmName = algorithmName ) )
 			}
 		},
-
-		# show = function( algorithmName ){
-		# 	showStateSpace()
-		# 	showRealStateSpace()
-
-		# 	if( simulationTerminated()) 
-		# 	{
-		# 		print( plotBasics( algorithmName = algorithmName ) )
-		# 	}
-		# },
 
 
 		showState = function( 
@@ -542,7 +517,72 @@ realStateSpace <- setRefClass(
 			return(	
 				proposeLogsOfUMeasures()
 			)
-		}
+		},
+
+		############################################################
+				# Post-Simulation evaluation.
+
+		initializeEcdfData 	= function(){
+
+			require( sqldf )
+			ecdfData 		<<- sqldf(
+				"SELECT 	x, y, COUNT(*) AS charge 
+				FROM 	dataForPlot 
+					WHERE Temperature=1 AND 
+					PHASE='Swap' 
+				GROUP BY 	x, y;"
+			)
+
+			rowsNo	<- nrow(ecdfData)
+
+			ecdfData$No   	<<- 1:rowsNo
+			ecdfData$ecdf 	<<- rep.int(NA, times=rowsNo)
+		},
+
+		ecdf2 = function( 
+			rows = 1:nrow(ecdfData)
+		){
+
+			if( length( rows ) == 1 ){
+				ecdfData[rows,'ecdf'] <<- ecdfData[rows,'charge']
+			} else {
+				S 		<- ecdfData[rows,]
+				rowsNo 	<- nrow(S)
+				S$AorB 	<- rep.int(NA, times=rowsNo)
+				
+					# division step
+				med 	<- median( S$x )
+				cond	<- S$x <= med
+
+					# recursive step
+				A 	<- S$No[cond]
+				B	<- S$No[!cond]
+					
+				S[cond,'AorB'] 	<- 'A'
+				S[!cond,'AorB'] <- 'B'
+
+				ecdf2(A)
+				ecdf2(B)
+
+					# marriage step
+
+				account <- 0
+				S 		<- S[order(S$y),]	
+
+				for ( i in 1:rowsNo) switch(
+					S[i,'AorB'],
+					'A'={
+						account <- account + S[i,'charge']
+					},
+					'B'={
+						ecdfData[i, 'ecdf'] <<- ecdfData[i, 'ecdf'] + account
+					},
+					stop("Value out of bound. Very suspicious.")
+				)
+			}	
+		}		
+
+
 ###########################################################################
 				# Finis Structurae
 	)

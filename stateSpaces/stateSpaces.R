@@ -42,12 +42,6 @@ stateSpace <- setRefClass(
 		prepareDataForPlot = function()
 		{},
 
-		# showStateSpace 	= function()
-		# {
-		# 	cat('\nThe general state-space inputs are here: \n')
-		# 	cat('Number of iterations of the algorithm: ', iterationsNo, '\n\n')
-		# },
-
 
 		show = function(...)
 		{
@@ -69,11 +63,6 @@ stateSpace <- setRefClass(
 				what I show after the simulation
 				has finished. ')		
 		},
-
-		# show = function()
-		# {
-		# 	showStateSpace()
-		# },
 
 		############################################################
 				# Algorithmic Methods				

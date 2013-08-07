@@ -143,19 +143,6 @@ realTemperedStateSpace <- setRefClass(
 		############################################################
 				# Visualisation
 
-
-		# showRealTemperedStateSpace = function()
-		# {
-		# 	cat("Temperatures:\n")
-		# 	print(temperatures)
-		# 	cat("\n")
-
-		# 	cat('The Quasi-Metric:\n')
-		# 	print( quasiMetric )
-		# 	cat("\n")
-		# },
-
-
 		anteSimulationShow = function(...)
 		{
 			callSuper()
@@ -164,16 +151,6 @@ realTemperedStateSpace <- setRefClass(
 			print( quasiMetric )
 			cat("\n")
 		},
-
-
-		# show = function( algorithmName )
-		# {
-		# 	showStateSpace()
-		# 	showRealStateSpace()
-		# 	showRealTemperedStateSpace()
-
-		# 	if( simulationTerminated()) print( plotBasics( algorithmName ) )
-		# },
 
 
 		prepareDataForPlot = function()

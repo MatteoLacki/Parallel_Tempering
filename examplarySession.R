@@ -31,7 +31,9 @@ system.time(
   LiangWangExample$simulate()  
 ) 
 LiangWangExample
-LiangWangExample$algorithm
+
+LiangWangExample$stateSpace$simulatedStates
+head(LiangWangExample$stateSpace$dataForPlot)
 
 
 
