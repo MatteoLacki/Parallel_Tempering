@@ -30,7 +30,20 @@ LiangWangExample
 system.time(
   LiangWangExample$simulate()  
 ) 
-LiangWangExample
+#LiangWangExample
+LiangWangExample$stateSpace$initializeEcdfData()
+LiangWangExample$stateSpace$ecdfData
+LiangWangExample$stateSpace$kolmogorovSmirnov()
+W <- LiangWangExample$stateSpace$ecdf
+dim(W)
+head(W)
+tail(W)
+Z <- LiangWangExample$stateSpace$ecdfData
+nrow(Z)
+Z <- as.matrix(Z)
+Z
+Z[1,]
+
 
 LiangWangExample$stateSpace$simulatedStates
 head(LiangWangExample$stateSpace$dataForPlot)
@@ -56,7 +69,7 @@ dev.off()
 ############################### New Measure ############################
 source("./targetMeasures/targetMatteoDensities.R")
 LiangWangExample <- simulation$new(
-	iterationsNo	= 1000,
+	iterationsNo	= 10000,
 	strategyNo 	= 1,
 	example 	= TRUE,
 	targetMeasureName = 'Matteo'	
@@ -67,6 +80,13 @@ system.time(
   LiangWangExample$simulate()  
 ) 
 LiangWangExample	
+LiangWangExample$stateSpace$initializeEcdfData()
+Z <- LiangWangExample$stateSpace$ecdfData
+#length(Z$x)
+anyDuplicated(c(Z$x,Z$y))
+anyDuplicated(Z$x)
+anyDuplicated(Z$y)
+# For 36000 different points with calculated charges: no difference whatsoever. So why to waste money ?
 
 ################################################
 LiangWangExample <- simulation$new(

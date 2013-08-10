@@ -37,7 +37,9 @@ realStateSpace <- setRefClass(
 			## Dataframe containing data that can be manipulated by the ggplot2.
 		dataForPlot 		= "data.frame",
 
-		ecdfData	 		= "data.frame"				
+		ecdfData	 		= "data.frame",
+
+		ecdf 				= "matrix"
 	),	
 	
 ###########################################################################
@@ -522,6 +524,23 @@ realStateSpace <- setRefClass(
 		############################################################
 				# Post-Simulation evaluation.
 
+		# initializeEcdfData 	= function(){
+
+		# 	require( sqldf )
+		# 	ecdfData 		<<- sqldf(
+		# 		"SELECT 	x, y, COUNT(*) AS charge 
+		# 		FROM 	dataForPlot 
+		# 			WHERE Temperature=1 AND 
+		# 			PHASE='Swap' 
+		# 		GROUP BY 	x, y;"
+		# 	)
+
+		# 	rowsNo	<- nrow(ecdfData)
+
+		# 	ecdfData$No   	<<- 1:rowsNo
+		# 	ecdfData$ecdf 	<<- rep.int(NA, times=rowsNo)
+		# },
+
 		initializeEcdfData 	= function(){
 
 			require( sqldf )
@@ -530,14 +549,18 @@ realStateSpace <- setRefClass(
 				FROM 	dataForPlot 
 					WHERE Temperature=1 AND 
 					PHASE='Swap' 
-				GROUP BY 	x, y;"
+				GROUP BY 	y, x;"
 			)
 
-			rowsNo	<- nrow(ecdfData)
+			rowsNo		<- nrow(ecdfData)
+			wholeCharge <- sum(ecdfData$charge)
+			ecdfData$charge <<- ecdfData$charge/wholeCharge
 
 			ecdfData$No   	<<- 1:rowsNo
-			ecdfData$ecdf 	<<- rep.int(NA, times=rowsNo)
-		},
+			#ecdfData$ecdf 	<<- rep.int(NA, times=rowsNo)
+
+			ecdfData <<- ecdfData[order(ecdfData$x),]
+		},		
 
 		ecdf2 = function( 
 			rows = 1:nrow(ecdfData)
@@ -580,6 +603,45 @@ realStateSpace <- setRefClass(
 					stop("Value out of bound. Very suspicious.")
 				)
 			}	
+		},
+
+		kolmogorovSmirnov = function(){
+			observationsNo 	<- nrow(ecdfData)
+			if ( observationsNo > 0){
+
+				if ( anyDuplicated(c(ecdfData$x, ecdfData$y)) > 0){
+					cat('\nSomething will go surely wrong: duplicates found that are very improbable. Calculations will be biased.\n')
+				} 
+
+				ecdf 	<<- matrix(ncol=observationsNo+1, nrow=observationsNo+1)
+				ecdf[1:(observationsNo+1),1] <<- 0
+				ecdf[1,1:(observationsNo+1)] <<- 0
+
+				result  <-  0
+
+				sapply(
+					2:(observationsNo+1),
+					function( i ){
+
+						sapply(
+							2:(observationsNo+1),
+							function( j ){
+
+									# ecdfData[i,'No'] == j means that we have a generated-point. 
+								ecdf[i,j] <<- ifelse(
+									ecdfData[i-1,'No'] == j-1,
+									ecdf[i-1,j-1] + ecdfData[i,'charge'],
+									ecdf[i-1,j] + ecdf[i,j-1] - ecdf[i-1,j-1]
+								)
+							}
+						)
+					}
+				)
+
+			} else {
+				initializeEcdfData()
+				kolmogorovSmirnov()								
+			}
 		}		
 
 
