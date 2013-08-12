@@ -37,9 +37,13 @@ realStateSpace <- setRefClass(
 			## Dataframe containing data that can be manipulated by the ggplot2.
 		dataForPlot 		= "data.frame",
 
-		ecdfData	 		= "data.frame",
+		maximiser 			= "numeric",
 
-		ecdf 				= "matrix"
+		ecdfData	 		= "matrix",
+
+		ecdf 				= "matrix",
+
+		KS 					= "numeric"
 	),	
 	
 ###########################################################################
@@ -544,22 +548,22 @@ realStateSpace <- setRefClass(
 		initializeEcdfData 	= function(){
 
 			require( sqldf )
-			ecdfData 		<<- sqldf(
-				"SELECT 	x, y, COUNT(*) AS charge 
+			tmpEcdfData	<- sqldf(
+				"SELECT 	y AS ySort, x AS xSort, COUNT(*) AS charge 
 				FROM 	dataForPlot 
 					WHERE Temperature=1 AND 
 					PHASE='Swap' 
-				GROUP BY 	y, x;"
+				GROUP BY 	ySort, xSort;"
 			)
 
-			rowsNo		<- nrow(ecdfData)
-			wholeCharge <- sum(ecdfData$charge)
-			ecdfData$charge <<- ecdfData$charge/wholeCharge
+			tmpEcdfData$yNo  	<- 1:nrow(tmpEcdfData)
+			wholeCharge 		<- sum(tmpEcdfData$charge)
+			tmpEcdfData$charge 	<- tmpEcdfData$charge/wholeCharge
+			tmpY 				<- tmpEcdfData$ySort	
+			tmpEcdfData 		<- tmpEcdfData[order(tmpEcdfData$x),]	
+			tmpEcdfData$ySort 	<- tmpY
 
-			ecdfData$No   	<<- 1:rowsNo
-			#ecdfData$ecdf 	<<- rep.int(NA, times=rowsNo)
-
-			ecdfData <<- ecdfData[order(ecdfData$x),]
+			ecdfData <<- as.matrix(tmpEcdfData)
 		},		
 
 		ecdf2 = function( 
@@ -609,35 +613,145 @@ realStateSpace <- setRefClass(
 			observationsNo 	<- nrow(ecdfData)
 			if ( observationsNo > 0){
 
-				if ( anyDuplicated(c(ecdfData$x, ecdfData$y)) > 0){
-					cat('\nSomething will go surely wrong: duplicates found that are very improbable. Calculations will be biased.\n')
+				# if ( anyDuplicated(c(ecdfData$x, ecdfData$y)) > 0){
+				# 	cat('\nSomething will go surely wrong: duplicates found that are very improbable. Calculations will be biased.\n')
+				# } 
+
+				if ( anyDuplicated(c(ecdfData[,1], ecdfData[,2])) > 0){
+					cat('\nSomething might go surely wrong: duplicates found that are very improbable. Calculations will be biased, because it is no longer the case, that in each row and column of the matrix there will be only one sample-point.\n')
 				} 
 
-				ecdf 	<<- matrix(ncol=observationsNo+1, nrow=observationsNo+1)
+				ecdf <<- matrix(ncol=observationsNo+1, nrow=observationsNo+1)
 				ecdf[1:(observationsNo+1),1] <<- 0
 				ecdf[1,1:(observationsNo+1)] <<- 0
 
-				result  <-  0
+				KS  <<-  0
 
-				sapply(
+				maximiser <<- c(-Inf,-Inf)
+
+				tmp1 <- sapply(
 					2:(observationsNo+1),
 					function( i ){
 
-						sapply(
-							2:(observationsNo+1),
-							function( j ){
+						if ( i%%floor(.1*observationsNo) == 0) cat( 
+							10*(i%/%floor(.1*observationsNo)), "% done.\n"
+						)
+						return(
+							sapply(
+								2:(observationsNo+1),
+								function( j ){
 
-									# ecdfData[i,'No'] == j means that we have a generated-point. 
-								ecdf[i,j] <<- ifelse(
-									ecdfData[i-1,'No'] == j-1,
-									ecdf[i-1,j-1] + ecdfData[i,'charge'],
-									ecdf[i-1,j] + ecdf[i,j-1] - ecdf[i-1,j-1]
-								)
-							}
+										# ecdfData columns are:
+										# ySort, xSort, charge, yNo
+									iPointInfo 	<- ecdfData[i-1,2:4]
+
+									ecdfWest 		<- ecdf[i,j-1]	
+									ecdfSouth 		<- ecdf[i-1,j]
+									ecdfSouthWest 	<- ecdf[i-1,j-1]
+
+									value 	<- ifelse(
+										iPointInfo[3] == j-1,
+										ecdf[i-1,j-1] + iPointInfo[2],
+										ecdfSouth + ecdfWest - ecdfSouthWest
+									)
+									
+									ecdf[i,j] 	<<- value
+
+									currentPoint 	<- c(
+										iPointInfo[1], 
+										ecdfData[j-1,1]
+									)
+
+									trueCDF <- targetMeasure$distribuant(
+										currentPoint
+									)	
+									
+
+									tmpKS <- max(
+										abs(trueCDF - value), 
+										abs(trueCDF - ecdfWest),
+										abs(trueCDF - ecdfSouth),
+										abs(trueCDF - ecdfSouthWest)
+									)
+
+									if (tmpKS > KS){
+										KS 			<<- tmpKS 
+										maximiser 	<<- currentPoint
+
+										cat('..............................................\n')	
+										print(iPointInfo)
+										cat('Current maximiser is', maximiser,'\n')
+										cat('True CDF:',trueCDF,'\n')
+										cat('Current KS:',KS,'\n')		
+										cat('ECDF[' , i , ',' , j ,']:',value,'\n')
+										print(ecdfWest)
+										print(ecdfSouth)
+										print(ecdfSouthWest)
+										cat(
+										 	abs(trueCDF - value),
+											abs(trueCDF - ecdfWest),
+										 	abs(trueCDF - ecdfSouth),
+										 	abs(trueCDF - ecdfSouthWest),
+											'\n'
+										)
+									}
+								}
+							)
 						)
 					}
 				)
 
+				# tmp <- sapply(
+				# 	2:(observationsNo+1),
+				# 	function( i ){
+
+				# 		sapply(
+				# 			2:(observationsNo+1),
+				# 			function( j ){
+
+				# 					# ecdfData[i,'No'] == j means that we have a generated-point. 
+				# 				tmp <-	
+				# 				ifelse(
+				# 					ecdfData[i-1,4] == j-1,
+				# 					tmp[i-1,j-1] + ecdfData[i-1,3],
+				# 					tmp[i-1,j] + tmp[i,j-1] - tmp[i-1,j-1]
+				# 				)
+				# 			}
+				# 		)
+				# 	}
+				# )
+
+				# print(tmp)
+
+				# ecdf <<- sapply(
+				# 	2:(observationsNo+1),
+				# 	function( i ){
+				# 		sapply(
+				# 			2:(observationsNo+1),
+				# 			function( j ){
+				# 				 return(
+ 			# 					 	ifelse(
+ 			# 						ecdfData[i-1,4] == j-1,
+ 			# 						ecdf[i-1,j-1] + ecdfData[i-1,3],
+ 			# 						ecdf[i-1,j] + ecdf[i,j-1] - ecdf[i-1,j-1]
+ 			# 						)
+ 			# 					)
+				# 			}
+				# 		)
+				# 	}
+				# )
+
+					# It's the slowest version.
+				# for (i in 2:(observationsNo+1)){
+				# 	for (j in 2:(observationsNo+1)){
+				# 		ecdf[i,j] <<- ifelse(
+				# 			ecdfData[i-1,4] == j-1,
+				# 			ecdf[i-1,j-1] + ecdfData[i-1,3],
+				# 			ecdf[i-1,j] + ecdf[i,j-1] - ecdf[i-1,j-1]
+				# 		)
+				# 	}	
+				# }
+					
 			} else {
 				initializeEcdfData()
 				kolmogorovSmirnov()								
