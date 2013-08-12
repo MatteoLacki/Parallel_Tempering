@@ -36,62 +36,7 @@ system.time(
 KS <- LiangWangExample$stateSpace$KS
 KS
 LiangWangExample$stateSpace$ecdfData
-
 LiangWangExample
-
-W <- LiangWangExample$stateSpace$ecdf
-K <- LiangWangExample$stateSpace$ecdfData
-
-dim(K)
-dim(W)
-
-maxi <- LiangWangExample$stateSpace$maximiser
-
-LiangWangExample$targetMeasure$distribuant(maxi)
-j <- K[K[,1]==maxi[1]&K[,2]==maxi[2],4]
-
-
-i <- 1:nrow(K)
-i <- i[K[,1]==maxi[1]&K[,2]==maxi[2]]
-
-abs(LiangWangExample$stateSpace$ecdf[i,j] - LiangWangExample$targetMeasure$distribuant(maxi))
-KS
-
-
-K
-M <- LiangWangExample$stateSpace$dataForPlot
-head(M)
-M <- M[M$Temperature==1&M$Phase=='Swap',]
-dim(M)
-dim(K)
-M[M$x==K[367,1]&M$y==K[367,2],]
-abs(-1)
-W <- LiangWangExample$stateSpace$ecdf
-K
-tail(W)
-W[40,1] 
-W[40,2]
-t(W[39:40,1:40])
-dim(W)
-head(W)
-tail(W)
-
-LiangWangExample
-LiangWangExample$targetMeasure$distribuant(c(0,0))
-LiangWangExample$targetMeasure$distribuant(c(10,10))
-
-K[39,'No'] == 19
-W[39,19]+K[39,'charge']
-K[39,'No'] == 20
-
-
-Z <- LiangWangExample$stateSpace$ecdfData
-nrow(Z)
-Z <- as.matrix(Z)
-Z
-Z[1,]
-
-
 LiangWangExample$stateSpace$simulatedStates
 head(LiangWangExample$stateSpace$dataForPlot)
 

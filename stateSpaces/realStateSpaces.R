@@ -10,6 +10,8 @@ realStateSpace <- setRefClass(
 			## Dimension of the original state space of interest.
 		spaceDim			= "integer",	
 
+			## Burn-in period.
+		burnIn				= "integer",
 			## Number of chains (independent simulations)
 		chainsNo			= "integer",
 
@@ -528,23 +530,6 @@ realStateSpace <- setRefClass(
 		############################################################
 				# Post-Simulation evaluation.
 
-		# initializeEcdfData 	= function(){
-
-		# 	require( sqldf )
-		# 	ecdfData 		<<- sqldf(
-		# 		"SELECT 	x, y, COUNT(*) AS charge 
-		# 		FROM 	dataForPlot 
-		# 			WHERE Temperature=1 AND 
-		# 			PHASE='Swap' 
-		# 		GROUP BY 	x, y;"
-		# 	)
-
-		# 	rowsNo	<- nrow(ecdfData)
-
-		# 	ecdfData$No   	<<- 1:rowsNo
-		# 	ecdfData$ecdf 	<<- rep.int(NA, times=rowsNo)
-		# },
-
 		initializeEcdfData 	= function(){
 
 			require( sqldf )
@@ -625,81 +610,8 @@ realStateSpace <- setRefClass(
 				ecdf[1,1:2] <<- 0
 				ecdf[2:(distinctPointsNo+1),1] <<- 0
 				KS  		<<- 0
-				
-				# tmp1 <- sapply(
-				# 	2:(distinctPointsNo+1),
-				# 	function( i ){
-				# 		if( i%%10 == 1 ) cat('\n Visited',i-1,'out of',distinctPointsNo,'rows.\n')
-				# 		return(
-				# 			sapply(
-				# 				2:(distinctPointsNo+1),
-				# 				function( j ){
-				# 					if( j >= jOfMaximalKS){
-				# 						return(0)
-				# 					} else
-				# 					{
-				# 							# ecdfData columns are:
-				# 							# 	ySort, xSort, charge, yNo
-				# 							# so that iPointInfo has entries
-				# 							# 	xSort, charge, yNo
-				# 						iPointInfo 	<- ecdfData[i-1,2:4]
+				i 			<- 2L
 
-				# 						I0  <- i %% 2L 
-				# 						I2 	<- I0 + 1L
-				# 						I1 	<- 2L - I0
-
-				# 						ecdfWest 		<- ecdf[j,I2]	
-				# 						ecdfSouth 		<- ecdf[j-1,I1]
-				# 						ecdfSouthWest 	<- ecdf[j-1,I2]	
-
-				# 						currentECDF 	<- ifelse(
-				# 							iPointInfo[3] == j-1,
-				# 							ecdfSouthWest + iPointInfo[2],
-				# 							ecdfSouth + ecdfWest - ecdfSouthWest
-				# 						)									
-
-				# 						ecdf[j,I1] 		<<- currentECDF				
-				# 						currentPoint 	<- c(
-				# 							iPointInfo[1], 
-				# 							ecdfData[j-1,1]
-				# 						)
-
-				# 						currentCDF <- targetMeasure$distribuant(
-				# 							currentPoint
-				# 						)	
-										
-				# 						tmpKS <- max(
-				# 							abs(currentCDF - currentECDF), 
-				# 							abs(currentCDF - ecdfWest),
-				# 							abs(currentCDF - ecdfSouth),
-				# 							abs(currentCDF - ecdfSouthWest)
-				# 						)
-
-				# 						# cat('j wynosi',j,'\n')	
-
-				# 						if (tmpKS > KS){
-				# 							KS 	<<- tmpKS 
-											
-				# 							if( 
-				# 						(currentECDF + tmpKS + resolution > 1) & 
-				# 						(currentCDF  + tmpKS + resolution > 1) 
-				# 							){
-				# 								jOfMaximalKS <<- j
-				# 								print(currentECDF + tmpKS + resolution)
-				# 								print(currentCDF + tmpKS + resolution)
-				# 								print(jOfMaximalKS)
-				# 							}
-				# 						}
-
-				# 						return(0)
-				# 					}	
-				# 				}
-				# 			)
-				# 		)
-				# 	}
-				# )	
-				i <- 2L
-				
 				while((i <= distinctPointsNo+1)&(jOfMaximalKS>1)){
 					
 					if( i%%10 == 1 ) cat('\n Visited',i-1,'out of',distinctPointsNo,'rows.\n')
@@ -740,7 +652,6 @@ realStateSpace <- setRefClass(
 							abs(currentCDF - ecdfSouthWest)
 						)
 
-						# cat('j wynosi',j,'\n')	
 						if (tmpKS > KS){
 							KS 	<<- tmpKS 
 							
