@@ -187,7 +187,6 @@ targetLiangDensity <- setRefClass(
 			}
 		},
 
-
 		distribuant = function( 
 			x
 		){
@@ -203,7 +202,6 @@ targetLiangDensity <- setRefClass(
 
 			return( crossprod( pnorms[1,], pnorms[2,] )*mixturesWeight  )	
 		},
-
 
 		getSquareGrid = function( 
 			minimum , 

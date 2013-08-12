@@ -37,11 +37,11 @@ realStateSpace <- setRefClass(
 			## Dataframe containing data that can be manipulated by the ggplot2.
 		dataForPlot 		= "data.frame",
 
-		maximiser 			= "numeric",
-
 		ecdfData	 		= "matrix",
 
 		ecdf 				= "matrix",
+
+		jOfMaximalKS 		= "integer",
 
 		KS 					= "numeric"
 	),	
@@ -609,155 +609,164 @@ realStateSpace <- setRefClass(
 			}	
 		},
 
-		kolmogorovSmirnov = function(){
-			observationsNo 	<- nrow(ecdfData)
-			if ( observationsNo > 0){
-
-				# if ( anyDuplicated(c(ecdfData$x, ecdfData$y)) > 0){
-				# 	cat('\nSomething will go surely wrong: duplicates found that are very improbable. Calculations will be biased.\n')
-				# } 
+		kolmogorovSmirnov = function(
+			resolution 	= 0
+		)
+		{
+			distinctPointsNo 	<- nrow(ecdfData)
+			jOfMaximalKS		<<- as.integer(distinctPointsNo+1)
+			if ( distinctPointsNo > 0){
 
 				if ( anyDuplicated(c(ecdfData[,1], ecdfData[,2])) > 0){
-					cat('\nSomething might go surely wrong: duplicates found that are very improbable. Calculations will be biased, because it is no longer the case, that in each row and column of the matrix there will be only one sample-point.\n')
+					cat('\nFound duplicates that are very improbable. Calculations will be biased, because it is no longer the case, that in each row and column of the matrix there will be only one sample-point.\n')
 				} 
 
-				ecdf <<- matrix(ncol=observationsNo+1, nrow=observationsNo+1)
-				ecdf[1:(observationsNo+1),1] <<- 0
-				ecdf[1,1:(observationsNo+1)] <<- 0
-
-				KS  <<-  0
-
-				maximiser <<- c(-Inf,-Inf)
-
-				tmp1 <- sapply(
-					2:(observationsNo+1),
-					function( i ){
-
-						if ( i%%floor(.1*observationsNo) == 0) cat( 
-							10*(i%/%floor(.1*observationsNo)), "% done.\n"
-						)
-						return(
-							sapply(
-								2:(observationsNo+1),
-								function( j ){
-
-										# ecdfData columns are:
-										# ySort, xSort, charge, yNo
-									iPointInfo 	<- ecdfData[i-1,2:4]
-
-									ecdfWest 		<- ecdf[i,j-1]	
-									ecdfSouth 		<- ecdf[i-1,j]
-									ecdfSouthWest 	<- ecdf[i-1,j-1]
-
-									value 	<- ifelse(
-										iPointInfo[3] == j-1,
-										ecdf[i-1,j-1] + iPointInfo[2],
-										ecdfSouth + ecdfWest - ecdfSouthWest
-									)
-									
-									ecdf[i,j] 	<<- value
-
-									currentPoint 	<- c(
-										iPointInfo[1], 
-										ecdfData[j-1,1]
-									)
-
-									trueCDF <- targetMeasure$distribuant(
-										currentPoint
-									)	
-									
-
-									tmpKS <- max(
-										abs(trueCDF - value), 
-										abs(trueCDF - ecdfWest),
-										abs(trueCDF - ecdfSouth),
-										abs(trueCDF - ecdfSouthWest)
-									)
-
-									if (tmpKS > KS){
-										KS 			<<- tmpKS 
-										maximiser 	<<- currentPoint
-
-										cat('..............................................\n')	
-										print(iPointInfo)
-										cat('Current maximiser is', maximiser,'\n')
-										cat('True CDF:',trueCDF,'\n')
-										cat('Current KS:',KS,'\n')		
-										cat('ECDF[' , i , ',' , j ,']:',value,'\n')
-										print(ecdfWest)
-										print(ecdfSouth)
-										print(ecdfSouthWest)
-										cat(
-										 	abs(trueCDF - value),
-											abs(trueCDF - ecdfWest),
-										 	abs(trueCDF - ecdfSouth),
-										 	abs(trueCDF - ecdfSouthWest),
-											'\n'
-										)
-									}
-								}
-							)
-						)
-					}
-				)
-
-				# tmp <- sapply(
-				# 	2:(observationsNo+1),
+				ecdf 		<<- matrix(ncol=2, nrow=distinctPointsNo+1)
+				ecdf[1,1:2] <<- 0
+				ecdf[2:(distinctPointsNo+1),1] <<- 0
+				KS  		<<- 0
+				
+				# tmp1 <- sapply(
+				# 	2:(distinctPointsNo+1),
 				# 	function( i ){
+				# 		if( i%%10 == 1 ) cat('\n Visited',i-1,'out of',distinctPointsNo,'rows.\n')
+				# 		return(
+				# 			sapply(
+				# 				2:(distinctPointsNo+1),
+				# 				function( j ){
+				# 					if( j >= jOfMaximalKS){
+				# 						return(0)
+				# 					} else
+				# 					{
+				# 							# ecdfData columns are:
+				# 							# 	ySort, xSort, charge, yNo
+				# 							# so that iPointInfo has entries
+				# 							# 	xSort, charge, yNo
+				# 						iPointInfo 	<- ecdfData[i-1,2:4]
 
-				# 		sapply(
-				# 			2:(observationsNo+1),
-				# 			function( j ){
+				# 						I0  <- i %% 2L 
+				# 						I2 	<- I0 + 1L
+				# 						I1 	<- 2L - I0
 
-				# 					# ecdfData[i,'No'] == j means that we have a generated-point. 
-				# 				tmp <-	
-				# 				ifelse(
-				# 					ecdfData[i-1,4] == j-1,
-				# 					tmp[i-1,j-1] + ecdfData[i-1,3],
-				# 					tmp[i-1,j] + tmp[i,j-1] - tmp[i-1,j-1]
-				# 				)
-				# 			}
+				# 						ecdfWest 		<- ecdf[j,I2]	
+				# 						ecdfSouth 		<- ecdf[j-1,I1]
+				# 						ecdfSouthWest 	<- ecdf[j-1,I2]	
+
+				# 						currentECDF 	<- ifelse(
+				# 							iPointInfo[3] == j-1,
+				# 							ecdfSouthWest + iPointInfo[2],
+				# 							ecdfSouth + ecdfWest - ecdfSouthWest
+				# 						)									
+
+				# 						ecdf[j,I1] 		<<- currentECDF				
+				# 						currentPoint 	<- c(
+				# 							iPointInfo[1], 
+				# 							ecdfData[j-1,1]
+				# 						)
+
+				# 						currentCDF <- targetMeasure$distribuant(
+				# 							currentPoint
+				# 						)	
+										
+				# 						tmpKS <- max(
+				# 							abs(currentCDF - currentECDF), 
+				# 							abs(currentCDF - ecdfWest),
+				# 							abs(currentCDF - ecdfSouth),
+				# 							abs(currentCDF - ecdfSouthWest)
+				# 						)
+
+				# 						# cat('j wynosi',j,'\n')	
+
+				# 						if (tmpKS > KS){
+				# 							KS 	<<- tmpKS 
+											
+				# 							if( 
+				# 						(currentECDF + tmpKS + resolution > 1) & 
+				# 						(currentCDF  + tmpKS + resolution > 1) 
+				# 							){
+				# 								jOfMaximalKS <<- j
+				# 								print(currentECDF + tmpKS + resolution)
+				# 								print(currentCDF + tmpKS + resolution)
+				# 								print(jOfMaximalKS)
+				# 							}
+				# 						}
+
+				# 						return(0)
+				# 					}	
+				# 				}
+				# 			)
 				# 		)
 				# 	}
-				# )
-
-				# print(tmp)
-
-				# ecdf <<- sapply(
-				# 	2:(observationsNo+1),
-				# 	function( i ){
-				# 		sapply(
-				# 			2:(observationsNo+1),
-				# 			function( j ){
-				# 				 return(
- 			# 					 	ifelse(
- 			# 						ecdfData[i-1,4] == j-1,
- 			# 						ecdf[i-1,j-1] + ecdfData[i-1,3],
- 			# 						ecdf[i-1,j] + ecdf[i,j-1] - ecdf[i-1,j-1]
- 			# 						)
- 			# 					)
-				# 			}
-				# 		)
-				# 	}
-				# )
-
-					# It's the slowest version.
-				# for (i in 2:(observationsNo+1)){
-				# 	for (j in 2:(observationsNo+1)){
-				# 		ecdf[i,j] <<- ifelse(
-				# 			ecdfData[i-1,4] == j-1,
-				# 			ecdf[i-1,j-1] + ecdfData[i-1,3],
-				# 			ecdf[i-1,j] + ecdf[i,j-1] - ecdf[i-1,j-1]
-				# 		)
-				# 	}	
-				# }
+				# )	
+				i <- 2L
+				
+				while((i <= distinctPointsNo+1)&(jOfMaximalKS>1)){
 					
+					if( i%%10 == 1 ) cat('\n Visited',i-1,'out of',distinctPointsNo,'rows.\n')
+
+					j <- 2L
+
+					while(j < jOfMaximalKS){
+						iPointInfo 	<- ecdfData[i-1,2:4]
+
+						I0  <- i %% 2L 
+						I2 	<- I0 + 1L
+						I1 	<- 2L - I0
+
+						ecdfWest 		<- ecdf[j,I2]	
+						ecdfSouth 		<- ecdf[j-1,I1]
+						ecdfSouthWest 	<- ecdf[j-1,I2]	
+
+						currentECDF 	<- ifelse(
+							iPointInfo[3] == j-1,
+							ecdfSouthWest + iPointInfo[2],
+							ecdfSouth + ecdfWest - ecdfSouthWest
+						)									
+
+						ecdf[j,I1] 		<<- currentECDF				
+						currentPoint 	<- c(
+							iPointInfo[1], 
+							ecdfData[j-1,1]
+						)
+
+						currentCDF <- targetMeasure$distribuant(
+							currentPoint
+						)	
+						
+						tmpKS <- max(
+							abs(currentCDF - currentECDF), 
+							abs(currentCDF - ecdfWest),
+							abs(currentCDF - ecdfSouth),
+							abs(currentCDF - ecdfSouthWest)
+						)
+
+						# cat('j wynosi',j,'\n')	
+						if (tmpKS > KS){
+							KS 	<<- tmpKS 
+							
+							if( 
+								(currentECDF + tmpKS + resolution > 1) & 
+								(currentCDF  + tmpKS + resolution > 1) 
+							){
+								jOfMaximalKS <<- j
+								print(currentECDF + tmpKS + resolution)
+								print(currentCDF + tmpKS + resolution)
+								print(jOfMaximalKS)
+							}
+						}
+
+						j <- j+1L
+					}
+
+					i <- i+1L
+				}
+
+													
 			} else {
 				initializeEcdfData()
 				kolmogorovSmirnov()								
 			}
 		}		
-
 
 ###########################################################################
 				# Finis Structurae

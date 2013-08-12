@@ -17,9 +17,6 @@ source("./simulations/simulations.R")
 source("./controllers/controllers.R")
 
 ############################### State-dependent simulation ###################
-
-
-
 LiangWangExample <- simulation$new(
 	iterationsNo	= 1000,
 	strategyNo 	= 1,
@@ -33,12 +30,13 @@ system.time(
 ) 
 #LiangWangExample
 LiangWangExample$stateSpace$initializeEcdfData()
-LiangWangExample$stateSpace$ecdfData
 system.time(
-	LiangWangExample$stateSpace$kolmogorovSmirnov()
+	LiangWangExample$stateSpace$kolmogorovSmirnov(resolution=0)
 )
 KS <- LiangWangExample$stateSpace$KS
 KS
+LiangWangExample$stateSpace$ecdfData
+
 LiangWangExample
 
 W <- LiangWangExample$stateSpace$ecdf
