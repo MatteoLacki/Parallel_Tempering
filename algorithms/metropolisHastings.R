@@ -64,8 +64,6 @@ metropolisHastings <- setRefClass(
 				acceptedRandomWalksNo	<<- rep.int(0L, times = chainsNo)
 				rejectedRandomWalksNo	<<- rep.int(0L, times = chainsNo)
 				detailedOutput			<<- detailedOutput				
-	
-				# insertChainNames()
 			}
 		},
 
@@ -136,8 +134,7 @@ metropolisHastings <- setRefClass(
 					
 
 		makeStepOfTheAlgorithm	= function( 
-			iteration,
-			burning  	= FALSE 
+			iteration
 		)
 			#### Makes one step of random walk followed by one swap step.
 		{
@@ -173,9 +170,9 @@ metropolisHastings <- setRefClass(
 		randomWalkRejection = function()
 			#### Here the Hastings quotients get compared with randomly generated values from the unit interval. All values are taken in logs for numerical stability.
 		{
-			Ulog <- log( runif( chainsNo ) )
+			Ulog 		<- log( runif( chainsNo ) )
 
-			logAlpha <- getLogAlpha()
+			logAlpha 	<- getLogAlpha()
 
 			updatedStates <<- Ulog < logAlpha
 
@@ -211,7 +208,7 @@ metropolisHastings <- setRefClass(
 
 			if ( anyUpdate ) 	updateAfterRandomWalk()
 
-			if ( !all( updatedStates ) ){
+			if ( notBurning & !all( updatedStates ) ){
 				rejectedRandomWalksNo[ !updatedStates ] <<- 
 					rejectedRandomWalksNo[ !updatedStates ] + 1L
 			}
@@ -226,8 +223,10 @@ metropolisHastings <- setRefClass(
 			lastStatesLogUDensities[ updatedStates ]<<-	
 				proposalLogUDensities[ updatedStates ]
 
-			acceptedRandomWalksNo[ updatedStates ] 	<<-
-				acceptedRandomWalksNo[ updatedStates ] + 1L 	
+			if ( notBurning ){	
+				acceptedRandomWalksNo[ updatedStates ] 	<<-
+					acceptedRandomWalksNo[ updatedStates ] + 1L
+			} 	
 		}
 		
 ####################################################################

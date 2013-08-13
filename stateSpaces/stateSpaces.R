@@ -10,7 +10,7 @@ stateSpace <- setRefClass(
 		iterationsNo	= "integer",
 
 			## Burn-in period.
-		notBurning			= "boolean",
+		notBurning		= "logical",
 
 			## The sub-object storing information needed for evaluation of the unnormalised density.
 		targetMeasure	= "TargetMeasures",
@@ -26,41 +26,47 @@ stateSpace <- setRefClass(
 		############################################################
 				# Initialisation
 
-		initialize 	= function(
+		initialize 			= function(
 			iterationsNo 	= NULL,
 			...
 		){
 			if ( !is.null(iterationsNo)){			
 				iterationsNo 	<<- as.integer(iterationsNo)
 				spaceName 	 	<<- 'General State Space'
-				notBurning 		<<- FALSE
+
+					# Burn-in is always initially turned-off, so that the initial states get stored properly. It is then announced by the algorithm. Finally, it is lifted by the algorithm.
+				notBurning 		<<- TRUE
 			}	
 		},
 
+		turnOnBurnIn 		= function(){
+			notBurning <<- FALSE
+		},
 
-		turnOffBurnIn = function(){
+
+		turnOffBurnIn 		= function(){
 			notBurning <<- TRUE
-		}
+		},
 
 		############################################################
 				# Visualisation
 
-		showState	= function()
+		showState			= function()
 		{},		
 
 
-		prepareDataForPlot = function()
+		prepareDataForPlot 	= function()
 		{},
 
 
-		show = function(...)
+		show 				= function(...)
 		{
 			anteSimulationShow()
 			postSimulationShow()	
 		},
 
 
-		anteSimulationShow = function(...)
+		anteSimulationShow 	= function(...)
 		{
 			cat('\nUsing General State Space.\n')
 			cat('\tNumber of iterations of the algorithm: ', iterationsNo, '\n\n')

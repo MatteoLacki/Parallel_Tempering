@@ -41,8 +41,7 @@ realTemperedStateSpace <- setRefClass(
 					chainsNo  			= chainsNo,
 					spaceDim  			= spaceDim,
 					initialStates 	 	= initialStates,
-					proposalCovariances = proposalCovariances,
-					...
+					proposalCovariances = proposalCovariances
 				)
 				
 				spaceName 	 <<- 'Real Tempered State Space'
@@ -137,7 +136,7 @@ realTemperedStateSpace <- setRefClass(
 				lastStates[,transposition] <<- lastStates[,transposition[2:1]]
 			}
 						
-			insertStates()	
+			if ( notBurning ) storeStates()	
 		},				
 
 
@@ -302,7 +301,7 @@ realTemperedStateSpace <- setRefClass(
 							limits 	= c(0, 1),
 							low		= "white",
 							high 	= "black"
-						) +
+						) +	
 						stat_contour(
 							data 	= contourData, 
 							aes( x, y, z =z ), 

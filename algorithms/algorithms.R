@@ -7,16 +7,19 @@ algorithm <- setRefClass(
 	fields		= list(
 
 			## Number of iterations of the algorithm.
-		iterationsNo  = "integer",
+		iterationsNo  		= "integer",
 
 			## The data container with methods that act on it.
-		stateSpace		= "StateSpaces",
+		stateSpace			= "StateSpaces",
 
 			## Boolean value: TRUE if the simulation has been carried out.
-		simulationFinished		= "logical",
+		simulationFinished	= "logical",
 
 			## Burn-in period.
-		burnIn				= "integer"	
+		burnIn				= "integer",
+
+			## Is it already not the burn-in time.
+		notBurning 			= "logical"	
 	),
 
 ###########################################################################
@@ -84,11 +87,22 @@ algorithm <- setRefClass(
 
 
 		makeStepOfTheAlgorithm	= function( 
-			iteration,
-			burning = FALSE 
+			iteration
 		)
 		{
 			cat('I shall make it all happen.')
+		},
+
+
+		turnOnBurnIn = function(){
+			stateSpace$turnOnBurnIn()
+			notBurning 	<<- FALSE	
+		},
+
+
+		turnOffBurnIn = function(){
+			stateSpace$turnOffBurnIn()
+			notBurning 	<<- TRUE
 		},
 
 
@@ -96,30 +110,21 @@ algorithm <- setRefClass(
 		{
 			prepareSimulation()
 			
+			turnOnBurnIn()
+
 			iteration <- 1L
 			while( iteration <= burnIn ){
 				makeStepOfTheAlgorithm( iteration )
 				iteration <- iteration+1	
 			}
 
-			stateSpace$turnOffBurnIn()
+			turnOffBurnIn()
 
 			iteration <- 1L
 			while( iteration <= iterationsNo ){
 				makeStepOfTheAlgorithm( iteration )
 				iteration <- iteration+1	
 			}
-
-			# tmp <- sapply( 
-			# 	1:iterationsNo, 
-			# 	function( iteration ) 
-			# 	{
-			# 		makeStepOfTheAlgorithm( iteration )
-			# 	},
-			# 	USE.NAMES = FALSE
-			# )
-
-			# rm(tmp)
 
 			getDataForVisualisation()
 

@@ -80,7 +80,7 @@ realStateSpace <- setRefClass(
 				)				
 
 				if( spaceDim > 0 & chainsNo > 0 ){	createDataStorage() }			
-				if( length(slotsNo) > 0 ){	insertStates()	}
+				if( length(slotsNo) > 0 ){	storeStates()	}
 
 				insertProposalCovariances(
 					proposalCovariances = proposalCovariances
@@ -239,8 +239,8 @@ realStateSpace <- setRefClass(
 		},
 
 
-		insertStates	= function() 
-			#### Inserts current states to the data history (field: simulatedStates).
+		storeStates	= function() 
+			#### Stores current states in the data history (field: simulatedStates).
 		{
 			if( freeSlotNo <= slotsNo )
 			{
@@ -250,8 +250,7 @@ realStateSpace <- setRefClass(
 				] 	<<- lastStates
 
 				freeSlotNo 	<<- freeSlotNo + 1L
-			} else
-			cat('The computer tried to make more steps than the user wanted him to. That is truly weird...') 
+			}
 		},
 
 
@@ -312,7 +311,8 @@ realStateSpace <- setRefClass(
 				lastStates[,indicesOfStatesUpdatedInRandomWalk] <<-
 					proposedStates[,indicesOfStatesUpdatedInRandomWalk] 
 			} 		
-			insertStates()				
+
+			if ( notBurning ) storeStates()				
 		},
 
 
@@ -549,49 +549,6 @@ realStateSpace <- setRefClass(
 
 			ecdfData <<- as.matrix(tmpEcdfData)
 		},		
-
-		ecdf2 = function( 
-			rows = 1:nrow(ecdfData)
-		){
-
-			if( length( rows ) == 1 ){
-				ecdfData[rows,'ecdf'] <<- ecdfData[rows,'charge']
-			} else {
-				S 		<- ecdfData[rows,]
-				rowsNo 	<- nrow(S)
-				S$AorB 	<- rep.int(NA, times=rowsNo)
-				
-					# division step
-				med 	<- median( S$x )
-				cond	<- S$x <= med
-
-					# recursive step
-				A 	<- S$No[cond]
-				B	<- S$No[!cond]
-					
-				S[cond,'AorB'] 	<- 'A'
-				S[!cond,'AorB'] <- 'B'
-
-				ecdf2(A)
-				ecdf2(B)
-
-					# marriage step
-
-				account <- 0
-				S 		<- S[order(S$y),]	
-
-				for ( i in 1:rowsNo) switch(
-					S[i,'AorB'],
-					'A'={
-						account <- account + S[i,'charge']
-					},
-					'B'={
-						ecdfData[i, 'ecdf'] <<- ecdfData[i, 'ecdf'] + account
-					},
-					stop("Value out of bound. Very suspicious.")
-				)
-			}	
-		},
 
 		kolmogorovSmirnov = function(
 			resolution 	= 0

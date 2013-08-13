@@ -123,6 +123,8 @@ parallelTempering <- setRefClass(
 				)
 
 			transpositionHistory<<-	tmpTranspositionHistory
+
+
 		},
 
 		
@@ -275,8 +277,7 @@ parallelTempering <- setRefClass(
 					
 
 		makeStepOfTheAlgorithm	= function( 
-			iteration,
-			burning = FALSE 
+			iteration
 		)
 			#### Makes one step of random walk followed by one swap step.
 		{
@@ -295,18 +296,17 @@ parallelTempering <- setRefClass(
 				###### random walk sphere ######
 
 
-
-				
-
 		updateAfterRandomWalk = function()
 		{
 				# Updating state space..
 			lastStatesLogUDensities[ updatedStates ]<<-	
 				proposalLogUDensities[ updatedStates ]
 
-			acceptedRandomWalksNo[ updatedStates ] 	<<-
-				acceptedRandomWalksNo[ updatedStates ] + 1L 
-
+			if ( notBurning ){	
+				acceptedRandomWalksNo[ updatedStates ] 	<<-
+					acceptedRandomWalksNo[ updatedStates ] + 1L 
+			}
+					
 				# updating unnormalised probabilities of swaps caused by random walk changes.
 			transpositionsForUpdate <- findTranspositionsForUpdate() 
 
@@ -326,7 +326,6 @@ parallelTempering <- setRefClass(
 				(proposalLogUDensities - lastStatesLogUDensities) 
 			)
 		},
-
 
 
 				###### swap sphere ######
@@ -467,7 +466,9 @@ parallelTempering <- setRefClass(
 					lastSwapUProbs <<- proposalUProbs 
 				}
 
-				transpositionHistory[ iteration ] <<- swapProposalLexic
+				if ( notBurning ){
+					transpositionHistory[ iteration ] <<- swapProposalLexic
+				}
 
 				if ( detailedOutput ) 
 				cat(

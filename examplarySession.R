@@ -29,7 +29,7 @@ LiangWangExample
 system.time(
   LiangWangExample$simulate()  
 ) 
-#LiangWangExample
+LiangWangExample
 LiangWangExample$stateSpace$initializeEcdfData()
 system.time(
 	LiangWangExample$stateSpace$kolmogorovSmirnov(resolution=0)
