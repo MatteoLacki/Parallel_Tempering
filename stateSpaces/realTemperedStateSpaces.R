@@ -41,7 +41,8 @@ realTemperedStateSpace <- setRefClass(
 					chainsNo  			= chainsNo,
 					spaceDim  			= spaceDim,
 					initialStates 	 	= initialStates,
-					proposalCovariances = proposalCovariances
+					proposalCovariances = proposalCovariances,
+					...
 				)
 				
 				spaceName 	 <<- 'Real Tempered State Space'

@@ -21,6 +21,7 @@ LiangWangExample <- simulation$new(
 	iterationsNo	= 1000,
 	strategyNo 	= 1,
 	example 	= TRUE,
+	burnIn 		= 2001,
 	save		= TRUE
 )
 

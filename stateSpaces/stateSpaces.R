@@ -9,6 +9,9 @@ stateSpace <- setRefClass(
 			## Number of iterations of the parallel tempering algorithm.	
 		iterationsNo	= "integer",
 
+			## Burn-in period.
+		notBurning			= "boolean",
+
 			## The sub-object storing information needed for evaluation of the unnormalised density.
 		targetMeasure	= "TargetMeasures",
 
@@ -28,16 +31,23 @@ stateSpace <- setRefClass(
 			...
 		){
 			if ( !is.null(iterationsNo)){			
-				iterationsNo <<- as.integer(iterationsNo)
-				spaceName 	 <<- 'General State Space'
+				iterationsNo 	<<- as.integer(iterationsNo)
+				spaceName 	 	<<- 'General State Space'
+				notBurning 		<<- FALSE
 			}	
 		},
+
+
+		turnOffBurnIn = function(){
+			notBurning <<- TRUE
+		}
 
 		############################################################
 				# Visualisation
 
 		showState	= function()
 		{},		
+
 
 		prepareDataForPlot = function()
 		{},
@@ -72,11 +82,14 @@ stateSpace <- setRefClass(
 			return( NULL )
 		},
 
+
 		randomWalkProposal 			= function()
 		{},
 
+
 		updateStatesAfterRandomWalk = function()
 		{},
+
 
 		updateStatesAfterSwap 		= function()
 		{}

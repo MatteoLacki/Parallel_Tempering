@@ -9,9 +9,7 @@ realStateSpace <- setRefClass(
 
 			## Dimension of the original state space of interest.
 		spaceDim			= "integer",	
-
-			## Burn-in period.
-		burnIn				= "integer",
+		
 			## Number of chains (independent simulations)
 		chainsNo			= "integer",
 
@@ -58,7 +56,7 @@ realStateSpace <- setRefClass(
 				# Initialisation
 
 		initialize	= function(
-			iterationsNo 		= NULL,  
+			iterationsNo 		= NULL, 
 			chainsNo 			= 0L,
 			spaceDim			= 0L,
 			initialStates 		= matrix(ncol=0, nrow=0),
@@ -69,7 +67,8 @@ realStateSpace <- setRefClass(
 		{
 			if( !is.null(iterationsNo) ){			
 				callSuper(
-					iterationsNo 		= iterationsNo
+					iterationsNo 		= iterationsNo,
+					...
 				)
 
 				spaceName 	 <<- 'Real State Space'

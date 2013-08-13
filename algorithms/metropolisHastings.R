@@ -1,4 +1,3 @@
-
 metropolisHastings <- setRefClass(
 	Class		= "MetropolisHastings",
 	contains	= "Algorithms",
@@ -46,6 +45,7 @@ metropolisHastings <- setRefClass(
 				
 		initialize = function(
 			iterationsNo 	= 0L,
+			burnIn 			= 2000L,
 			chainsNo 	  	= 0L,
 			detailedOutput	= FALSE,
 			...
@@ -55,7 +55,8 @@ metropolisHastings <- setRefClass(
 			if (!is.null(iterationsNo)){
 			
 				callSuper(
-					iterationsNo = iterationsNo,
+					iterationsNo    = iterationsNo,
+					burnIn 			= burnIn,
 					... 
 				)
 	
@@ -135,7 +136,8 @@ metropolisHastings <- setRefClass(
 					
 
 		makeStepOfTheAlgorithm	= function( 
-			iteration 
+			iteration,
+			burning  	= FALSE 
 		)
 			#### Makes one step of random walk followed by one swap step.
 		{

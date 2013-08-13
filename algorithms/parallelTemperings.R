@@ -15,7 +15,7 @@ parallelTempering <- setRefClass(
 		inverseTemperatures = "numeric",
 
 			## Number of swapping states strategy.
-		strategyNo 		= "integer",
+		strategyNo 			= "integer",
 
 			## Matrix with two rows with pairs of possible pairs in columns.
 		translatorFromLexicOrderToTranspositions = "matrix",
@@ -33,23 +33,23 @@ parallelTempering <- setRefClass(
 		swapProposal 		= "integer", 
 	
 			## An integer value describing the number of swap in the lexicographical order. -1 corresponds to swap randomWalkRejection.
-		lastTranspositionNo		= "integer",
+		lastTranspositionNo	= "integer",
 
 			## A vector of integers: all accepted transpositions enlisted. As long as the provided number of iterations to be executed. When rejected, we put 0. It is also filled with zeros at the beginning.
-		transpositionHistory	= "factor",
+		transpositionHistory= "factor",
 
 			## A vector of integers: overall number of accepted transposition-swap proposals.
 
-		acceptedSwapsNo			= "integer",
+		acceptedSwapsNo		= "integer",
 
 		# 	## Triggers detailed output during the simulation.
 		# detailedOutput			= "logical",
 
 			## Is the swap probability independent of point in space?	
-		simpleSwap				= "logical",
+		simpleSwap			= "logical",
 
 			## If a state-independent strategy was chosen, this vector will store the possible states. In lexicographic order.
-		possibleSwaps 			= "integer"
+		possibleSwaps 		= "integer"
 	),
 
 ###########################################################################
@@ -128,6 +128,7 @@ parallelTempering <- setRefClass(
 		
 		initialize = function(
 			iterationsNo 	= NULL,
+			burnIn 			= 2000L,
 			temperatures 	= numeric(0),
 			strategyNo		= 1L,
 			detailedOutput	= FALSE,
@@ -141,6 +142,7 @@ parallelTempering <- setRefClass(
 
 				callSuper( 
 					iterationsNo 	= iterationsNo,
+					burnIn 			= burnIn,
 					chainsNo 		= chainsNo,
 					detailedOutput 	= detailedOutput,
 					...
@@ -273,7 +275,8 @@ parallelTempering <- setRefClass(
 					
 
 		makeStepOfTheAlgorithm	= function( 
-			iteration 
+			iteration,
+			burning = FALSE 
 		)
 			#### Makes one step of random walk followed by one swap step.
 		{
@@ -288,7 +291,6 @@ parallelTempering <- setRefClass(
 				"Swap Step No ", 	iteration,	'\n')
 
 			swap( iteration )	
-
 		},
 				###### random walk sphere ######
 

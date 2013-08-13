@@ -26,7 +26,6 @@ simulation <- setRefClass(
 			## Save results?    
 	    save 			= "logical",
 
-
 	    	## Names of used objects
 	    algorithmName 		= "character",
 	    stateSpaceName 		= "character",
@@ -48,6 +47,7 @@ simulation <- setRefClass(
 			target 		 		= "Liang-Wang",	
 			example 			= FALSE,
 			iterationsNo 		= NULL,
+			burnIn				= 2000L,
 			chainsNo 			= 0L,
 			spaceDim			= 0L,
 			initialStates		= matrix(nrow=0, ncol=0),
@@ -72,6 +72,11 @@ simulation <- setRefClass(
 	      		targetMeasureName 	<<- target
 				algorithmName 		<<- algo
 				proposalCovariances <- covariances
+
+				if( as.integer(burnIn) >= 0 )
+				{
+					burnIn <- as.integer(burnIn)
+				}
 
 				if( example )
 				{
@@ -169,6 +174,7 @@ simulation <- setRefClass(
 					{
 						algorithm <<- metropolisHastings$new(
 							iterationsNo 	= iterationsNo,
+							burnIn 			= burnIn,
 							strategyNo		= strategyNo,
 							detailedOutput	= detailedOutput,
 							chainsNo 		= as.integer(chainsNo)
@@ -178,6 +184,7 @@ simulation <- setRefClass(
 					{
 						algorithm <<- parallelTempering$new(
 							iterationsNo 	= iterationsNo,
+							burnIn 			= burnIn,
 							temperatures 	= temperatures,
 							strategyNo		= strategyNo,
 							detailedOutput	= detailedOutput,
@@ -219,7 +226,6 @@ simulation <- setRefClass(
 
 			return( temperatures )
 		},	
-
 	
 		setIterationsNo = function( iterationsNo )
 		{
