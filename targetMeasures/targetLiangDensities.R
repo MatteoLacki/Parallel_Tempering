@@ -203,6 +203,27 @@ targetLiangDensity <- setRefClass(
 			return( crossprod( pnorms[1,], pnorms[2,] )*mixturesWeight  )	
 		},
 
+
+		marginalDistribuant	= function(
+			proposedState,
+			coordinateNo
+		)
+		{
+			return(
+				sum(
+					sapply(
+						mixturesMeans[coordinateNo,],
+						function( cooridinateMean )
+						{	
+							pnorm( (proposedState - cooridinateMean)/sigma)
+						}
+					)
+				)*
+				mixturesWeight
+			)
+		},
+
+
 		getSquareGrid = function( 
 			minimum , 
 			maximum ,

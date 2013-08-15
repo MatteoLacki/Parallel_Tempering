@@ -550,33 +550,33 @@ realStateSpace <- setRefClass(
 			ecdfData <<- as.matrix(tmpEcdfData)
 		},		
 
+
 		kolmogorovSmirnov = function(
 			resolution 	= 0
 		)
 		{
 			distinctPointsNo 	<- nrow(ecdfData)
-			jOfMaximalKS		<<- as.integer(distinctPointsNo+1)
+			jOfMaximalKS		<<- as.integer(distinctPointsNo+2)
 			if ( distinctPointsNo > 0){
 
 				if ( anyDuplicated(c(ecdfData[,1], ecdfData[,2])) > 0){
 					cat('\nFound duplicates that are very improbable. Calculations will be biased, because it is no longer the case, that in each row and column of the matrix there will be only one sample-point.\n')
 				} 
 
-				ecdf 		<<- matrix(ncol=2, nrow=distinctPointsNo+1)
+				ecdf 		<<- matrix(ncol=2, nrow=distinctPointsNo+2)
 				ecdf[1,1:2] <<- 0
-				ecdf[2:(distinctPointsNo+1),1] <<- 0
+				ecdf[2:(distinctPointsNo+2),1] <<- 0
 				KS  		<<- 0
+					# First rows and column are filled with zeros.
 				i 			<- 2L
 
-				while((i <= distinctPointsNo+1)&(jOfMaximalKS>1)){
+				while((i <= distinctPointsNo+2)&(jOfMaximalKS>1)){
 					
 					if( i%%10 == 1 ) cat('\n Visited',i-1,'out of',distinctPointsNo,'rows.\n')
 
 					j <- 2L
 
 					while(j < jOfMaximalKS){
-						iPointInfo 	<- ecdfData[i-1,2:4]
-
 						I0  <- i %% 2L 
 						I2 	<- I0 + 1L
 						I1 	<- 2L - I0
@@ -585,47 +585,93 @@ realStateSpace <- setRefClass(
 						ecdfSouth 		<- ecdf[j-1,I1]
 						ecdfSouthWest 	<- ecdf[j-1,I2]	
 
-						currentECDF 	<- ifelse(
-							iPointInfo[3] == j-1,
-							ecdfSouthWest + iPointInfo[2],
-							ecdfSouth + ecdfWest - ecdfSouthWest
-						)									
+						xIsFinite 	<- i < distinctPointsNo+2
+						yIsFinite 	<- j < distinctPointsNo+2
 
-						ecdf[j,I1] 		<<- currentECDF				
-						currentPoint 	<- c(
-							iPointInfo[1], 
-							ecdfData[j-1,1]
-						)
+							# Guardian of the KS increment.
+						tmpKS 		<- KS
 
-						currentCDF <- targetMeasure$distribuant(
-							currentPoint
-						)	
-						
-						tmpKS <- max(
-							abs(currentCDF - currentECDF), 
-							abs(currentCDF - ecdfWest),
-							abs(currentCDF - ecdfSouth),
-							abs(currentCDF - ecdfSouthWest)
-						)
+						if( xIsFinite & yIsFinite )
+						{
+							iPointInfo 		<- ecdfData[i-1,2:4]
+							currentPoint 	<- c(
+								iPointInfo[1], 
+								ecdfData[j-1,1]
+							)
+
+							currentECDF 	<- ifelse(
+								iPointInfo[3] == j-1,
+								ecdfSouthWest + iPointInfo[2],
+								ecdfSouth + ecdfWest - ecdfSouthWest
+							)									
+								# We must evaluate the real CDF only when the ECDF changes. It makes sense to calculate KS only on the verteces of isobars, not the edges.
+								# So the following condition defines a real vertex. 
+							if( 
+								currentECDF > ecdfWest &
+								currentECDF > ecdfSouth
+							){
+								currentCDF <- targetMeasure$distribuant(
+									currentPoint
+								)	
+								
+								tmpKS <- max(
+									abs(currentCDF - currentECDF), 
+									abs(currentCDF - ecdfWest),
+									abs(currentCDF - ecdfSouth),
+									abs(currentCDF - ecdfSouthWest)
+								)								
+							}	
+						} else {
+							if( !xIsFinite & !yIsFinite )
+							{
+								cat('What are you doing here? The appearence of this message means a perfect match of both measures. This should never be the case!')
+								tmpKS		<- 0
+								currentECDF <- 1
+							} else {
+									# Only when both coordinates are finite, the point can have a positive charge.
+									# That's why no charge is present here.
+								currentECDF <- ecdfSouth + ecdfWest - ecdfSouthWest
+
+								if ( xIsFinite )
+								{
+									nonInfiniteCoordinateNo <- 1L
+									nonInfiniteCoordinate 	<- ecdfData[i-1,2]
+								} else {
+									nonInfiniteCoordinateNo <- 2L
+									nonInfiniteCoordinate 	<- ecdfData[j-1,1]
+								}
+
+								currentCDF <- targetMeasure$marginalDistribuant(
+									proposedState 	= nonInfiniteCoordinate,
+									coordinateNo 	= nonInfiniteCoordinateNo
+								)
+
+								tmpKS <- max(
+									abs(currentCDF - currentECDF), 
+									abs(currentCDF - ecdfWest),
+									abs(currentCDF - ecdfSouth)
+								)
+							}
+						}
+
+						ecdf[j,I1] 	<<- currentECDF				
 
 						if (tmpKS > KS){
 							KS 	<<- tmpKS 
 							
+								# Here we reduce the number of calculations due to the impossibility of difference getting too big in a stripe [1-KS-resolution, 1].
 							if( 
 								(currentECDF + tmpKS + resolution > 1) & 
 								(currentCDF  + tmpKS + resolution > 1) 
 							){
 								jOfMaximalKS <<- j
-								print(currentECDF + tmpKS + resolution)
-								print(currentCDF + tmpKS + resolution)
-								print(jOfMaximalKS)
 							}
 						}
-
 						j <- j+1L
+						# End of the search in the 0y direction given x[i].
 					}
-
 					i <- i+1L
+					# Now, we shall take under scope x[i+1].
 				}
 
 													

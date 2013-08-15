@@ -17,31 +17,36 @@ source("./simulations/simulations.R")
 source("./controllers/controllers.R")
 
 ############################### State-dependent simulation ###################
+
+
+
 LiangWangExample <- simulation$new(
-	iterationsNo	= 1000,
+	iterationsNo	= 10000,
 	strategyNo 	= 1,
 	example 	= TRUE,
-	burnIn 		= 2001,
+	burnIn 		= 2000,
 	save		= TRUE
 )
 
 LiangWangExample
 system.time(
-  LiangWangExample$simulate()  
+LiangWangExample$simulate()  
 ) 
-LiangWangExample
+#LiangWangExample
 LiangWangExample$stateSpace$initializeEcdfData()
 system.time(
 	LiangWangExample$stateSpace$kolmogorovSmirnov(resolution=0)
 )
 KS <- LiangWangExample$stateSpace$KS
 KS
+
 LiangWangExample$stateSpace$ecdfData
 LiangWangExample
 LiangWangExample$stateSpace$simulatedStates
 head(LiangWangExample$stateSpace$dataForPlot)
 
 
+head(LiangWangExample$stateSpace$dataForPlot)
 
 ############################### Additional Topics ############################
 X <- LiangWangExample$stateSpace$dataForPlot[,1:2]
@@ -134,6 +139,12 @@ system.time(
   LiangWangExample$simulate()  
 ) 
 LiangWangExample	
+LiangWangExample$stateSpace$initializeEcdfData()
+system.time(
+  LiangWangExample$stateSpace$kolmogorovSmirnov(resolution=0)
+)
+KS <- LiangWangExample$stateSpace$KS
+KS
 
 svg("MatteoDistributionStrategyUniformDistributionOnAllTranspositions.svg", width=12, height=8)
 	LiangWangExample$stateSpace$plotBaseTemperature()	
