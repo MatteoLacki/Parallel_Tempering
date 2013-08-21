@@ -43,7 +43,9 @@ realStateSpace <- setRefClass(
 
 		jOfMaximalKS 		= "integer",
 
-		KS 					= "numeric"
+		KS 					= "numeric",
+
+		sojournData 		= "data.frame"
 	),	
 	
 ###########################################################################
@@ -679,7 +681,72 @@ realStateSpace <- setRefClass(
 				initializeEcdfData()
 				kolmogorovSmirnov()								
 			}
-		}		
+		},
+
+		initializeSojournData 	= function(){
+
+			require( sqldf )
+			sojournData		<<- sqldf(
+				"SELECT 	x , y, COUNT(*) AS charge 
+				FROM 	dataForPlot 
+					WHERE Temperature=1 AND 
+					PHASE='Swap' 
+				GROUP BY 	x, y;"
+			)
+		
+		},
+
+		estimateSojournsByLength = function(){
+
+			initializeSojournData()
+
+			sojournData$euclideanClassifier <<- apply(
+				sojournData[,1:2],
+				1,
+				function( samplePoint )
+				{
+					return( 
+						targetMeasure$classifyByLength( samplePoint ) 
+					)
+				}
+			)
+
+			euclideanClassifier	<- sqldf(
+				"SELECT 	euclideanClassifier AS meanNo, 
+							SUM(charge) AS counts 
+				FROM 		sojournData 
+				GROUP BY 	meanNo;"
+			)
+
+			tmp  	<- rep.int(0L, times = targetMeasure$mixturesNo)
+			tmp[euclideanClassifier$meanNo] <- euclideanClassifier$counts
+			tmp 	<- tmp/sum(tmp)
+
+			return( tmp )
+		},	
+
+		estimateSojournsByChiSquare = function(){
+
+			initializeSojournData()
+
+			counterTable <- rep.int( 
+				x = 0L, 
+				times = targetMeasure$mixturesNo
+			)
+
+			for( i in 1:nrow( sojournData )){
+				for( j in 1:sojournData[i,3]){
+					whichMean 	<- targetMeasure$classifyByChiSquare( 
+						as.numeric( sojournData[i,1:2] ) 
+					) 
+					counterTable[ whichMean ] <- counterTable[ whichMean ] + 1
+				}
+			}			
+
+			counterTable <- counterTable/sum( counterTable )
+
+			return( counterTable )
+		}
 
 ###########################################################################
 				# Finis Structurae

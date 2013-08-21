@@ -322,6 +322,45 @@ targetLiangDensity <- setRefClass(
 					file 		= fileName
 				)
 			}
+		},
+
+		measureDistanceFromMeans = function( point ){
+			return(
+				apply(
+					mixturesMeans,
+					2,
+					function( mean )
+					{
+						crossprod( mean - point )
+					}	
+				)
+			)	
+		},
+
+		classifyByLength = function( point ){
+
+			distances <- measureDistanceFromMeans( point ) 
+
+			minimiser <- which(distances == min(distances), arr.ind=TRUE)	
+			
+			if( length(minimiser) > 1){
+				minimiser <- sample( x=minimiser, size=1)
+			}
+				
+			return( minimiser )
+		},
+
+		classifyByChiSquare = function( point ){
+
+			chiSquares <- exp( -measureDistanceFromMeans( point )/(sigma2*2) )
+
+			return(
+				sample( 
+					x=1:mixturesNo, 
+					size=1, 
+					prob = chiSquares 
+				)
+			)
 		}
 
 

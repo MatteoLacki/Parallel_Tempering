@@ -18,13 +18,11 @@ source("./controllers/controllers.R")
 
 ############################### State-dependent simulation ###################
 
-
-
 LiangWangExample <- simulation$new(
-	iterationsNo	= 10000,
+	iterationsNo	= 100,
 	strategyNo 	= 1,
 	example 	= TRUE,
-	burnIn 		= 2000,
+	burnIn 		= 200,
 	save		= TRUE
 )
 
@@ -32,7 +30,23 @@ LiangWangExample
 system.time(
 LiangWangExample$simulate()  
 ) 
+
 #LiangWangExample
+system.time(
+	x <- LiangWangExample$stateSpace$estimateSojournsByChiSquare()
+)
+plot(x=1:20,y=x)
+mean(x)
+sd(x)
+system.time(
+	y <- LiangWangExample$stateSpace$estimateSojournsByLength()
+)
+y
+plot(x=1:20,y=y)
+mean(y)
+sd(y)
+
+
 LiangWangExample$stateSpace$initializeEcdfData()
 system.time(
 	LiangWangExample$stateSpace$kolmogorovSmirnov(resolution=0)
