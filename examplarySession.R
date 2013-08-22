@@ -18,37 +18,64 @@ source("./controllers/controllers.R")
 
 ############################### State-dependent simulation ###################
 
-LiangWangExample <- simulation$new(
-	iterationsNo	= 100,
-	strategyNo 	= 1,
-	example 	= TRUE,
-	burnIn 		= 200,
-	save		= TRUE,
-	trialNo 	= 10L,
-	evaluateKS 	= TRUE
-)
-
 euclid <- function(x,y)
 {
 	return( crossprod(x-y) )
 }
 
-for( strategyNo in 1:6 ){
-	for( trialNo in 1:10 ){
+trialNo 	<- 10L
+strategyNo	<- 6L
+
+results <- as.data.frame(matrix(nrow=trialNo*strategyNo,ncol=63))
+
+nameCreator <- function( letter, minNo, maxNo)	
+{
+	sapply(
+		minNo:maxNo,
+		function(num){
+			return( paste( letter, num, sep="",collapse="" ) )
+		}
+	)	
+}
+	
+naming  <- c(
+	'Strategy',
+	nameCreator('rwByTemp',1,5), 
+	nameCreator('rswap',0,10),
+	'KS',
+	nameCreator('MeanNo',1,20),
+	nameCreator('MeanNo',1,20),
+	'EX',
+	'EY',
+	'EX2',
+	'EY2',
+	'EXY'
+) 	
+
+i <- 1L	
+for( strategy in 1:strategyNo ){
+	for( trial in 1:trialNo ){
 		LiangWangExample <- simulation$new(
 			iterationsNo	= 100,
-			strategyNo 	= strategyNo,
+			strategyNo 	= strategy,
 			example 	= TRUE,
 			burnIn 		= 200,
-			save		= TRUE,
-			trialNo 	= trialNo,
+			save		= FALSE,
+			trialNo 	= trial,
 			quasiMetric 	= euclid,
 			evaluateKS 	= TRUE
 		)
 		LiangWangExample$simulate()
+		results[i,] <- LiangWangExample$furnishResults()
+		i <- i+1
 		rm(LiangWangExample)	
 	}
 }
+
+names( results ) <- naming
+results
+
+############################### Additional Topics ############################
 
 LiangWangExample <- simulation$new(
 	iterationsNo	= 75,
@@ -60,34 +87,6 @@ LiangWangExample <- simulation$new(
 	evaluateKS 	= TRUE
 )
 
-
-system.time(
-  LiangWangExample$simulate()  
-)
-
-class(LiangWangExample$furnishResults())
-
-LiangWangExample$stateSpace$estimateMoments()
-LiangWangExample$algorithm$tellHistory()
-table(LiangWangExample$algorithm$transpositionHistory)
-
-
-LiangWangExample$stateSpace$initializeEcdfData()
-system.time(
-	LiangWangExample$stateSpace$kolmogorovSmirnov(resolution=0)
-)
-KS <- LiangWangExample$stateSpace$KS
-KS
-
-LiangWangExample$stateSpace$ecdfData
-LiangWangExample
-LiangWangExample$stateSpace$simulatedStates
-head(LiangWangExample$stateSpace$dataForPlot)
-
-
-head(LiangWangExample$stateSpace$dataForPlot)
-
-############################### Additional Topics ############################
 X <- LiangWangExample$stateSpace$dataForPlot[,1:2]
 
 colMeans(X^2)
