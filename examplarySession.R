@@ -1,7 +1,7 @@
 ############################### Loading files ################################
 rm( list = ls())
-directory <- "/home/matteo/Documents/Scienza/Laurea_di_Matematica/Implementation"
-setwd(directory)
+#directory <- "/home/matteo/Documents/Scienza/Laurea_di_Matematica/Implementation"
+#setwd(directory)
 
 source("./targetMeasures/targetMeasures.R")
 source("./targetMeasures/targetUnnormalisedDensities.R")
@@ -18,62 +18,71 @@ source("./controllers/controllers.R")
 
 ############################### State-dependent simulation ###################
 
-euclid <- function(x,y)
+
+BigSimulaton <- function( trialNo, minStrat, maxStrat )
 {
-	return( crossprod(x-y) )
+  euclid <- function(x,y)
+  {
+  	return( crossprod(x-y) )
+  }
+  
+  strategyNo  <- maxStrat - minStrat + 1
+  
+  results <- as.data.frame(matrix(nrow=trialNo*strategyNo,ncol=63))
+  
+  nameCreator <- function( letter, minNo, maxNo)	
+  {
+  	sapply(
+  		minNo:maxNo,
+  		function(num){
+  			return( paste( letter, num, sep="",collapse="" ) )
+  		}
+  	)	
+  }
+  	
+  naming  <- c(
+  	'Strategy',
+  	nameCreator('rwByTemp',1,5), 
+  	nameCreator('rswap',0,10),
+  	'KS',
+  	nameCreator('MeanNo',1,20),
+  	nameCreator('MeanNo',1,20),
+  	'EX',
+  	'EY',
+  	'EX2',
+  	'EY2',
+  	'EXY'
+  ) 	
+  
+  i <- 1L
+  
+  
+    for( strategy in minStrat:maxStrat ){
+    	for( trial in 1:trialNo ){
+          LiangWangExample <- simulation$new(
+      			iterationsNo	= 7500,
+      			strategyNo 	= strategy,
+      			example 	= TRUE,
+      			burnIn 		= 2500,
+      			save		= FALSE,
+      			trialNo 	= trial,
+      			quasiMetric 	= euclid,
+      			evaluateKS 	= TRUE
+      		)
+      		LiangWangExample$simulate()
+      		results[i,] <- LiangWangExample$furnishResults()
+      		i <- i+1
+      		rm(LiangWangExample)		 
+    	}
+    }
+  
+  
+  names( results ) <- naming
+  
+  return( results )
 }
 
-trialNo 	<- 10L
-strategyNo	<- 6L
-
-results <- as.data.frame(matrix(nrow=trialNo*strategyNo,ncol=63))
-
-nameCreator <- function( letter, minNo, maxNo)	
-{
-	sapply(
-		minNo:maxNo,
-		function(num){
-			return( paste( letter, num, sep="",collapse="" ) )
-		}
-	)	
-}
-	
-naming  <- c(
-	'Strategy',
-	nameCreator('rwByTemp',1,5), 
-	nameCreator('rswap',0,10),
-	'KS',
-	nameCreator('MeanNo',1,20),
-	nameCreator('MeanNo',1,20),
-	'EX',
-	'EY',
-	'EX2',
-	'EY2',
-	'EXY'
-) 	
-
-i <- 1L	
-for( strategy in 1:strategyNo ){
-	for( trial in 1:trialNo ){
-		LiangWangExample <- simulation$new(
-			iterationsNo	= 100,
-			strategyNo 	= strategy,
-			example 	= TRUE,
-			burnIn 		= 200,
-			save		= FALSE,
-			trialNo 	= trial,
-			quasiMetric 	= euclid,
-			evaluateKS 	= TRUE
-		)
-		LiangWangExample$simulate()
-		results[i,] <- LiangWangExample$furnishResults()
-		i <- i+1
-		rm(LiangWangExample)	
-	}
-}
-
-names( results ) <- naming
-results
+BigSimulaton( 2, 1, 1)
 
 ############################### Additional Topics ############################
 
