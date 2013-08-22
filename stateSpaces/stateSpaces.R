@@ -36,7 +36,7 @@ stateSpace <- setRefClass(
 
 					# Burn-in is always initially turned-off, so that the initial states get stored properly. It is then announced by the algorithm. Finally, it is lifted by the algorithm.
 				notBurning 		<<- TRUE
-			}	
+			}
 		},
 
 		turnOnBurnIn 		= function(){
@@ -79,6 +79,15 @@ stateSpace <- setRefClass(
 				what I show after the simulation
 				has finished. ')		
 		},
+
+
+		writeStates = function(...)
+		{
+			cat('Do not forget to define 
+				what I save after the simulation
+				has finished. ')		
+		},
+
 
 		############################################################
 				# Algorithmic Methods				

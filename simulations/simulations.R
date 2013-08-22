@@ -30,7 +30,12 @@ simulation <- setRefClass(
 	    algorithmName 		= "character",
 	    stateSpaceName 		= "character",
 	    targetMeasureName 	= "character",
-	    iterationsNo 		= "integer"
+	    strategyNo 			= "integer",
+	    trialNo 			= "integer",
+	    iterationsNo 		= "integer",
+
+	    directoryToWrite 	= "character",
+	    evaluateKS 			= "logical"
     ),
 
 ###########################################################################
@@ -58,6 +63,8 @@ simulation <- setRefClass(
 			covariances 		= matrix(ncol=0, nrow=0),
 			detailedOutput		= FALSE,
 			save 				= FALSE,
+			trialNo 			= 1L,
+			evaluateKS 			= FALSE,
 			...
       )
 		{
@@ -71,7 +78,10 @@ simulation <- setRefClass(
 	      		stateSpaceName 		<<- space
 	      		targetMeasureName 	<<- target
 				algorithmName 		<<- algo
-				proposalCovariances <- covariances
+				strategyNo 			<<- as.integer(strategyNo)
+				trialNo				<<- trialNo
+				evaluateKS 			<<- evaluateKS
+				proposalCovariances <-  covariances
 
 				if( as.integer(burnIn) >= 0 )
 				{
@@ -239,7 +249,7 @@ simulation <- setRefClass(
 
 
 		############################################################
-				# Visualisation
+				# Visualisation and Saving
 
 
 		show = function()
@@ -251,6 +261,100 @@ simulation <- setRefClass(
 			targetMeasure$show()
 		},
 
+
+		write = function() 
+		{
+			
+			if( !file.exists("./data") ) dir.create("./data")
+
+			parallel <- algorithmName=='parallel tempering'
+
+			directoryToWrite <<- paste(
+				getwd(),
+				"/data/",
+				algorithmName,
+				'[]',
+				stateSpaceName,
+				'[]',
+				targetMeasureName,
+				ifelse( 
+					parallel,
+					paste(
+						'[]strat',
+						strategyNo,
+						'[]',
+						sep="",
+						collapse=""
+					),
+					'[]'
+				),
+				iterationsNo,
+				"iter",
+				'[]trial', 
+				trialNo,
+				sep="",
+				colapse=""
+			)
+
+			if( !file.exists( directoryToWrite ) ) dir.create( directoryToWrite )
+
+			stateSpace$writeStates( directoryToWrite )
+  			algorithm$writeInfo( directoryToWrite )
+	  		stateSpace$writeSojourns( directoryToWrite )
+
+  			if( evaluateKS ){				  
+  				stateSpace$writeKS( directoryToWrite )
+  			}
+
+  			if( parallel ){
+  				algorithm$writeSwaps( directoryToWrite )
+  			}
+
+		},
+
+
+		furnishResults = function(){
+			
+			spaceDim  		<- stateSpace$spaceDim 
+
+			temperaturesNo 	<- 
+
+			results  <- list( strategyNo=1L )
+
+			if( stateSpaceName=='real tempered' ){
+				results$randomWalksRejections  	<- 
+					algorithm$randomWalkHistory()
+			} 
+
+			if( algorithmName=='parallel tempering' ){
+				results$transpositionRejections  <- 
+					algorithm$tellHistory()
+			}			
+
+			if( evaluateKS ){
+				results$KS <- stateSpace$KS			
+			} else {
+				results$KS <- 2
+			}
+
+			results$euclideanClassifier <- 
+				stateSpace$estimateSojournsByLength()
+
+			results$chiSquareClassifier <- 
+				stateSpace$estimateSojournsByChiSquare()
+
+			results$momentEstimates 	<- 
+				stateSpace$estimateMoments()
+
+			return(
+				Reduce(
+					c, 
+					results
+				)
+			)	
+		},
+
+
 		############################################################
 				# Algorithmic Methods
 
@@ -259,29 +363,14 @@ simulation <- setRefClass(
 		{
 			algorithm$simulate()
 
-			if( !file.exists("./data") ) dir.create("./data")
+			if( evaluateKS ){
+				stateSpace$kolmogorovSmirnov( resolution=0 )
+			}	
 
-			if( save ){
-        		write.csv2(
-	  				stateSpace$simulatedStates,
-	  				file = paste(
-	  					getwd(),
-	  					"/data/",
-	  					algorithmName,
-	  					'[]',
-	  					stateSpaceName,
-	  					'[]',
-	  					targetMeasureName,
-	  					'[]',
-	  					iterationsNo,
-	  					"iterations.csv", 
-	  					sep="",
-	  					colapse=""
-	  				),
-	  				row.names=FALSE
-	  			)	
-			}  
+			if( save ) write()
 		}
+
+
 
 ###########################################################################
 				# Finis Structurae	

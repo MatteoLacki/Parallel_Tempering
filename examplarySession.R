@@ -23,28 +23,53 @@ LiangWangExample <- simulation$new(
 	strategyNo 	= 1,
 	example 	= TRUE,
 	burnIn 		= 200,
-	save		= TRUE
+	save		= TRUE,
+	trialNo 	= 10L,
+	evaluateKS 	= TRUE
 )
 
-LiangWangExample
-system.time(
-LiangWangExample$simulate()  
-) 
+euclid <- function(x,y)
+{
+	return( crossprod(x-y) )
+}
 
-#LiangWangExample
-system.time(
-	x <- LiangWangExample$stateSpace$estimateSojournsByChiSquare()
+for( strategyNo in 1:6 ){
+	for( trialNo in 1:10 ){
+		LiangWangExample <- simulation$new(
+			iterationsNo	= 100,
+			strategyNo 	= strategyNo,
+			example 	= TRUE,
+			burnIn 		= 200,
+			save		= TRUE,
+			trialNo 	= trialNo,
+			quasiMetric 	= euclid,
+			evaluateKS 	= TRUE
+		)
+		LiangWangExample$simulate()
+		rm(LiangWangExample)	
+	}
+}
+
+LiangWangExample <- simulation$new(
+	iterationsNo	= 75,
+	strategyNo 	= 1,
+	example 	= TRUE,
+	burnIn 		= 25,
+	save		= TRUE,
+	trialNo 	= 1L,
+	evaluateKS 	= TRUE
 )
-plot(x=1:20,y=x)
-mean(x)
-sd(x)
+
+
 system.time(
-	y <- LiangWangExample$stateSpace$estimateSojournsByLength()
+  LiangWangExample$simulate()  
 )
-y
-plot(x=1:20,y=y)
-mean(y)
-sd(y)
+
+class(LiangWangExample$furnishResults())
+
+LiangWangExample$stateSpace$estimateMoments()
+LiangWangExample$algorithm$tellHistory()
+table(LiangWangExample$algorithm$transpositionHistory)
 
 
 LiangWangExample$stateSpace$initializeEcdfData()

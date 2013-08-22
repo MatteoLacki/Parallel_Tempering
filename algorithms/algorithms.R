@@ -82,6 +82,25 @@ algorithm <- setRefClass(
 			stateSpace$prepareDataForPlot()
 		},
 
+
+	 	writeInfo = function( 
+	 		directoryToWrite
+	 	){
+	 		write.csv2(
+				list(
+	 				burnIn 			= burnIn,
+	 				iterationsNo	= iterationsNo
+	 			),
+				file = paste(
+					directoryToWrite,
+					"/basicInfo.csv",
+					sep="",
+					collapse=""
+				),
+				row.names = FALSE
+			)
+	 	},
+
 		############################################################
 				# Algorithmic Methods
 

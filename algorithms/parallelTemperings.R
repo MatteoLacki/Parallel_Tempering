@@ -38,13 +38,6 @@ parallelTempering <- setRefClass(
 			## A vector of integers: all accepted transpositions enlisted. As long as the provided number of iterations to be executed. When rejected, we put 0. It is also filled with zeros at the beginning.
 		transpositionHistory= "factor",
 
-			## A vector of integers: overall number of accepted transposition-swap proposals.
-
-		acceptedSwapsNo		= "integer",
-
-		# 	## Triggers detailed output during the simulation.
-		# detailedOutput			= "logical",
-
 			## Is the swap probability independent of point in space?	
 		simpleSwap			= "logical",
 
@@ -69,8 +62,9 @@ parallelTempering <- setRefClass(
 
 			if ( is.na( tmpStrategyNo ) || tmpStrategyNo < 0 ){		 
 				stop(
-					"Inappropriate stregy number. Right now you can choose among strategies from 1 to 4."
+					"Inappropriate stregy number. Right now you can choose among strategies from 1 to 6."
 				)
+
 			} else {	
 				strategyNo	<<- tmpStrategyNo
 			}
@@ -271,6 +265,58 @@ parallelTempering <- setRefClass(
 
 			return( p )	
 		},	
+
+
+		writeInfo = function(
+	 		directoryToWrite,
+	 		...
+	 	)	
+	 	{
+	 		callSuper(
+	 			directoryToWrite,
+	 			...
+	 		)
+
+	 		write.csv2(
+				list(
+	 				temperatures = temperatures 			
+	 			),
+				file = paste(
+					directoryToWrite,
+					"/temperatures.csv",
+					sep="",
+					collapse=""
+				),
+				row.names 	= FALSE
+			)
+	 	},
+
+
+		writeSwaps = function( 
+			directoryToWrite,
+			...
+		){
+	 		write.csv2(
+				table( transpositionHistory ),
+				file = paste(
+					directoryToWrite,
+					"/swapsRejections.csv",
+					sep="",
+					collapse=""
+				),
+				row.names 	= FALSE
+			)
+		},
+
+
+		tellHistory = function(){
+
+			history <- as.numeric( table( transpositionHistory ) )
+			history <- history/sum(history)
+
+			return( history )
+		},
+
 
 		############################################################
 				# Algorithmic Methods

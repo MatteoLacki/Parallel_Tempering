@@ -45,6 +45,8 @@ realStateSpace <- setRefClass(
 
 		KS 					= "numeric",
 
+		sojournDataNotInitialised = "logical",
+
 		sojournData 		= "data.frame"
 	),	
 	
@@ -69,9 +71,11 @@ realStateSpace <- setRefClass(
 		{
 			if( !is.null(iterationsNo) ){			
 				callSuper(
-					iterationsNo 		= iterationsNo,
+					iterationsNo 	= iterationsNo,
 					...
 				)
+
+				sojournDataNotInitialised <<- TRUE
 
 				spaceName 	 <<- 'Real State Space'
 	
@@ -470,6 +474,71 @@ realStateSpace <- setRefClass(
 			)
 		},
 
+
+		writeStates = function( 
+			directoryToWrite,
+			... 
+		)
+		{
+			write.csv2(
+				simulatedStates,
+				file = paste(
+					directoryToWrite,
+					"/simulatedStates.csv",
+					sep="",
+					collapse=""
+				),
+				row.names=FALSE
+			)	
+		},
+
+
+		writeKS = function( 
+			directoryToWrite,
+			... 
+		)
+		{
+			write.csv2(
+				KS,
+				file = paste(
+					directoryToWrite,
+					"/KS.csv",
+					sep="",
+					collapse=""
+				),
+				row.names=FALSE
+			)	
+		},
+
+
+		writeSojourns = function( 
+			directoryToWrite,
+			... 
+		)
+		{
+			sojourns <- as.data.frame(
+				cbind(
+					estimateSojournsByChiSquare(),
+					estimateSojournsByLength()
+				)
+			)
+
+			names(sojourns) <- c('chi2','euclid')
+
+			write.csv2(
+				sojourns,
+				file = paste(
+					directoryToWrite,
+					"/sojourns.csv",
+					sep="",
+					collapse=""
+				),
+				row.names=FALSE
+			)	
+		},
+
+
+
 		############################################################
 				# Algorithmic Methods
 
@@ -685,16 +754,21 @@ realStateSpace <- setRefClass(
 
 		initializeSojournData 	= function(){
 
-			require( sqldf )
-			sojournData		<<- sqldf(
-				"SELECT 	x , y, COUNT(*) AS charge 
-				FROM 	dataForPlot 
-					WHERE Temperature=1 AND 
-					PHASE='Swap' 
-				GROUP BY 	x, y;"
-			)
+			if( sojournDataNotInitialised ){
+				require( sqldf )
+				sojournData		<<- sqldf(
+					"SELECT 	x , y, COUNT(*) AS charge 
+					FROM 	dataForPlot 
+						WHERE Temperature=1 AND 
+						PHASE='Swap' 
+					GROUP BY 	x, y;"
+				)
+
+				sojournDataNotInitialised <<- FALSE	
+			}
 		
 		},
+
 
 		estimateSojournsByLength = function(){
 
@@ -725,6 +799,7 @@ realStateSpace <- setRefClass(
 			return( tmp )
 		},	
 
+
 		estimateSojournsByChiSquare = function(){
 
 			initializeSojournData()
@@ -746,8 +821,29 @@ realStateSpace <- setRefClass(
 			counterTable <- counterTable/sum( counterTable )
 
 			return( counterTable )
-		}
+		},
 
+
+		estimateMoments = function(){
+
+			initializeSojournData()
+
+			X 	<- sojournData$x 
+			Y 	<- sojournData$y 
+			CH  <- sojournData$charge
+
+			moments <- rep.int(0, times=5)
+
+				# EX, EY, D^2 X, D^2 Y, Cov(X,Y) 
+
+			moments[1] <- sum(X*CH)/iterationsNo
+			moments[2] <- sum(Y*CH)/iterationsNo
+			moments[3] <- sum(X^2*CH)/iterationsNo
+			moments[4] <- sum(Y^2*CH)/iterationsNo
+			moments[5] <- sum(X*Y*CH)/iterationsNo
+
+			return( moments )
+		}
 ###########################################################################
 				# Finis Structurae
 	)

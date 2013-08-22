@@ -109,26 +109,65 @@ metropolisHastings <- setRefClass(
 		},
 
 
+		acceptanceRejection = function(){
+
+			return(  
+				rbind( 
+					chainNames, 
+					acceptedRandomWalksNo/iterationsNo, 
+					rejectedRandomWalksNo/iterationsNo
+				)
+			)
+		},
+
+
+		randomWalkHistory = function(){
+
+			return(  
+				acceptedRandomWalksNo/iterationsNo
+			)
+		},
+
+
 		postSimulationShow = function(...)
 		{
 			if( simulationFinished )
 			{
 				cat("\tPercentage of accepted-rejected random-walks:\n")
-				acceptance <- rbind( 
-					chainNames, 
-					acceptedRandomWalksNo/iterationsNo, 
-					rejectedRandomWalksNo/iterationsNo
-				)
+				
 
-				acceptance <- as.data.frame( acceptance )
-
+				acceptance <- as.data.frame( acceptanceRejection )
 				row.names(acceptance) 	<- 
 					c("chain","accepted", "rejected")
 				colnames(acceptance) 	<- 1:chainsNo
-				print( acceptance )
+				print( acceptanceRejection() )
 				cat("\n")
 			}	
 		},
+
+
+		writeInfo = function(
+	 		directoryToWrite,
+	 		...
+	 	)	
+	 	{
+	 		callSuper(
+	 			directoryToWrite,
+	 			...
+	 		)
+
+	 		write.csv2(
+				acceptanceRejection(),
+				file = paste(
+					directoryToWrite,
+					"/acceptedRandomWalks.csv",
+					sep="",
+					collapse=""
+				),
+				row.names 	= FALSE
+			)
+	 	},
+
 		############################################################
 				# Algorithmic Methods
 					
