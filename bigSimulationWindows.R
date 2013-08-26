@@ -1,6 +1,6 @@
 rm( list = ls())
-#directory <- "/home/matteo/Documents/Scienza/Laurea_di_Matematica/Implementation"
-directory <- "F:/Mateusz/gitHub/Parallel_Tempering"
+directory <- "/home/matteo/Documents/Scienza/Laurea_di_Matematica/Implementation"
+#directory <- "F:/Mateusz/gitHub/Parallel_Tempering"
 setwd(directory)
 
 source("./targetMeasures/targetMeasures.R")
@@ -54,24 +54,37 @@ BigSimulaton <- function( trialNo, minStrat, maxStrat )
   	'EXY'
   ) 	
   
+  names(results) <- naming
   i <- 1L
   
   
     for( strategy in minStrat:maxStrat ){
     	for( trial in 1:trialNo ){
           LiangWangExample <- simulation$new(
-      			iterationsNo	= 7500,
+      			iterationsNo	= 75,
       			strategyNo 	= strategy,
       			example 	= TRUE,
-      			burnIn 		= 2500,
+      			burnIn 		= 25,
       			save		= FALSE,
       			trialNo 	= trial,
       			quasiMetric 	= euclid,
       			evaluateKS 	= TRUE
       		)
       		LiangWangExample$simulate()
-      		results[i,] <- LiangWangExample$furnishResults()
+      		
+      		results[i,]   <- LiangWangExample$furnishResults()
       		i <- i+1
+      		write.csv2(
+			results,
+			file = paste(
+			directory,
+			"/bigSimulations/partial.csv",
+			sep="",
+			collapse=""
+			),
+			row.names=FALSE
+		)	
+	
       		rm(LiangWangExample)		 
     	}
     }
@@ -82,11 +95,13 @@ BigSimulaton <- function( trialNo, minStrat, maxStrat )
   return( results )
 }
 
+results <- BigSimulaton( 1, 1, 3)
+
 write.csv2(
-	BigSimulaton( 200, 1, 3),
+	results,
 	file = paste(
 	directory,
-	"/bigSimulations/bigSimulationStrat1to3with200trials.csv",
+	"/bigSimulations/trial.csv",
 	sep="",
 	collapse=""
 	),

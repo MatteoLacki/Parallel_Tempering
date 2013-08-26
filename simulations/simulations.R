@@ -317,9 +317,7 @@ simulation <- setRefClass(
 			
 			spaceDim  		<- stateSpace$spaceDim 
 
-			temperaturesNo 	<- 
-
-			results  <- list( strategyNo=1L )
+			results  <- list( strategyNo=strategyNo )
 
 			if( stateSpaceName=='real tempered' ){
 				results$randomWalksRejections  	<- 
