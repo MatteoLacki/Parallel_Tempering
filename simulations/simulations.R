@@ -354,14 +354,16 @@ simulation <- setRefClass(
 				results$KS <- 2
 			}
 
+			sojournEstimates 	<- targetMeasure$sojournTimes 
+
 			results$euclideanClassifier <- 
-				stateSpace$estimateSojournsByLength()
+				sojournEstimates[1,]/iterationsNo
 
 			results$chiSquareClassifier <- 
-				stateSpace$estimateSojournsByChiSquare()
+				sojournEstimates[2,]/iterationsNo
 
-			results$momentEstimates 	<- 
-				stateSpace$estimateMoments()
+			results$integralEstimates 	<- 
+				integrant$approximation
 
 			return(
 				Reduce(

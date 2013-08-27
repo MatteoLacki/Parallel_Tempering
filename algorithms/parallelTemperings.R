@@ -32,10 +32,12 @@ parallelTempering <- setRefClass(
 		swapProposal 		= "integer", 
 	
 			## An integer value describing the number of swap in the lexicographical order. -1 corresponds to swap randomWalkRejection.
-		lastTranspositionNo	= "integer",
+		#lastTranspositionNo	= "integer",
 
 			## A vector of integers: all accepted transpositions enlisted. As long as the provided number of iterations to be executed. When rejected, we put 0. It is also filled with zeros at the beginning.
-		transpositionHistory= "factor",
+#		transpositionHistory= "factor",
+
+		transpositionsHistory 	= "matrix",
 
 			## Is the swap probability independent of point in space?	
 		simpleSwap			= "logical",
@@ -106,18 +108,7 @@ parallelTempering <- setRefClass(
 			transpositionsNo 	<<- 
 				ncol( translatorFromLexicOrderToTranspositions )			
 
-			lastTranspositionNo <<- -1L
-
-			tmpTranspositionHistory <- as.factor( integer( iterationsNo ) )
-			tmpTranspositionHistory <- 
-				ordered(
-					tmpTranspositionHistory,
-					levels = 0:transpositionsNo
-				)
-
-			transpositionHistory<<-	tmpTranspositionHistory
-
-
+			transpositionsHistory<<- matrix(0L,ncol=transpositionsNo, nrow=2 )
 		},
 
 		
@@ -146,7 +137,6 @@ parallelTempering <- setRefClass(
 				)
 
 				acceptedRandomWalksNo	<<- rep.int(0L, times = chainsNo)
-				#rejectedRandomWalksNo	<<- rep.int(0L, times = chainsNo)
 				
 				insertTranspositions()
 				insertStrategyNo( strategyNo )
@@ -242,31 +232,51 @@ parallelTempering <- setRefClass(
 					}
 				)
 
-			xAxisTags <- c("No swap", xAxisTags)	
+			cnt  <-	ncol( transpositionsHistory )
+			data <- numeric(2*cnt)
+			data[1:cnt] <- transpositionsHistory[2,]
+			data[(cnt+1):(2*cnt)] <-
+				transpositionsHistory[1,]-transpositionsHistory[2,]	
 
-			p <-qplot( 
-					transpositionHistory, 
-					geom="bar"
-				) +
-				scale_x_discrete(
-					breaks = 0:transpositionsNo,
-					labels = xAxisTags
-				) + 
-				theme(
-					axis.title.x=element_text(colour="darkred", size=14),
-					axis.title.y=element_text(colour="darkred", size=14),
-					plot.title=element_text(size=rel(1.5), colour="darkred")
-				) + 
+			data <- as.data.frame(data)
+			names(data) <- 'Count'
+
+			data$Acceptance[1:cnt] <- 'Accepted'	
+			data$Acceptance[(cnt+1):(2*cnt)] <- 'Rejected'
+
+			data$Transposition[1:cnt] <- xAxisTags	
+			data$Transposition[(cnt+1):(2*cnt)] <- xAxisTags
+
+			data$labelY[1:cnt] <- transpositionsHistory[2,]	
+			data$labelY[(cnt+1):(2*cnt)] <- transpositionsHistory[1,]+max(transpositionsHistory[1,])/40
+
+
+			data$relativeValue[1:cnt] <- round(
+				transpositionsHistory[2,]/transpositionsHistory[1,],
+				digits = 2	
+			)
+
+			data$relativeValue[(cnt+1):(2*cnt)] <- round(
+				1 - data$relativeValue[1:cnt],
+				digits=2
+			)
+
+			p <- ggplot( 
+					data, 
+					aes(x=Transposition, y=Count, fill=Acceptance)
+				)+
+				geom_bar(stat="identity")+
+				geom_text(
+					aes(y=labelY, label=relativeValue), 
+					vjust=1.5, colour="black", size=4
+				)+
+				scale_fill_brewer(palette="Pastel1")+
 				labs(
-					x='Transposition',
-					y='Counts',
 					title ="Swaps distribution"
 				)
 
-
 			return( p )	
 		},	
-
 
 		writeInfo = function(
 	 		directoryToWrite,
@@ -298,7 +308,7 @@ parallelTempering <- setRefClass(
 			...
 		){
 	 		write.csv2(
-				table( transpositionHistory ),
+				tellHistory(),
 				file = paste(
 					directoryToWrite,
 					"/swapsRejections.csv",
@@ -311,11 +321,7 @@ parallelTempering <- setRefClass(
 
 
 		tellHistory = function(){
-
-			history <- as.numeric( table( transpositionHistory ) )
-			history <- history/sum(history)
-
-			return( history )
+			return( transpositionsHistory[2,]/transpositionsHistory[1,] )
 		},
 
 
@@ -412,6 +418,10 @@ parallelTempering <- setRefClass(
 						prob = lastSwapUProbs
 					) 
 			}
+
+			if ( notBurning ){
+				transpositionsHistory[1,swapProposalLexic] <<- transpositionsHistory[1,swapProposalLexic]+1L 	
+			}	
 
 			swapProposal <<- 	
 				translateLexicToTranspositions( swapProposalLexic )
@@ -515,7 +525,7 @@ parallelTempering <- setRefClass(
 				}
 
 				if ( notBurning ){
-					transpositionHistory[ iteration ] <<- swapProposalLexic
+					transpositionsHistory[2,swapProposalLexic] <<- transpositionsHistory[2,swapProposalLexic]+1L
 				}
 
 				if ( detailedOutput ) 

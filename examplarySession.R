@@ -107,10 +107,10 @@ source("./controllers/controllers.R")
 f <- function( x ){ return( c( x, x^2, x[1]*x[2]) )}
 
 LiangWangExample <- simulation$new(
-	iterationsNo	= 75,
-	strategyNo 	= 1,
+	iterationsNo	= 7500,
+	strategyNo 	= 2,
 	example 	= TRUE,
-	burnIn 		= 25,
+	burnIn 		= 2500,
 	save		= FALSE,
 	trialNo 	= 1L,
 	evaluateKS 	= FALSE,
@@ -122,10 +122,67 @@ LiangWangExample <- simulation$new(
 system.time(
   LiangWangExample$simulate()  
 ) 
-LiangWangExample
-LiangWangExample$targetMeasure$sojournTimes
+LiangWangExample$furnishResults()
+LiangWangExample$algorithm$plotHistory()
+
+x <- LiangWangExample$algorithm$transpositionsHistory
+x
+y <- x[2,]/x[1,]
+
+cnt<- ncol(x)
+y <- numeric(2*cnt)
+y[1:cnt] <- x[2,]
+y[(cnt+1):(2*cnt)]<- x[1,]-x[2,]
+z <- as.data.frame(y)
+z[1:cnt,2] <- 'Accepted'
+z[(cnt+1):(2*cnt),2]<- 'Rejected'
+z[1:cnt,3] <- xAxisTags
+z[(cnt+1):(2*cnt),3]<- xAxisTags
+names(z) <- c('Count','Acceptance','Transposition')
+z$labelY[1:cnt]  <- x[2,]
+z$labelY[(cnt+1):(2*cnt)]  <- x[1,]+max(x[1,])/40
+z$relativeValue[1:cnt] <- round(x[2,]/x[1,],digits=2 )
+z$relativeValue[(cnt+1):(2*cnt)] <- round(1 - x[2,]/x[1,], digits=2)
+z
+
+xAxisTags <- 
+	apply(
+		LiangWangExample$algorithm$translatorFromLexicOrderToTranspositions,
+		2,
+		function( transposition )
+		{
+			paste(
+				"(", 
+				transposition[1], 
+				",",
+				transposition[2],
+				")", 
+				sep="", 
+				collapse=""
+			)	
+		}
+	)
+
+ggplot(
+	z,
+	aes(x = Transposition, y= Count, fill=Acceptance)
+)+
+geom_bar(stat="identity") +
+geom_text(aes(y=labelY, label=relativeValue), vjust=1.5, colour="black", size=4)+
+scale_fill_brewer(palette="Pastel1")+ 
+				labs(
+					title ="Swaps distribution"
+				)
+
 
 LiangWangExample$integrant$approximation
+barplot(x[1,])
+qplot(
+	1:length(y),
+	y,
+	geom="bar",
+	stat="identity"
+)
 
 
 
