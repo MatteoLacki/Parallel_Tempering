@@ -345,7 +345,7 @@ simulation <- setRefClass(
 
 			if( algorithmName=='parallel tempering' ){
 				results$transpositionRejections  <- 
-					algorithm$tellHistory()
+					algorithm$swapHistory()
 			}			
 
 			if( evaluateKS ){

@@ -30,13 +30,8 @@ parallelTempering <- setRefClass(
 
 			## Swap proposal as a transposition pair.
 		swapProposal 		= "integer", 
-	
-			## An integer value describing the number of swap in the lexicographical order. -1 corresponds to swap randomWalkRejection.
-		#lastTranspositionNo	= "integer",
 
-			## A vector of integers: all accepted transpositions enlisted. As long as the provided number of iterations to be executed. When rejected, we put 0. It is also filled with zeros at the beginning.
-#		transpositionHistory= "factor",
-
+			## A vector numbered from 1 to transpositionNo where counts of swaps and their acceptances are made.
 		transpositionsHistory 	= "matrix",
 
 			## Is the swap probability independent of point in space?	
@@ -308,7 +303,7 @@ parallelTempering <- setRefClass(
 			...
 		){
 	 		write.csv2(
-				tellHistory(),
+				swapHistory(),
 				file = paste(
 					directoryToWrite,
 					"/swapsRejections.csv",
@@ -320,8 +315,8 @@ parallelTempering <- setRefClass(
 		},
 
 
-		tellHistory = function(){
-			return( transpositionsHistory[2,]/transpositionsHistory[1,] )
+		swapHistory = function(){
+			return( c(transpositionsHistory[2,],transpositionsHistory[1,]) )
 		},
 
 

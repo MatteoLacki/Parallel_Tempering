@@ -28,8 +28,6 @@ BigSimulaton <- function( trialNo, minStrat, maxStrat )
   
   strategyNo  <- maxStrat - minStrat + 1
   
-  results <- as.data.frame(matrix(nrow=trialNo*strategyNo,ncol=63))
-  
   nameCreator <- function( letter, minNo, maxNo)	
   {
   	sapply(
@@ -39,14 +37,15 @@ BigSimulaton <- function( trialNo, minStrat, maxStrat )
   		}
   	)	
   }
-  	
+
   naming  <- c(
   	'Strategy',
-  	nameCreator('rwByTemp',1,5), 
-  	nameCreator('rswap',0,10),
+  	nameCreator('randomWalkTemperature',1,5), 
+  	nameCreator('randomSwaps',1,10),
+  	nameCreator('acceptedRandomSwaps',1,10),
   	'KS',
-  	nameCreator('MeanNo',1,20),
-  	nameCreator('MeanNo',1,20),
+  	nameCreator('euclideanClusterMean',1,20),
+  	nameCreator('chiSquareClusterMean',1,20),
   	'EX',
   	'EY',
   	'EX2',
@@ -54,30 +53,53 @@ BigSimulaton <- function( trialNo, minStrat, maxStrat )
   	'EXY'
   ) 	
   
-  i <- 1L
+  	results <- as.data.frame(
+  		matrix(
+  			nrow=trialNo*strategyNo,
+  			ncol=length(naming)
+  		)
+  	)
+
+  	names( results ) <- naming
   
-  
+  	functionToIntegrate <- function( x ){ return( c( x, x^2, x[1]*x[2]) )}	
+
+ 	i <- 1L 
     for( strategy in minStrat:maxStrat ){
     	for( trial in 1:trialNo ){
           LiangWangExample <- simulation$new(
-      			iterationsNo	= 7500,
-      			strategyNo 	= strategy,
-      			example 	= TRUE,
-      			burnIn 		= 2500,
-      			save		= FALSE,
-      			trialNo 	= trial,
-      			quasiMetric 	= euclid,
-      			evaluateKS 	= TRUE
+				iterationsNo= 7500,
+				strategyNo 	= strategy,
+				example 	= TRUE,
+				burnIn 		= 2500,
+				save		= FALSE,
+				trialNo 	= trial,
+				evaluateKS 	= FALSE,
+				integratedFunction = functionToIntegrate,
+				rememberStates  = FALSE,
+				evaluateSojourn = TRUE
       		)
       		LiangWangExample$simulate()
       		results[i,] <- LiangWangExample$furnishResults()
+
+      		write.csv2(
+				results[1:i,],
+				file = paste(
+				directory,
+				"/bigSimulations/partialResults.csv",
+				sep="",
+				collapse=""
+				),
+				row.names=FALSE
+			)	
+      		
       		i <- i+1
+
       		rm(LiangWangExample)		 
     	}
     }
   
   
-  names( results ) <- naming
   
   return( results )
 }
@@ -107,10 +129,10 @@ source("./controllers/controllers.R")
 f <- function( x ){ return( c( x, x^2, x[1]*x[2]) )}
 
 LiangWangExample <- simulation$new(
-	iterationsNo	= 7500,
+	iterationsNo	= 750,
 	strategyNo 	= 2,
 	example 	= TRUE,
-	burnIn 		= 2500,
+	burnIn 		= 250,
 	save		= FALSE,
 	trialNo 	= 1L,
 	evaluateKS 	= FALSE,
@@ -125,66 +147,7 @@ system.time(
 LiangWangExample$furnishResults()
 LiangWangExample$algorithm$plotHistory()
 
-x <- LiangWangExample$algorithm$transpositionsHistory
-x
-y <- x[2,]/x[1,]
-
-cnt<- ncol(x)
-y <- numeric(2*cnt)
-y[1:cnt] <- x[2,]
-y[(cnt+1):(2*cnt)]<- x[1,]-x[2,]
-z <- as.data.frame(y)
-z[1:cnt,2] <- 'Accepted'
-z[(cnt+1):(2*cnt),2]<- 'Rejected'
-z[1:cnt,3] <- xAxisTags
-z[(cnt+1):(2*cnt),3]<- xAxisTags
-names(z) <- c('Count','Acceptance','Transposition')
-z$labelY[1:cnt]  <- x[2,]
-z$labelY[(cnt+1):(2*cnt)]  <- x[1,]+max(x[1,])/40
-z$relativeValue[1:cnt] <- round(x[2,]/x[1,],digits=2 )
-z$relativeValue[(cnt+1):(2*cnt)] <- round(1 - x[2,]/x[1,], digits=2)
-z
-
-xAxisTags <- 
-	apply(
-		LiangWangExample$algorithm$translatorFromLexicOrderToTranspositions,
-		2,
-		function( transposition )
-		{
-			paste(
-				"(", 
-				transposition[1], 
-				",",
-				transposition[2],
-				")", 
-				sep="", 
-				collapse=""
-			)	
-		}
-	)
-
-ggplot(
-	z,
-	aes(x = Transposition, y= Count, fill=Acceptance)
-)+
-geom_bar(stat="identity") +
-geom_text(aes(y=labelY, label=relativeValue), vjust=1.5, colour="black", size=4)+
-scale_fill_brewer(palette="Pastel1")+ 
-				labs(
-					title ="Swaps distribution"
-				)
-
-
 LiangWangExample$integrant$approximation
-barplot(x[1,])
-qplot(
-	1:length(y),
-	y,
-	geom="bar",
-	stat="identity"
-)
-
-
 
 svg("histogram.svg", width=6, height=4)
 	LiangWangExample$algorithm$plotHistory()
