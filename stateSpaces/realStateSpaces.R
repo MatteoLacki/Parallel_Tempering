@@ -47,7 +47,9 @@ realStateSpace <- setRefClass(
 
 		sojournDataNotInitialised = "logical",
 
-		sojournData 		= "data.frame"
+		sojournData 		= "data.frame",
+
+		evaluateSojourn 	= "logical"
 	),	
 	
 ###########################################################################
@@ -61,10 +63,12 @@ realStateSpace <- setRefClass(
 
 		initialize	= function(
 			iterationsNo 		= NULL, 
+			rememberStates 		= FALSE,
 			chainsNo 			= 0L,
 			spaceDim			= 0L,
 			initialStates 		= matrix(ncol=0, nrow=0),
 			proposalCovariances = matrix(ncol=0, nrow=0),
+			evaluateSojourn 	= FALSE,
 			...
 		)
 			#### Splits the initialization to general state-space initialization and real-state-space-specific initialization.
@@ -72,8 +76,11 @@ realStateSpace <- setRefClass(
 			if( !is.null(iterationsNo) ){			
 				callSuper(
 					iterationsNo 	= iterationsNo,
+					rememberStates  = rememberStates,
 					...
 				)
+
+				evaluateSojourn 	<<- evaluateSojourn
 
 				sojournDataNotInitialised <<- TRUE
 
@@ -85,8 +92,13 @@ realStateSpace <- setRefClass(
 					chainsNo		= chainsNo
 				)				
 
-				if( spaceDim > 0 & chainsNo > 0 ){	createDataStorage() }			
-				if( length(slotsNo) > 0 ){	storeStates()	}
+				if( rememberStates & spaceDim > 0 & chainsNo > 0 ){
+					createDataStorage() 
+				}
+
+				if( rememberStates & ( length(slotsNo) > 0 ) ){	
+					storeStates()	
+				}
 
 				insertProposalCovariances(
 					proposalCovariances = proposalCovariances
@@ -318,7 +330,17 @@ realStateSpace <- setRefClass(
 					proposedStates[,indicesOfStatesUpdatedInRandomWalk] 
 			} 		
 
-			if ( notBurning ) storeStates()
+			if ( rememberStates & notBurning ) storeStates()
+		},
+
+
+		calculateBetweenSteps = function( iteration ){
+					
+			updateApproximatedIntegral( iteration )
+
+			if( evaluateSojourn ){
+				targetMeasure$classify( lastStates[,1] )
+			}
 		},
 
 
@@ -350,9 +372,11 @@ realStateSpace <- setRefClass(
 			cat('\tSpace dimension: ', spaceDim, '\n')
 			cat('\tNumber of chains: ', chainsNo, '\n')
 			
-			cat('\tInitial States:\n')
-			print( getIteration() )
-			cat("\n")
+			if ( rememberStates ){
+				cat('\tInitial States:\n')
+				print( getIteration() )
+				cat("\n")
+			}
 
 			cat('\tProposal covariances after Cholesky decomposition:\n')
 			print( proposalCholCovariances )
@@ -365,9 +389,11 @@ realStateSpace <- setRefClass(
 			...
 		)
 		{
-			if( simulationTerminated()) 
+			if( rememberStates ) 
 			{
-				print( plotBasics( algorithmName = algorithmName ) )
+				if (simulationTerminated()){	
+					print( plotBasics( algorithmName = algorithmName ) )
+				}	
 			}
 		},
 
@@ -378,53 +404,57 @@ realStateSpace <- setRefClass(
 		)
 			#### Shows in a nice way a given iteration of the algorithm.
 		{
-			tmpStates <- 
-				as.data.frame( 
-					getIteration( iteration, type ) 
-				)
-
-			colnames(tmpStates) <- temperatures
-			rownames(tmpStates) <- 1:spaceDim
-
-			return(tmpStates)
+			if( rememberStates ){
+				tmpStates <- 
+					as.data.frame( 
+						getIteration( iteration, type ) 
+					)
+	
+				colnames(tmpStates) <- temperatures
+				rownames(tmpStates) <- 1:spaceDim
+	
+				return(tmpStates)
+			}
 		},		
 
 
 		prepareDataForPlot = function()
-			#### Reshuffles the entire history of states so that the entire result conforms to the data frame templates of ggplot2
+			#### Reshuffles the entire history of states so that the entire result conforms to the data frame templates of ggplot2. It is being called from the algorithm.
 		{
-			require( ggplot2 )
+			if( rememberStates ){
+				require( ggplot2 )
 
-			switch(
-				spaceDim,	
-				'1L'= cat('To be implemented'),
-				'2L'={
-					data  	<- vector(	"list", slotsNo )
+				switch(
+					spaceDim,	
+					'1L'= cat('To be implemented'),
+					'2L'={
+						data  	<- vector(	"list", slotsNo )
 
-					for( slotNo in 1:slotsNo )
-					{
-						data[[ slotNo ]] <- 
-							cbind(
-								t( getStates( slotNo ) ),
-								1:chainsNo,
-								rep.int( slotNo, chainsNo ),
-								ifelse( slotNo == 1, 0, 1)
-							)
-					}
+						for( slotNo in 1:slotsNo )
+						{
+							data[[ slotNo ]] <- 
+								cbind(
+									t( getStates( slotNo ) ),
+									1:chainsNo,
+									rep.int( slotNo, chainsNo ),
+									ifelse( slotNo == 1, 0, 1)
+								)
+						}
 
-					data <- 
-						as.data.frame( do.call( rbind, data ) )
+						data <- 
+							as.data.frame( do.call( rbind, data ) )
 
-					names( data )		<- c("x","y","Chain","Progress","Phase")
-					data$Progress 		<- data$Progress/iterationsNo
-					data$Phase 			<- factor( data$Phase )
-					levels( data$Phase )<- c("Initial State","Random Walk")
-					
-					dataForPlot <<- data 
-				},
-				cat("I do not know how to visualise 
-					non-2D state-spaces")
-			)		
+						names( data )		<- c("x","y","Chain","Progress","Phase")
+						data$Progress 		<- data$Progress/iterationsNo
+						data$Phase 			<- factor( data$Phase )
+						levels( data$Phase )<- c("Initial State","Random Walk")
+						
+						dataForPlot <<- data 
+					},
+					cat("I do not know how to visualise 
+						non-2D state-spaces")
+				)
+			}			
 		},
 
 
@@ -759,100 +789,99 @@ realStateSpace <- setRefClass(
 				initializeEcdfData()
 				kolmogorovSmirnov()								
 			}
-		},
-
-		initializeSojournData 	= function(){
-
-			if( sojournDataNotInitialised ){
-				require( sqldf )
-				sojournData		<<- sqldf(
-					"SELECT 	x , y, COUNT(*) AS charge 
-					FROM 	dataForPlot 
-						WHERE Temperature=1 AND 
-						PHASE='Swap' 
-					GROUP BY 	x, y;"
-				)
-
-				sojournDataNotInitialised <<- FALSE	
-			}
-		
-		},
-
-
-		estimateSojournsByLength = function(){
-
-			initializeSojournData()
-
-			sojournData$euclideanClassifier <<- apply(
-				sojournData[,1:2],
-				1,
-				function( samplePoint )
-				{
-					return( 
-						targetMeasure$classifyByLength( samplePoint ) 
-					)
-				}
-			)
-
-			euclideanClassifier	<- sqldf(
-				"SELECT 	euclideanClassifier AS meanNo, 
-							SUM(charge) AS counts 
-				FROM 		sojournData 
-				GROUP BY 	meanNo;"
-			)
-
-			tmp  	<- rep.int(0L, times = targetMeasure$mixturesNo)
-			tmp[euclideanClassifier$meanNo] <- euclideanClassifier$counts
-			tmp 	<- tmp/sum(tmp)
-
-			return( tmp )
-		},	
-
-
-		estimateSojournsByChiSquare = function(){
-
-			initializeSojournData()
-
-			counterTable <- rep.int( 
-				x = 0L, 
-				times = targetMeasure$mixturesNo
-			)
-
-			for( i in 1:nrow( sojournData )){
-				for( j in 1:sojournData[i,3]){
-					whichMean 	<- targetMeasure$classifyByChiSquare( 
-						as.numeric( sojournData[i,1:2] ) 
-					) 
-					counterTable[ whichMean ] <- counterTable[ whichMean ] + 1
-				}
-			}			
-
-			counterTable <- counterTable/sum( counterTable )
-
-			return( counterTable )
-		},
-
-
-		estimateMoments = function(){
-
-			initializeSojournData()
-
-			X 	<- sojournData$x 
-			Y 	<- sojournData$y 
-			CH  <- sojournData$charge
-
-			moments <- rep.int(0, times=5)
-
-				# EX, EY, D^2 X, D^2 Y, Cov(X,Y) 
-
-			moments[1] <- sum(X*CH)/iterationsNo
-			moments[2] <- sum(Y*CH)/iterationsNo
-			moments[3] <- sum(X^2*CH)/iterationsNo
-			moments[4] <- sum(Y^2*CH)/iterationsNo
-			moments[5] <- sum(X*Y*CH)/iterationsNo
-
-			return( moments )
 		}
+
+		# initializeSojournData 	= function(){
+
+		# 	if( sojournDataNotInitialised ){
+		# 		require( sqldf )
+		# 		sojournData		<<- sqldf(
+		# 			"SELECT 	x , y, COUNT(*) AS charge 
+		# 			FROM 	dataForPlot 
+		# 				WHERE Temperature=1 AND 
+		# 				PHASE='Swap' 
+		# 			GROUP BY 	x, y;"
+		# 		)
+
+		# 		sojournDataNotInitialised <<- FALSE	
+		# 	}
+		
+		# },
+
+
+		# estimateSojournsByLength = function(){
+
+		# 	initializeSojournData()
+
+		# 	sojournData$euclideanClassifier <<- apply(
+		# 		sojournData[,1:2],
+		# 		1,
+		# 		function( samplePoint )
+		# 		{
+		# 			return( 
+		# 				targetMeasure$classifyByLength( samplePoint ) 
+		# 			)
+		# 		}
+		# 	)
+
+		# 	euclideanClassifier	<- sqldf(
+		# 		"SELECT 	euclideanClassifier AS meanNo, 
+		# 					SUM(charge) AS counts 
+		# 		FROM 		sojournData 
+		# 		GROUP BY 	meanNo;"
+		# 	)
+
+		# 	tmp  	<- rep.int(0L, times = targetMeasure$mixturesNo)
+		# 	tmp[euclideanClassifier$meanNo] <- euclideanClassifier$counts
+		# 	tmp 	<- tmp/sum(tmp)
+
+		# 	return( tmp )
+		# },	
+
+
+		# estimateSojournsByChiSquare = function(){
+
+		# 	initializeSojournData()
+
+		# 	counterTable <- rep.int( 
+		# 		x = 0L, 
+		# 		times = targetMeasure$mixturesNo
+		# 	)
+
+		# 	for( i in 1:nrow( sojournData )){
+		# 		for( j in 1:sojournData[i,3]){
+		# 			whichMean 	<- targetMeasure$classifyByChiSquare( 
+		# 				as.numeric( sojournData[i,1:2] ) 
+		# 			) 
+		# 			counterTable[ whichMean ] <- counterTable[ whichMean ] + 1
+		# 		}
+		# 	}			
+
+		# 	counterTable <- counterTable/sum( counterTable )
+
+		# 	return( counterTable )
+		# },
+
+		# estimateMoments = function(){
+
+		# 	initializeSojournData()
+
+		# 	X 	<- sojournData$x 
+		# 	Y 	<- sojournData$y 
+		# 	CH  <- sojournData$charge
+
+		# 	moments <- rep.int(0, times=5)
+
+		# 		# EX, EY, D^2 X, D^2 Y, Cov(X,Y) 
+
+		# 	moments[1] <- sum(X*CH)/iterationsNo
+		# 	moments[2] <- sum(Y*CH)/iterationsNo
+		# 	moments[3] <- sum(X^2*CH)/iterationsNo
+		# 	moments[4] <- sum(Y^2*CH)/iterationsNo
+		# 	moments[5] <- sum(X*Y*CH)/iterationsNo
+
+		# 	return( moments )
+		# }
 ###########################################################################
 				# Finis Structurae
 	)

@@ -70,6 +70,7 @@ simulation <- setRefClass(
 			evaluateKS 			= FALSE,
 			integratedFunction  = function(){ return(0L)},
 			rememberStates 		= FALSE,
+			evaluateSojourn 	= FALSE,
 			...
       )
 		{
@@ -165,7 +166,9 @@ simulation <- setRefClass(
 							chainsNo 			= as.integer(chainsNo),
 							spaceDim			= spaceDim,
 							initialStates		= initialStates,
-							proposalCovariances = proposalCovariances
+							proposalCovariances = proposalCovariances,
+							rememberStates 		= rememberStates,
+							evaluateSojourn 	= evaluateSojourn	
 						)
 					},	
 					'real tempered'	= 
@@ -177,7 +180,9 @@ simulation <- setRefClass(
 							spaceDim			= spaceDim,
 							initialStates		= initialStates,
 							quasiMetric 		= quasiMetric,
-							proposalCovariances = proposalCovariances
+							proposalCovariances = proposalCovariances,
+							rememberStates 		= rememberStates,
+							evaluateSojourn 	= evaluateSojourn
 						)	
 					},
 					cat("That kind of state-space is currently the only one unavailable.")

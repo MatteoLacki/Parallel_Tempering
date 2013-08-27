@@ -145,8 +145,8 @@ algorithm <- setRefClass(
 				iteration <- iteration+1	
 			}
 
+			
 			getDataForVisualisation()
-
 			simulationFinished	<<- TRUE
 		}	
 

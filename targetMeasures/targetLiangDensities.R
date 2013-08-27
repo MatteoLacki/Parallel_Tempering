@@ -25,7 +25,9 @@ targetLiangDensity <- setRefClass(
 		mixturesMeans	= "matrix",
 
 			## Approximated quantiles of the distribution. 
-		quantiles 		= "numeric"	 
+		quantiles 		= "numeric",
+
+		sojournTimes 	= "matrix"
 	),
 
 ###########################################################################
@@ -57,6 +59,8 @@ targetLiangDensity <- setRefClass(
 
 			sigma 	<<- .1
 			sigma2 	<<- sigma^2	
+
+			sojournTimes 	<<- matrix(0L, ncol=mixturesNo, nrow= 2)	
 
 			# weightConstant 	<<-  mixturesWeight/( sigma*sqrt( 2* pi) )
 			weightConstant 	<<-  mixturesWeight/( sigma2*2*pi )
@@ -324,6 +328,7 @@ targetLiangDensity <- setRefClass(
 			}
 		},
 
+
 		measureDistanceFromMeans = function( point ){
 			return(
 				apply(
@@ -337,30 +342,43 @@ targetLiangDensity <- setRefClass(
 			)	
 		},
 
+
+		classify = function( point ){
+			classifyByLength( point )
+			classifyByChiSquare( point )
+		},
+
+
 		classifyByLength = function( point ){
 
-			distances <- measureDistanceFromMeans( point ) 
+			distances 	<- measureDistanceFromMeans( point ) 
 
-			minimiser <- which(distances == min(distances), arr.ind=TRUE)	
+			closestMean <- which(distances == min(distances), arr.ind=TRUE)	
 			
-			if( length(minimiser) > 1){
-				minimiser <- sample( x=minimiser, size=1)
+			if( length(closestMean) > 1){
+				closestMean <- sample( x=minimiser, size=1)
 			}
 				
-			return( minimiser )
+			sojournTimes[1,closestMean] <<- sojournTimes[1,closestMean]+1L
+
+			#return( closestMean )
 		},
+
 
 		classifyByChiSquare = function( point ){
 
 			chiSquares <- exp( -measureDistanceFromMeans( point )/(sigma2*2) )
 
-			return(
-				sample( 
-					x=1:mixturesNo, 
-					size=1, 
-					prob = chiSquares 
-				)
+			mostProbableMean <-
+			sample( 
+				x=1:mixturesNo, 
+				size=1, 
+				prob = chiSquares 
 			)
+
+			sojournTimes[2,mostProbableMean] <<- sojournTimes[1,mostProbableMean]+1L
+
+			# return( mostProbableMean )
 		}
 
 

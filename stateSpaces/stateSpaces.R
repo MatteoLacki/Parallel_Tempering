@@ -17,7 +17,9 @@ stateSpace <- setRefClass(
 
 		integrant 		= "FunctionsToIntegrate",
 
-		spaceName 		= "character"	
+		spaceName 		= "character",
+
+		rememberStates 	= "logical"	
 	),
 
 ###########################################################################
@@ -30,12 +32,14 @@ stateSpace <- setRefClass(
 
 		initialize 			= function(
 			iterationsNo 	= NULL,
+			rememberStates  = FALSE,
 			...
 		){
 			if ( !is.null(iterationsNo)){			
 				iterationsNo 	<<- as.integer(iterationsNo)
 				spaceName 	 	<<- 'General State Space'
-
+				rememberStates  <<- rememberStates
+				
 					# Burn-in is always initially turned-off, so that the initial states get stored properly. It is then announced by the algorithm. Finally, it is lifted by the algorithm.
 				notBurning 		<<- TRUE
 			}
@@ -109,7 +113,13 @@ stateSpace <- setRefClass(
 
 
 		updateStatesAfterSwap 		= function()
-		{}
+		{},
+
+		calculateBetweenSteps  		= function(...)
+		{
+			cat('Do not forget to define 
+				what I calculate between steps.')		
+		}
 ####################################################################
 				# Finis Structurae		
 	)

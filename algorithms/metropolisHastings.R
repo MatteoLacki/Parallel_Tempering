@@ -28,7 +28,7 @@ metropolisHastings <- setRefClass(
 		acceptedRandomWalksNo	= "integer",
 
 			## A vector of integers: overall number of accepted random-walk proposals.
-		rejectedRandomWalksNo	= "integer",
+		#rejectedRandomWalksNo	= "integer",
 
 			## Triggers detailed output during the simulation.
 		detailedOutput			= "logical"
@@ -62,7 +62,6 @@ metropolisHastings <- setRefClass(
 	
 				chainsNo 				<<- chainsNo
 				acceptedRandomWalksNo	<<- rep.int(0L, times = chainsNo)
-				rejectedRandomWalksNo	<<- rep.int(0L, times = chainsNo)
 				detailedOutput			<<- detailedOutput				
 			}
 		},
@@ -114,8 +113,9 @@ metropolisHastings <- setRefClass(
 			return(  
 				rbind( 
 					chainNames, 
-					acceptedRandomWalksNo/iterationsNo, 
-					rejectedRandomWalksNo/iterationsNo
+					round(acceptedRandomWalksNo/iterationsNo, digits=3), 
+					round(1 - acceptedRandomWalksNo/iterationsNo, digits=3)
+					#rejectedRandomWalksNo/iterationsNo
 				)
 			)
 		},
@@ -183,10 +183,9 @@ metropolisHastings <- setRefClass(
 			
 			randomWalk()
 
-			if ( notBurning )
-			{
-				stateSpace$updateApproximatedIntegral( iteration )
-			}
+			if( notBurning ) stateSpace$calculateBetweenSteps( 
+				iteration 
+			)
 		},
 		
 			###### random walk sphere ######
@@ -253,10 +252,6 @@ metropolisHastings <- setRefClass(
 
 			if ( anyUpdate ) 	updateAfterRandomWalk()
 
-			if ( notBurning & !all( updatedStates ) ){
-				rejectedRandomWalksNo[ !updatedStates ] <<- 
-					rejectedRandomWalksNo[ !updatedStates ] + 1L
-			}
 
 			stateSpace$updateStatesAfterRandomWalk( anyUpdate, updatedStates )
 		},
@@ -270,10 +265,10 @@ metropolisHastings <- setRefClass(
 
 			if ( notBurning ){	
 				acceptedRandomWalksNo[ updatedStates ] 	<<-
-					acceptedRandomWalksNo[ updatedStates ] + 1L
+					acceptedRandomWalksNo[ updatedStates ] + 1L	
 			} 	
-		}
-		
+		}			
+
 ####################################################################
 				# Finis Structurae
 	)

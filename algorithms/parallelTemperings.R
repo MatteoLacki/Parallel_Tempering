@@ -1,4 +1,3 @@
-
 parallelTempering <- setRefClass(
 	Class		= "ParallelTemperings",
 	contains	= "MetropolisHastings",
@@ -147,7 +146,7 @@ parallelTempering <- setRefClass(
 				)
 
 				acceptedRandomWalksNo	<<- rep.int(0L, times = chainsNo)
-				rejectedRandomWalksNo	<<- rep.int(0L, times = chainsNo)
+				#rejectedRandomWalksNo	<<- rep.int(0L, times = chainsNo)
 				
 				insertTranspositions()
 				insertStrategyNo( strategyNo )
@@ -208,8 +207,8 @@ parallelTempering <- setRefClass(
 				cat("\n\n\tPercentage of accepted-rejected random-walks:\n")
 				acceptance <- rbind( 
 					chainNames, 
-					acceptedRandomWalksNo/iterationsNo, 
-					rejectedRandomWalksNo/iterationsNo
+					round(acceptedRandomWalksNo/iterationsNo, digits=3),
+					round(1 - acceptedRandomWalksNo/iterationsNo, digits=3)
 				)
 
 				acceptance <- as.data.frame( acceptance )
@@ -341,10 +340,7 @@ parallelTempering <- setRefClass(
 
 			swap( iteration )	
 
-			if ( notBurning )
-			{
-				stateSpace$updateApproximatedIntegral( iteration )
-			}
+			if ( notBurning ) stateSpace$calculateBetweenSteps( iteration )
 		},
 				###### random walk sphere ######
 

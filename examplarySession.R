@@ -107,19 +107,23 @@ source("./controllers/controllers.R")
 f <- function( x ){ return( c( x, x^2, x[1]*x[2]) )}
 
 LiangWangExample <- simulation$new(
-	iterationsNo	= 7500,
+	iterationsNo	= 75,
 	strategyNo 	= 1,
 	example 	= TRUE,
-	burnIn 		= 2500,
-	save		= TRUE,
+	burnIn 		= 25,
+	save		= FALSE,
 	trialNo 	= 1L,
 	evaluateKS 	= FALSE,
-	integratedFunction = f 
+	integratedFunction = f,
+	rememberStates  = FALSE,
+	evaluateSojourn = TRUE
 )
 
 system.time(
   LiangWangExample$simulate()  
 ) 
+LiangWangExample
+LiangWangExample$targetMeasure$sojournTimes
 
 LiangWangExample$integrant$approximation
 

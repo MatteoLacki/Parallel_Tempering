@@ -25,12 +25,14 @@ realTemperedStateSpace <- setRefClass(
 
 		initialize	= function(
 			iterationsNo 		= NULL,  
+			rememberStates 		= FALSE,
 			chainsNo 			= 0L,
 			spaceDim			= 0L,
 			initialStates 		= matrix(ncol=0, nrow=0),
 			proposalCovariances = matrix(ncol=0, nrow=0),
 			quasiMetric 		= function(){},
 			temperatures 		= numeric(0),
+			evaluateSojourn 	= FALSE,
 			...
 		)
 			#### Splits the initialization to general state-space initialization and real-state-space-specific initialization.
@@ -38,10 +40,12 @@ realTemperedStateSpace <- setRefClass(
 			if ( !is.null(iterationsNo)){		
 				callSuper(
 					iterationsNo 		= iterationsNo,
+					rememberStates 		= rememberStates,
 					chainsNo  			= chainsNo,
 					spaceDim  			= spaceDim,
 					initialStates 	 	= initialStates,
-					proposalCovariances = proposalCovariances
+					proposalCovariances = proposalCovariances,
+					evaluateSojourn 	= evaluateSojourn
 				)
 				
 				spaceName 	 <<- 'Real Tempered State Space'
@@ -94,33 +98,35 @@ realTemperedStateSpace <- setRefClass(
 		)
 			#### For a given iteration extracts results of a given step type, to choose among 'initial states', 'random walk', and 'swap'.
 		{
-			if ( simulationTerminated() )
-			{
-				result 	<- getStates(
-					ifelse(
-						type == 'initial states',
-						1L,
-						ifelse( 
-							type == 'random walk',
-							2L*iteration,
-							ifelse(
-								type = 'swap',
-								2L*iteration+1L,
-								stop("Error: you can choose only among types such as 'initial states', 'random walks', or 'swap'. " )
+			if ( rememberStates ){
+				if ( simulationTerminated() )
+				{
+					result 	<- getStates(
+						ifelse(
+							type == 'initial states',
+							1L,
+							ifelse( 
+								type == 'random walk',
+								2L*iteration,
+								ifelse(
+									type = 'swap',
+									2L*iteration+1L,
+									stop("Error: you can choose only among types such as 'initial states', 'random walks', or 'swap'. " )
+								)
 							)
-						)
-					)	
-				)			
-			} else
-			{
-				cat('Simulation not yet terminated - here are the initial states:\n\n')
-				result 	<- getStates(1L) 
-			}
+						)	
+					)			
+				} else
+				{
+					cat('Simulation not yet terminated - here are the initial states:\n\n')
+					result 	<- getStates(1L) 
+				}
 
-			colnames(result) <- temperatures
-			rownames(result) <- 1:spaceDim	
+				colnames(result) <- temperatures
+				rownames(result) <- 1:spaceDim	
 
-			return( result )
+				return( result )
+			}	
 		},
 
 
@@ -136,7 +142,7 @@ realTemperedStateSpace <- setRefClass(
 				lastStates[,transposition] <<- lastStates[,transposition[2:1]]
 			}
 						
-			if ( notBurning ) storeStates()	
+			if ( rememberStates & notBurning ) storeStates()	
 		},				
 
 
@@ -156,53 +162,55 @@ realTemperedStateSpace <- setRefClass(
 		prepareDataForPlot = function()
 			#### Reshuffles the entire history of states so that the entire result conforms to the data frame templates of ggplot2
 		{
-			switch(
-				spaceDim,	
-				'1L'= cat('To be implemented'),
-				'2L'={
-					data  	<- vector(	"list", slotsNo )
+			if ( rememberStates ){
+				switch(
+					spaceDim,	
+					'1L'= cat('To be implemented'),
+					'2L'={
+						data  	<- vector(	"list", slotsNo )
 
-					for( slotNo in 1:slotsNo )
-					{
-						data[[ slotNo ]] <-
-							cbind(
-								t( getStates( slotNo ) ),
-								temperatures,
-								rep.int( slotNo %/% 2, chainsNo ),
-								rep.int( 
-									ifelse(
-										slotNo == 1, 
-										0,
+						for( slotNo in 1:slotsNo )
+						{
+							data[[ slotNo ]] <-
+								cbind(
+									t( getStates( slotNo ) ),
+									temperatures,
+									rep.int( slotNo %/% 2, chainsNo ),
+									rep.int( 
 										ifelse(
-											slotNo %% 2 == 0,
-											1,
-											2
-										)	
-									), 
-									chainsNo 
+											slotNo == 1, 
+											0,
+											ifelse(
+												slotNo %% 2 == 0,
+												1,
+												2
+											)	
+										), 
+										chainsNo 
+									)
 								)
-							)
-					}
+						}
 
-					data <- 
-						as.data.frame( do.call( rbind, data ) )
+						data <- 
+							as.data.frame( do.call( rbind, data ) )
 
-					names( data )		<- 	c("x","y","Temperature","Progress","Phase")
-					data$Progress 		<- data$Progress/iterationsNo
-					data$Phase 			<- factor( data$Phase )
-					levels( data$Phase )<- c("Initial State","Random Walk","Swap")
-					data$Temperature 	<- 
-						factor( 
-							data$Temperature,
-							levels 	= temperatures,
-							ordered	= TRUE  
-						)				
+						names( data )		<- 	c("x","y","Temperature","Progress","Phase")
+						data$Progress 		<- data$Progress/iterationsNo
+						data$Phase 			<- factor( data$Phase )
+						levels( data$Phase )<- c("Initial State","Random Walk","Swap")
+						data$Temperature 	<- 
+							factor( 
+								data$Temperature,
+								levels 	= temperatures,
+								ordered	= TRUE  
+							)				
 
-					dataForPlot <<- data 
-				},
-				cat("I do not know how to visualise 
-					non-2D state-spaces")
-			)		
+						dataForPlot <<- data 
+					},
+					cat("I do not know how to visualise 
+						non-2D state-spaces")
+				)		
+			}
 		},
 
 
