@@ -15,6 +15,8 @@ stateSpace <- setRefClass(
 			## The sub-object storing information needed for evaluation of the unnormalised density.
 		targetMeasure	= "TargetMeasures",
 
+		integrant 		= "FunctionsToIntegrate",
+
 		spaceName 		= "character"	
 	),
 

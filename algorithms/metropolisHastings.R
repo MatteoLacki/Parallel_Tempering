@@ -182,7 +182,13 @@ metropolisHastings <- setRefClass(
 				"Random Walk No ", 	iteration,	'\n')
 			
 			randomWalk()
+
+			if ( notBurning )
+			{
+				stateSpace$updateApproximatedIntegral( iteration )
+			}
 		},
+		
 			###### random walk sphere ######
 
 		randomWalk = function()

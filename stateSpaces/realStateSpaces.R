@@ -90,7 +90,7 @@ realStateSpace <- setRefClass(
 
 				insertProposalCovariances(
 					proposalCovariances = proposalCovariances
-				)			
+				)
 			}
 		},
 
@@ -318,8 +318,17 @@ realStateSpace <- setRefClass(
 					proposedStates[,indicesOfStatesUpdatedInRandomWalk] 
 			} 		
 
-			if ( notBurning ) storeStates()				
+			if ( notBurning ) storeStates()
 		},
+
+
+		updateApproximatedIntegral = function( iteration )
+		{
+			integrant$approximate( 
+				argument 	= lastStates[,1], 
+				iteration 	= iteration 
+			)
+		},	
 
 
 		############################################################

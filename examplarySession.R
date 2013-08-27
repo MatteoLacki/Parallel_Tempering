@@ -85,27 +85,45 @@ BigSimulaton <- function( trialNo, minStrat, maxStrat )
 BigSimulaton( 2, 1, 1)
 
 ############################### Additional Topics ############################
+rm( list = ls())
+#directory <- "/home/matteo/Documents/Scienza/Laurea_di_Matematica/Implementation"
+#setwd(directory)
+
+source("./targetMeasures/targetMeasures.R")
+source("./targetMeasures/targetUnnormalisedDensities.R")
+source("./targetMeasures/targetLiangDensities.R")
+source("./targetMeasures/targetMatteoDensities.R")
+source("./functionsToIntegrate/functionsToIntegrate.R")
+source("./stateSpaces/stateSpaces.R")
+source("./stateSpaces/realStateSpaces.R")
+source("./stateSpaces/realTemperedStateSpaces.R")
+source("./algorithms/algorithms.R")
+source("./algorithms/metropolisHastings.R")
+source("./algorithms/parallelTemperings.R")
+source("./simulations/simulations.R")
+source("./controllers/controllers.R")
+
+
+f <- function( x ){ return( c( x, x^2, x[1]*x[2]) )}
 
 LiangWangExample <- simulation$new(
-	iterationsNo	= 75,
+	iterationsNo	= 7500,
 	strategyNo 	= 1,
 	example 	= TRUE,
-	burnIn 		= 25,
+	burnIn 		= 2500,
 	save		= TRUE,
 	trialNo 	= 1L,
-	evaluateKS 	= TRUE
+	evaluateKS 	= FALSE,
+	integratedFunction = f 
 )
 
-X <- LiangWangExample$stateSpace$dataForPlot[,1:2]
+system.time(
+  LiangWangExample$simulate()  
+) 
 
-colMeans(X^2)
+LiangWangExample$integrant$approximation
 
 
-head(LiangWangExample$stateSpace$dataForPlot)
-X <- LiangWangExample$stateSpace$dataForPlot
-X <- X[X$Temperature == 1,]
-X
-X <- X[,1:2]
 
 svg("histogram.svg", width=6, height=4)
 	LiangWangExample$algorithm$plotHistory()

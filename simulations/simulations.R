@@ -7,6 +7,7 @@
 # source("./referenceObjects/algorithm.R")
 # source("./referenceObjects/metropolisHastings.R")
 # source("./referenceObjects/parallelTempering.R")
+# source("./functionsToIntegrate/functionsToIntegrate.R")
 
 simulation <- setRefClass(
 	Class		= "Simulations",
@@ -22,6 +23,8 @@ simulation <- setRefClass(
 
 			## Unnormalised Probabilities of the state-space: the target measure from which we want to draw samples.
 		targetMeasure 	= "TargetMeasures",	
+
+		integrant 		= "FunctionsToIntegrate",
 
 			## Save results?    
 	    save 			= "logical",
@@ -65,6 +68,8 @@ simulation <- setRefClass(
 			save 				= FALSE,
 			trialNo 			= 1L,
 			evaluateKS 			= FALSE,
+			integratedFunction  = function(){ return(0L)},
+			rememberStates 		= FALSE,
 			...
       )
 		{
@@ -81,7 +86,11 @@ simulation <- setRefClass(
 				strategyNo 			<<- as.integer(strategyNo)
 				trialNo				<<- trialNo
 				evaluateKS 			<<- evaluateKS
-				proposalCovariances <-  covariances
+				proposalCovariances <-  covariances 
+
+				if ( !rememberStates ){
+					evaluateKS 			<<- evaluateKS
+				}
 
 				if( as.integer(burnIn) >= 0 )
 				{
@@ -174,9 +183,13 @@ simulation <- setRefClass(
 					cat("That kind of state-space is currently the only one unavailable.")
 				)
 	
-	
-				stateSpace$targetMeasure  <<- targetMeasure
-	
+				stateSpace$targetMeasure  	<<- targetMeasure
+
+				integrant 	<<- functionToIntegrate$new(
+					integrant = integratedFunction
+				)
+
+				stateSpace$integrant  		<<- integrant
 	
 				switch(
 					algorithmName,
@@ -259,6 +272,7 @@ simulation <- setRefClass(
 				algorithmName = algorithmName 
 			)
 			targetMeasure$show()
+			integrant$show()
 		},
 
 

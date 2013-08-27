@@ -129,6 +129,7 @@ parallelTempering <- setRefClass(
 			strategyNo		= 1L,
 			detailedOutput	= FALSE,
 			chainsNo 		= 0L,
+			integratedFunction  = function(){},
 			...
 		){
 			if ( !is.null(iterationsNo)){
@@ -137,10 +138,11 @@ parallelTempering <- setRefClass(
 				inverseTemperatures <<- 1/temperatures
 
 				callSuper( 
-					iterationsNo 	= iterationsNo,
-					burnIn 			= burnIn,
-					chainsNo 		= chainsNo,
-					detailedOutput 	= detailedOutput,
+					iterationsNo 		= iterationsNo,
+					burnIn 				= burnIn,
+					chainsNo 			= chainsNo,
+					detailedOutput 		= detailedOutput,
+					integratedFunction  = integratedFunction,
 					...
 				)
 
@@ -338,12 +340,16 @@ parallelTempering <- setRefClass(
 				"Swap Step No ", 	iteration,	'\n')
 
 			swap( iteration )	
+
+			if ( notBurning )
+			{
+				stateSpace$updateApproximatedIntegral( iteration )
+			}
 		},
 				###### random walk sphere ######
 
 
-		updateAfterRandomWalk = function()
-		{
+		updateAfterRandomWalk = function(){
 				# Updating state space..
 			lastStatesLogUDensities[ updatedStates ]<<-	
 				proposalLogUDensities[ updatedStates ]
