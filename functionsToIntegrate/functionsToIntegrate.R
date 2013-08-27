@@ -4,8 +4,8 @@ functionToIntegrate <- setRefClass(
 ###########################################################################
 								# Fields	
 	fields  = list(
-		approximation 	= "numeric",
-		integrant 	= "function"		
+		approximation 		= "numeric",
+		integratedFunction	= "function"		
 	),
 
 
@@ -16,14 +16,17 @@ functionToIntegrate <- setRefClass(
 		
 
 		initialize = function(
-			integrant = function(){}
+			integratedFunction = NULL
 		){
-			integrant <<- integrant
+			if ( !is.null( integratedFunction )){
+					# It is impossible to name the integrated function intergratedFunction
+				integratedFunction <<- integratedFunction
+			}	
 		},	
 	
 
 		evaluate = function( argument ){
-			return( integrant( argument ) )		
+			return( integratedFunction( argument ) )		
 		},
 	
 

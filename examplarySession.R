@@ -7,6 +7,7 @@ source("./targetMeasures/targetMeasures.R")
 source("./targetMeasures/targetUnnormalisedDensities.R")
 source("./targetMeasures/targetLiangDensities.R")
 source("./targetMeasures/targetMatteoDensities.R")
+source("./functionsToIntegrate/functionsToIntegrate.R")
 source("./stateSpaces/stateSpaces.R")
 source("./stateSpaces/realStateSpaces.R")
 source("./stateSpaces/realTemperedStateSpaces.R")
@@ -68,10 +69,10 @@ BigSimulaton <- function( trialNo, minStrat, maxStrat )
     for( strategy in minStrat:maxStrat ){
     	for( trial in 1:trialNo ){
           LiangWangExample <- simulation$new(
-				iterationsNo= 7500,
+				iterationsNo	= 75,
 				strategyNo 	= strategy,
 				example 	= TRUE,
-				burnIn 		= 2500,
+				burnIn 		= 25,
 				save		= FALSE,
 				trialNo 	= trial,
 				evaluateKS 	= FALSE,
@@ -104,7 +105,7 @@ BigSimulaton <- function( trialNo, minStrat, maxStrat )
   return( results )
 }
 
-BigSimulaton( 2, 1, 1)
+x <- BigSimulaton( 2, 1, 3)
 
 ############################### Additional Topics ############################
 rm( list = ls())
@@ -239,37 +240,6 @@ svg("MatteoDistributionStrategyUniformDistributionOnAllTranspositions.svg", widt
 	LiangWangExample$stateSpace$plotBaseTemperature()	
 dev.off()
 
-################################################
-
-
-kwaziNazi <- function(x,y)
-{
-	return( crossprod(x-y) )
-}
-
-LiangWangExample <- simulation$new(
-	iterationsNo	= 1000,
-	strategyNo 	= 4,
-	example 	= TRUE,
-	targetMeasureName = 'Matteo',
-	quasiMetric	= kwaziNazi
-)
-
-LiangWangExample
-system.time(
-  LiangWangExample$simulate()  
-) 
-LiangWangExample	
-
-
-svg("MatteoDistributionStrategyWithQuasiMetric.svg", width=12, height=8)
-	LiangWangExample$stateSpace$plotBaseTemperature()	
-dev.off()
-
-
-svg("MatteoDistributionStrategyWithQuasiMetricTranspositionHistory.svg", width=12, height=8)
-	LiangWangExample$algorithm$plotHistory()
-dev.off()
 
 ################################################
 
@@ -317,4 +287,44 @@ system.time(
   LiangWangExample$simulate()  
 ) 
 LiangWangExample	
+
+#################################################
+
+rm( list = ls())
+#directory <- "/home/matteo/Documents/Scienza/Laurea_di_Matematica/Implementation"
+#setwd(directory)
+source("./targetMeasures/targetMeasures.R")
+source("./targetMeasures/targetUnnormalisedDensities.R")
+source("./targetMeasures/targetLiangDensities.R")
+source("./targetMeasures/targetMatteoDensities.R")
+source("./functionsToIntegrate/functionsToIntegrate.R")
+source("./stateSpaces/stateSpaces.R")
+source("./stateSpaces/realStateSpaces.R")
+source("./stateSpaces/realTemperedStateSpaces.R")
+source("./algorithms/algorithms.R")
+source("./algorithms/metropolisHastings.R")
+source("./algorithms/parallelTemperings.R")
+source("./simulations/simulations.R")
+source("./controllers/controllers.R")
+
+f <- function( x ){ return( c( x, x^2, x[1]*x[2]) )}	
+
+LiangWangExample <- simulation$new(
+	iterationsNo	= 75,
+	strategyNo 	= 2,
+	example 	= TRUE,
+	burnIn 		= 250,
+	save		= FALSE,
+	trialNo 	= 1L,
+	evaluateKS 	= TRUE,
+	integratedFunction = f,
+	rememberStates  = TRUE,
+	evaluateSojourn = TRUE
+)
+
+system.time(
+  LiangWangExample$simulate()  
+) 
+LiangWangExample$stateSpace$dataForPlot	
+LiangWangExample$stateSpace$plotBasics('Parallel_Tempering')
 

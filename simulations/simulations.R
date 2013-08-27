@@ -191,7 +191,7 @@ simulation <- setRefClass(
 				stateSpace$targetMeasure  	<<- targetMeasure
 
 				integrant 	<<- functionToIntegrate$new(
-					integrant = integratedFunction
+					integratedFunction = integratedFunction
 				)
 
 				stateSpace$integrant  		<<- integrant
