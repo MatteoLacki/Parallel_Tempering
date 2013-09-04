@@ -88,7 +88,7 @@ BigSimulaton <- function( trialNo, minStrat, maxStrat )
 				results[1:i,],
 				file = paste(
 					directory,
-					"/bigSimulations/partialResults.csv",
+					"/MakingSimulations/partialResults.csv",
 					sep="",
 					collapse=""
 				),
@@ -111,7 +111,7 @@ write.csv2(
 	results,
 	file = paste(
 		directory,
-		"/bigSimulations/trial.csv",
+		"/MakingSimulations/trial.csv",
 		sep="",
 		collapse=""
 	),

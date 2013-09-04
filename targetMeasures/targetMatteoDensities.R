@@ -211,6 +211,42 @@ targetMatteoDensity <- setRefClass(
 		},
 
 
+		marginalDistribuant	= function(
+			proposedState,
+			coordinateNo
+		)
+		{
+			return(
+				crossprod(
+					pnorm( 
+						(x - mixturesMeans[coordinateNo,])/sigma 
+					),
+					mixturesWeight
+				)
+			)
+		},
+
+
+		measureDistanceFromMeans = function( point ){
+			return(
+				apply(
+					mixturesMeans,
+					2,
+					function( mean )
+					{
+						crossprod( mean - point )
+					}	
+				)
+			)	
+		},
+
+
+		classify = function( point ){
+			classifyByLength( point )
+			classifyByChiSquare( point )
+		},
+
+
 		getSquareGrid = function( 
 			minimum , 
 			maximum ,
