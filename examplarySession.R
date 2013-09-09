@@ -309,12 +309,27 @@ source("./controllers/controllers.R")
 
 f <- function( x ){ return( c( x, x^2, x[1]*x[2]) )}	
 
+tmpProposalCovariances 	<- vector( "list", 5L )
+temperatures 	<-  c(1, 2.8, 7.7, 21.6, 60)
+for (i in 1:5 )
+{
+	tmpProposalCovariances[[i]] <- 
+		diag( 
+			ifelse(i <=3, .05, .01)*temperatures[i]^2,
+			nrow=2, 
+			ncol=2 
+		) 				
+}
+
 LiangWangExample <- simulation$new(
+	target 		= 'Matteo',
 	iterationsNo	= 75,
 	strategyNo 	= 2,
-	example 	= TRUE,
-	burnIn 		= 250,
-	save		= FALSE,
+	burnIn 		= 25,
+	chainsNo 	= 5,
+	spaceDim 	= 2,
+	temperatures 	= c(1, 2.8, 7.7, 21.6, 60),	
+	covariances 	= tmpProposalCovariances,
 	trialNo 	= 1L,
 	evaluateKS 	= TRUE,
 	integratedFunction = f,
@@ -325,6 +340,4 @@ LiangWangExample <- simulation$new(
 system.time(
   LiangWangExample$simulate()  
 ) 
-LiangWangExample$stateSpace$dataForPlot	
-LiangWangExample$stateSpace$plotBasics('Parallel_Tempering')
 
