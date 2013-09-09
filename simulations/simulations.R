@@ -144,10 +144,10 @@ simulation <- setRefClass(
 				switch(
 					targetMeasureName,
 					'Liang-Wang'={
-						targetMeasure 	<<- targetLiangDensity$new()
+						targetMeasure 	<<- targetLiangDensity$new(iterationsNo = iterationsNo)
 					},
 					'Matteo'={
-						targetMeasure 	<<- targetMatteoDensity$new()
+						targetMeasure 	<<- targetMatteoDensity$new(iterationsNo = iterationsNo)
 					},
 					'any density'={
 						targetMeasure 	<<- targetUDensity$new(
