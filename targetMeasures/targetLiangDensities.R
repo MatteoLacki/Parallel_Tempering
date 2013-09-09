@@ -27,7 +27,9 @@ targetLiangDensity <- setRefClass(
 			## Approximated quantiles of the distribution. 
 		quantiles 		= "numeric",
 
-		sojournTimes 	= "matrix"
+		sojournTimes 	= "matrix",
+
+		algorithmName 	= "character"
 	),
 
 ###########################################################################
@@ -39,35 +41,39 @@ targetLiangDensity <- setRefClass(
 				# Initialisation
 
 		initialize 	= function(
+			iterationsNo 	= NULL,
 			quantileSimulationsNo = 10000,
+			mixturesNo 		= 20L,
+			mixturesWeight 	= 1/mixturesNo,
+			mixturesMeans   = matrix(
+				c(2.18, 8.67, 4.24, 8.41, 3.93, 3.25, 1.70, 4.59, 6.91, 6.87, 5.41, 2.70, 4.98, 1.14, 8.33, 4.93, 1.83, 2.26, 5.54, 1.69, 5.76, 9.59, 8.48, 1.68, 8.82, 3.47, 0.50, 5.60, 5.81, 5.40, 2.65, 7.88, 3.70, 2.39, 9.50, 1.50, 0.09, 0.31, 6.86, 8.11), 
+				nrow=2, 
+				ncol=20, 
+				byrow=TRUE
+			),
+			sigma 			= .1,
+			weightConstant 	= mixturesWeight/( sigma2*2*pi ),
+			algorithmName 	= 'Liang',
 			...
 		)
 		{
-			callSuper(...)
+			if( !is.null(iterationsNo) ){
+				callSuper(...)
 
-			mixturesNo 		<<- 20L
+				mixturesNo 		<<- mixturesNo
+				mixturesWeight 	<<- mixturesWeight
+				mixturesMeans 	<<- mixturesMeans
+				sigma 			<<- sigma
+				sigma2 			<<- sigma^2	
+				sojournTimes 	<<- matrix(0L, ncol=mixturesNo, nrow= 2)	
 
-			mixturesWeight 	<<- 1/mixturesNo
+				weightConstant 	<<- weightConstant
+				algorithmName 	<<- algorithmName
 
-			mixturesMeans 	<<- 
-				matrix(
-					c(2.18, 8.67, 4.24, 8.41, 3.93, 3.25, 1.70, 4.59, 6.91, 6.87, 5.41, 2.70, 4.98, 1.14, 8.33, 4.93, 1.83, 2.26, 5.54, 1.69, 5.76, 9.59, 8.48, 1.68, 8.82, 3.47, 0.50, 5.60, 5.81, 5.40, 2.65, 7.88, 3.70, 2.39, 9.50, 1.50, 0.09, 0.31, 6.86, 8.11), 
-					nrow=2, 
-					ncol=20, 
-					byrow=TRUE
-				)
+				establishTrueValues()
 
-			sigma 	<<- .1
-			sigma2 	<<- sigma^2	
-
-			sojournTimes 	<<- matrix(0L, ncol=mixturesNo, nrow= 2)	
-
-			# weightConstant 	<<-  mixturesWeight/( sigma*sqrt( 2* pi) )
-			weightConstant 	<<-  mixturesWeight/( sigma2*2*pi )
-
-			establishTrueValues()
-
-			simulateQuantiles( simulationsNo=quantileSimulationsNo  )
+				simulateQuantiles( simulationsNo=quantileSimulationsNo  )
+			}	
 		},
 
 		############################################################
@@ -108,7 +114,7 @@ targetLiangDensity <- setRefClass(
 					)			
 				)
 
-			p <- wireframe(distribuantInGrid[,3] ~ tmpRealDistribuantValues[,1] * distribuantInGrid[,2])						
+			p <- wireframe(distribuantInGrid[,3] ~ realDensityValues[,4] * distribuantInGrid[,2])						
 
 			return(p)
 		},
@@ -140,10 +146,24 @@ targetLiangDensity <- setRefClass(
 
 
 		establishTrueValues = function()
-		{
-			cat("\nEvaluating Liang-Wang density example and saving it. This might take a while.\n\n")
+		{	
+			cat(
+				paste(
+					"\nEvaluating ",
+					algorithmName,
+					" density example and saving it. This might take a while.\n\n",
+					sep="",
+					collapse=""
+				)	
+			)
 
-			fileName <- "./data/LiangTrueValues.csv"
+			fileName <- paste(
+				"./data/",
+				algorithmName,
+				'TrueValues.csv',
+				sep="",
+				collapse=""
+			)
 
 			if( file.exists( fileName ) )
 			{
@@ -286,10 +306,13 @@ targetLiangDensity <- setRefClass(
 		simulateQuantiles = function(
 			simulationsNo
 		){	
-			cat("\nApproximating real quantiles by Monte Carlo and saving them.\n\n")
+			cat("\nApproximating quantiles by Monte 
+				Carlo and saving them.\n\n")
 
 			fileName <- paste(
-				"./data/LiangApproximateQuantiles_", 
+				"./data/",
+				algorithmName,
+				"ApproximateQuantiles_", 
 				simulationsNo,
 				'.csv', 
 				collapse='',
