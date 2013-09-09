@@ -30,7 +30,7 @@ targetMatteoDensity <- setRefClass(
 			),
 			sigma 					= c(.7, .05),
 			weightConstant 			=  1/( 2*pi),
-			algorithmName  				= "Matteo",
+			algorithmName  			= "Matteo",
 			...
 		)
 		{
@@ -44,7 +44,7 @@ targetMatteoDensity <- setRefClass(
 					mixturesMeans 	= mixturesMeans,
 					sigma 			= sigma,
 					weightConstant 	= weightConstant,
-					algorithmName 		= algorithmName,
+					algorithmName 	= algorithmName,
 					...
 				)
 
@@ -72,36 +72,6 @@ targetMatteoDensity <- setRefClass(
 			cat('\n\n')
 		},		
 
-		
-		# plotDistribuant = function()
-		# {
-		# 	grid  <- 
-		# 		getSquareGrid(
-		# 			minimum = -2,
-		# 			maximum = 12,
-		# 			mesh 	= 0.1
-		# 		)
-
-		# 	require("lattice")
-
-		# 	distribuantInGrid <-
-		# 		as.data.frame(
-		# 			cbind(
-		# 				t( grid ),
-		# 				apply(
-		# 					grid,
-		# 					2,
-		# 					function( gridPoint ) distribuant( gridPoint )	
-		# 				)
-		# 			)			
-		# 		)
-
-		# 	p <- wireframe(distribuantInGrid[,3] ~ tmpRealDistribuantValues[,1] * distribuantInGrid[,2])						
-
-		# 	return(p)
-		# },
-
-
 		############################################################
 				# Algorithmic Methods				
 
@@ -124,59 +94,6 @@ targetMatteoDensity <- setRefClass(
 				)
 			)
 		},
-
-
-		# establishTrueValues = function()
-		# {
-		# 	cat("\nEvaluating density example and saving it. This might take a while.\n\n")
-
-			
-
-		# 	if( file.exists( fileName ) )
-		# 	{
-		# 		cat("\nFile already exists. Proceeding with loading it.\n\n")
-
-		# 		realDensityValues <<- 
-		# 			as.data.frame( 
-		# 				read.csv2(
-		# 					fileName,
-		# 					header = TRUE
-		# 					) 
-		# 				)
-		# 	} else 	
-		# 	{
-		# 		grid  <- 
-		# 			getSquareGrid(
-		# 				minimum = -2,
-		# 				maximum = 12,
-		# 				mesh 	= 0.1
-		# 			)
-
-		# 		tmpRealDensityValues <-
-		# 			as.data.frame(
-		# 				cbind(
-		# 					t( grid ),
-		# 					apply(
-		# 						grid,
-		# 						2,
-		# 						function( gridPoint ) measure( gridPoint )	
-		# 					)
-		# 				)			
-		# 			)
-
-		# 		colnames( tmpRealDensityValues ) <- c("x", "y", "z")
-				 
-		# 		realDensityValues <<- tmpRealDensityValues
-
-
-		# 		if( !file.exists("./data") ) 	dir.create("./data")
-
-		# 		write.csv2(
-		# 			realDensityValues,
-		# 			file 		= fileName
-		# 		)
-		# 	}
-		# },
 
 
 		distribuant = function( 
@@ -214,109 +131,6 @@ targetMatteoDensity <- setRefClass(
 				)	
 			)
 		}
-
-
-		# getSquareGrid = function( 
-		# 	minimum , 
-		# 	maximum ,
-		# 	mesh 
-		# ){
-		# 	gridBase 	<- seq( minimum, maximum, by = mesh)
-		# 	gridLength 	<- length( gridBase )
-
-		# 	return( 
-		# 		do.call(
-		# 			cbind,
-		# 			lapply(
-		# 				gridBase,
-		# 				function( gridBasePoint )
-		# 				{
-		# 					matrix( 
-		# 						c(
-		# 							rep.int( gridBasePoint, times= gridLength ),
-		# 							gridBase
-		# 						),
-		# 						ncol = gridLength,
-		# 						nrow = 2,
-		# 						byrow=TRUE
-		# 					)
-		# 				}
-		# 			)
-		# 		)
-		# 	)
-		# }
-
-
-		# getQuantiles = function(
-		# 	simulationsNo
-		# ){
-		# 	X <- rbind(
-		# 		matrix(
-		# 			rnorm(n = 2*simulationsNo,mean =0,sd=sigma), 
-		# 			nrow=2, 
-		# 			ncol=simulationsNo
-		# 		),
-		# 		sample.int( 
-		# 			n=mixturesNo, 
-		# 			size=simulationsNo, 
-		# 			replace=TRUE
-		# 		) 	
-		# 	)
-
-		# 	X <- apply( X, 2, function(x) c(x[1], x[2]) + mixturesMeans[,x[3]] )
-
-		# 	X <- apply( X, 2, function(x) measure(x) )
-
-		# 	return( quantile(x=X, probs = c(.01, .05, .25, .5, .75)) )				
-		# },
-
-
-		# simulateQuantiles = function(
-		# 	simulationsNo
-		# ){	
-		# 	cat("\nApproximating quantiles.\n\n")
-
-		# 	fileName <- paste(
-		# 		"./data/MatteoApproximateQuantiles_", 
-		# 		simulationsNo,
-		# 		'.csv', 
-		# 		collapse='',
-		# 		sep=''
-		# 	)
-
-		# 	if( file.exists( fileName ) )
-		# 	{
-		# 		cat("\nApproximation already carried out in the past. Proceeding with precalculated values.\n\n")
-
-		# 		tmp <- 	
-		# 			read.csv2(
-		# 				fileName,
-		# 				header = TRUE
-		# 			) 
-					
-		# 		quantiles <<- tmp$x 
-
-					
-		# 	} else 	
-		# 	{			
-		# 		if( !file.exists("./data") ) 	dir.create("./data")
-
-		# 			# Gets 3 independent approximations of the 3 quantiles .25, .5 , .75 .
-		# 		quantiles <<- diag( 
-		# 			replicate( 
-		# 				n=5, 
-		# 				getQuantiles( simulationsNo ) 
-		# 			) 
-		# 		)
-
-		# 		write.csv2(
-		# 			quantiles,
-		# 			file 		= fileName
-		# 		)
-		# 	}
-		# }
-
-
 ####################################################################
 				# Finis Structurae		
 	)
