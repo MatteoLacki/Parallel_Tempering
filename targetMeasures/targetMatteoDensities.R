@@ -114,7 +114,7 @@ targetMatteoDensity <- setRefClass(
 		},
 
 
-		marginalDistribuant = function(
+		marginalDistribuant	= function(
 			proposedState,
 			coordinateNo
 		){

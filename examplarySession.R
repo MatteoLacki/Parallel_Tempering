@@ -130,16 +130,18 @@ source("./controllers/controllers.R")
 
 f <- function( x ){ return( c( x, x^2, x[1]*x[2]) )}
 
+temperatures 			<- c(1, 2.8, 7.7, 21.6, 60)
+tmpProposalCovariances 	<- vector( "list", 5L )
+
 LiangWangExample <- simulation$new(
-	iterationsNo	= 750,
+	iterationsNo	= 75,
 	strategyNo 	= 2,
 	example 	= TRUE,
-	burnIn 		= 250,
-	save		= FALSE,
+	burnIn 		= 25,
 	trialNo 	= 1L,
-	evaluateKS 	= FALSE,
+	evaluateKS 	= TRUE,
 	integratedFunction = f,
-	rememberStates  = FALSE,
+	rememberStates  = TRUE,
 	evaluateSojourn = TRUE
 )
 
