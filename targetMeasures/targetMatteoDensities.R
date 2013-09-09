@@ -1,32 +1,10 @@
 targetMatteoDensity <- setRefClass(
 	Class		= "TargetMatteoDensities",
-	contains	= "TargetMeasures",
+	contains	= "TargetLiangDensities",
 
 ###########################################################################
 								# Fields
 	fields		= list(
-
-			## Number of mixtures of gaussian variables. 
-		mixturesNo 		= "integer",
-
-			## Weights of every mixture.
-		mixturesWeight  = "numeric",
-
-			## The norming constant of the covariance matrices of the Matteo density.
-		sigma2			= "numeric",
-
-			## Square root of the norming constant of the covariance matrices of the Matteo density.
-		sigma			= "numeric",
-
-			## A constant related to weight and sigma. 
-		weightConstant  = "numeric",
-
-			## Mean values of the normal distributions that are getting mixed.
-		mixturesMeans	= "matrix",
-
-			## Approximated quantiles of the distribution. 
-		quantiles 		= "numeric",	 
-
 			## matrix with column with means and sigma and weights.
 		meansSigmasWeights = "matrix"
 	),
@@ -40,34 +18,35 @@ targetMatteoDensity <- setRefClass(
 				# Initialisation
 
 		initialize 	= function(
+			stupidGuardian 	= NULL,
 			quantileSimulationsNo = 10000,
-			...
-		)
-		{
-			callSuper(...)
-
-			mixturesNo 		<<- 2L
-
-			mixturesWeight 	<<- c(1/10, 9/10)
-
-			mixturesMeans 	<<- 
+			mixturesNo		= 2L,
+			mixturesMeans 	= 
 				matrix(
 					c(2, 8, 2, 8), 
 					nrow=2, 
 					ncol=2, 
 					byrow=TRUE
+				),
+			mixturesWeight	= c(1/10, 9/10),
+			sigma 			= c(.7, .05),	
+			weightConstant  = 1/( 2*pi),
+			...
+		)
+		{
+			if( !is.null(stupidGuardian)){
+				callSuper(
+					quantileSimulationsNo = quantileSimulationsNo,
+					mixturesNo		= mixturesNo,
+					mixturesWeight	= mixturesWeight,
+					mixturesMeans 	= mixturesMeans,
+					sigma 			= sigma,
+					weightConstant 	= weightConstant,		
+					...
 				)
 
-			sigma 	<<- c(.7, .05)
-			sigma2 	<<- sigma^2	
-
-			meansSigmasWeights <<- rbind(mixturesMeans, sigma, mixturesWeight)
-
-			weightConstant 	<<-  1/( 2*pi)
-
-			establishTrueValues()
-
-			simulateQuantiles( simulationsNo=quantileSimulationsNo  )
+				meansSigmasWeights <<- rbind(mixturesMeans, sigma, mixturesWeight)
+			}
 		},
 
 		############################################################

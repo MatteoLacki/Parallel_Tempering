@@ -39,35 +39,40 @@ targetLiangDensity <- setRefClass(
 				# Initialisation
 
 		initialize 	= function(
+			stupidGuardian	= NULL,
 			quantileSimulationsNo = 10000,
+			mixturesNo 		= 20L,
+			mixturesMeans 	= matrix(
+				c(2.18, 8.67, 4.24, 8.41, 3.93, 3.25, 1.70, 4.59, 6.91, 6.87, 5.41, 2.70, 4.98, 1.14, 8.33, 4.93, 1.83, 2.26, 5.54, 1.69, 5.76, 9.59, 8.48, 1.68, 8.82, 3.47, 0.50, 5.60, 5.81, 5.40, 2.65, 7.88, 3.70, 2.39, 9.50, 1.50, 0.09, 0.31, 6.86, 8.11), 
+				nrow=2, 
+				ncol=20, 
+				byrow=TRUE
+			),
+			mixturesWeight 	= 1/20,
+			sigma 			= .1,
+			weightConstant 	= mixturesWeight/(sigma^2*2*pi),
 			...
 		)
 		{
-			callSuper(...)
-
-			mixturesNo 		<<- 20L
-
-			mixturesWeight 	<<- 1/mixturesNo
-
-			mixturesMeans 	<<- 
-				matrix(
-					c(2.18, 8.67, 4.24, 8.41, 3.93, 3.25, 1.70, 4.59, 6.91, 6.87, 5.41, 2.70, 4.98, 1.14, 8.33, 4.93, 1.83, 2.26, 5.54, 1.69, 5.76, 9.59, 8.48, 1.68, 8.82, 3.47, 0.50, 5.60, 5.81, 5.40, 2.65, 7.88, 3.70, 2.39, 9.50, 1.50, 0.09, 0.31, 6.86, 8.11), 
-					nrow=2, 
-					ncol=20, 
-					byrow=TRUE
-				)
-
-			sigma 	<<- .1
-			sigma2 	<<- sigma^2	
-
-			sojournTimes 	<<- matrix(0L, ncol=mixturesNo, nrow= 2)	
-
-			# weightConstant 	<<-  mixturesWeight/( sigma*sqrt( 2* pi) )
-			weightConstant 	<<-  mixturesWeight/( sigma2*2*pi )
-
-			establishTrueValues()
-
-			simulateQuantiles( simulationsNo=quantileSimulationsNo  )
+			if (!is.null(stupidGuardian)){	
+				callSuper(...)
+	
+				mixturesNo 		<<- mixturesNo
+				mixturesWeight 	<<- mixturesWeight
+				mixturesMeans 	<<- mixturesMeans
+	
+				sigma 	<<- sigma
+				sigma2 	<<- sigma^2	
+	
+				sojournTimes 	<<- matrix(0L, ncol=mixturesNo, nrow= 2)	
+	
+				weightConstant	<<- weightConstant 
+				#weightConstant 	<<-  mixturesWeight/( sigma2*2*pi )
+	
+				establishTrueValues()
+	
+				simulateQuantiles( simulationsNo=quantileSimulationsNo  )
+			}
 		},
 
 		############################################################

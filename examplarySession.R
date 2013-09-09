@@ -135,6 +135,7 @@ tmpProposalCovariances 	<- vector( "list", 5L )
 LiangWangExample <- simulation$new(
 	iterationsNo	= 75,
 	strategyNo 	= 2,
+	example 	= TRUE,
 	burnIn 		= 25,
 	trialNo 	= 1L,
 	evaluateKS 	= TRUE,
