@@ -66,7 +66,7 @@ targetMatteoDensity <- setRefClass(
 			cat("First Mixture weight: ", mixturesWeight[1], '\n')	
 			cat("Second Mixture weight: ", mixturesWeight[2], '\n')	
 			cat('First Mixture variance: ', sigma2[1], '\n')
-			cat('Second Mixture variance: ', sigma2[1], '\n')
+			cat('Second Mixture variance: ', sigma2[2], '\n')
 			cat("Mixtures' means:\n")
 			print(mixturesMeans)
 			cat('\n\n')
@@ -87,11 +87,11 @@ targetMatteoDensity <- setRefClass(
 						function( b )
 						{	
 							b[4]*exp( 
-							- crossprod( proposedState - b[1:2] )/ (2 * b[3]) 
-							)
+							- crossprod( proposedState - b[1:2] )/ (2 * b[3]^2) 
+							)/(b[3]^2)
 						}
 					)
-				)
+				)*weightConstant
 			)
 		},
 
@@ -130,7 +130,26 @@ targetMatteoDensity <- setRefClass(
 					)	
 				)	
 			)
+		},
+
+
+		getFirstAndSecondMoments = function(){
+			return(
+				list(
+					EX 	= sum(mixturesWeight*mixturesMeans[1,]),
+					EY 	= sum(mixturesWeight*mixturesMeans[2,]),
+					EX2 = sum(mixturesWeight*(sigma2+mixturesMeans[1,]^2)),
+					EY2 = sum(mixturesWeight*(sigma2+mixturesMeans[2,]^2)),
+					EXY = as.numeric(
+						crossprod(
+							mixturesWeight*mixturesMeans[1,],
+							mixturesMeans[2,]
+						)
+					)
+				)
+			)
 		}
+
 ####################################################################
 				# Finis Structurae		
 	)

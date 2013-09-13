@@ -402,6 +402,19 @@ targetLiangDensity <- setRefClass(
 			sojournTimes[2,mostProbableMean] <<- sojournTimes[1,mostProbableMean]+1L
 
 			# return( mostProbableMean )
+		},
+
+
+		getFirstAndSecondMoments = function(){
+			return(
+				list(
+					EX 	= mixturesWeight*sum(mixturesMeans[1,]),
+					EY 	= mixturesWeight*sum(mixturesMeans[2,]),
+					EX2 = sigma2 + mixturesWeight*crossprod(mixturesMeans[1,]),
+					EY2 = sigma2 + mixturesWeight*crossprod(mixturesMeans[2,]),
+					EXY = as.numeric(mixturesWeight*crossprod(mixturesMeans[1,],mixturesMeans[2,]))
+				)
+			)
 		}
 
 
