@@ -21,6 +21,7 @@ targetMatteoDensity <- setRefClass(
 			iterationsNo 			= NULL,
 			quantileSimulationsNo 	= 10000,
 			mixturesNo 				= 2L,
+			# mixturesWeight			= c( .5, .5),
 			mixturesWeight			= c(1/10, 9/10),
 			mixturesMeans 			= matrix(
 				c(2, 8, 2, 8), 

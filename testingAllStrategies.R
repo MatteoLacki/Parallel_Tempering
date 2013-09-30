@@ -17,47 +17,79 @@ source("./controllers/controllers.R")
 
 tmpProposalCovariances 	<- vector( "list", 5L )
 temperatures 	<-  c(1, 2.8, 7.7, 21.6, 60)
-#ifelse(i <=3, 2, .5)*temperatures[i]^2,
-weights <- c(.4,1,.5,.18,.05)
 for (i in 1:5 )
 {
 	tmpProposalCovariances[[i]] <- 
 		diag( 
-			weights[i]*temperatures[i]^2,			
+			ifelse(i <=3, .05, .01)*temperatures[i]^2,
 			nrow=2, 
 			ncol=2 
 		) 				
 }
-tmpProposalCovariances
-
 f <- function( x ){ return( c( x, x^2, x[1]*x[2]) )}	
 
-euclid <- function(x,y)
-{
-	return( crossprod(x-y) )
-}
-
-Matteo <- simulation$new(
-	target 		= 'Matteo',
-	iterationsNo	= 14000,
+LiangWangExample <- simulation$new(
+	target 		= 'Liang-Wang',
+	iterationsNo	= 75,
 	strategyNo 	= 2,
-	burnIn 		= 2000,
+	burnIn 		= 25,
 	chainsNo 	= 5,
 	spaceDim 	= 2,
-	temperatures 	= temperatures,	
+	temperatures 	= c(1, 2.8, 7.7, 21.6, 60),	
 	covariances 	= tmpProposalCovariances,
-	quasiMetric 	= euclid,
 	trialNo 	= 1L,
-	initialStates 	= matrix(rep.int(8, times=10) ,nrow=2, ncol=5, byrow=TRUE),
-	evaluateKS 	= FALSE,
+	evaluateKS 	= TRUE,
 	integratedFunction = f,
-	rememberStates  = FALSE,
+	rememberStates  = TRUE,
 	evaluateSojourn = TRUE
 )
 
-Matteo$simulate()
+LiangWangExample$targetMeasure$getFirstAndSecondMoments()
+LiangWangExample$targetMeasure$mixturesMeans
+Matteo$targetMeasure$mixturesMeans
+
+system.time(
+  LiangWangExample$simulate()  
+) 
+LiangWangExample
+
+LiangWangExample$algorithm$transpositionsHistory
+X <- LiangWangExample$algorithm$swapHistory()
+X[1:10]
+X[11:20]
+		# FIX THIS!
+#LiangWangExample$targetMeasure$plotDistribuant()
+#head(LiangWangExample$targetMeasure$realDensityValues)
+
+tmpProposalCovariances 	<- vector( "list", 5L )
+temperatures 	<-  c(1, 2.8, 7.7, 21.6, 60)
+for (i in 1:5 )
+{
+	tmpProposalCovariances[[i]] <- 
+		diag( 
+			ifelse(i <=3, 2, .01)*temperatures[i]^2,
+			nrow=2, 
+			ncol=2 
+		) 				
+}
+
+
+Matteo <- simulation$new(
+	target 		= 'Matteo',
+	iterationsNo	= 75,
+	strategyNo 	= 2,
+	burnIn 		= 25,
+	chainsNo 	= 5,
+	spaceDim 	= 2,
+	temperatures 	= c(1, 2.8, 7.7, 21.6, 60),	
+	covariances 	= tmpProposalCovariances,
+	trialNo 	= 1L,
+	evaluateKS 	= TRUE,
+	integratedFunction = f,
+	rememberStates  = TRUE,
+	evaluateSojourn = TRUE
+)
+
 Matteo
 Matteo$targetMeasure$getFirstAndSecondMoments()
-Matteo$targetMeasure$sojournTimes
-
-Matteo$stateSpace$plotAllTemperatures()
+Matteo$targetMeasure$sigma2
