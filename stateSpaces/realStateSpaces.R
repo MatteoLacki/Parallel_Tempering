@@ -591,9 +591,11 @@ realStateSpace <- setRefClass(
 						proposedStates, 
 						2, 
 						function( proposedState ) 
+						{
 							targetMeasure$measure( 
 								proposedState = proposedState
 							) 
+						}	
 					)
 				)	
 			)
@@ -790,98 +792,6 @@ realStateSpace <- setRefClass(
 				kolmogorovSmirnov()								
 			}
 		}
-
-		# initializeSojournData 	= function(){
-
-		# 	if( sojournDataNotInitialised ){
-		# 		require( sqldf )
-		# 		sojournData		<<- sqldf(
-		# 			"SELECT 	x , y, COUNT(*) AS charge 
-		# 			FROM 	dataForPlot 
-		# 				WHERE Temperature=1 AND 
-		# 				PHASE='Swap' 
-		# 			GROUP BY 	x, y;"
-		# 		)
-
-		# 		sojournDataNotInitialised <<- FALSE	
-		# 	}
-		
-		# },
-
-
-		# estimateSojournsByLength = function(){
-
-		# 	initializeSojournData()
-
-		# 	sojournData$euclideanClassifier <<- apply(
-		# 		sojournData[,1:2],
-		# 		1,
-		# 		function( samplePoint )
-		# 		{
-		# 			return( 
-		# 				targetMeasure$classifyByLength( samplePoint ) 
-		# 			)
-		# 		}
-		# 	)
-
-		# 	euclideanClassifier	<- sqldf(
-		# 		"SELECT 	euclideanClassifier AS meanNo, 
-		# 					SUM(charge) AS counts 
-		# 		FROM 		sojournData 
-		# 		GROUP BY 	meanNo;"
-		# 	)
-
-		# 	tmp  	<- rep.int(0L, times = targetMeasure$mixturesNo)
-		# 	tmp[euclideanClassifier$meanNo] <- euclideanClassifier$counts
-		# 	tmp 	<- tmp/sum(tmp)
-
-		# 	return( tmp )
-		# },	
-
-
-		# estimateSojournsByChiSquare = function(){
-
-		# 	initializeSojournData()
-
-		# 	counterTable <- rep.int( 
-		# 		x = 0L, 
-		# 		times = targetMeasure$mixturesNo
-		# 	)
-
-		# 	for( i in 1:nrow( sojournData )){
-		# 		for( j in 1:sojournData[i,3]){
-		# 			whichMean 	<- targetMeasure$classifyByChiSquare( 
-		# 				as.numeric( sojournData[i,1:2] ) 
-		# 			) 
-		# 			counterTable[ whichMean ] <- counterTable[ whichMean ] + 1
-		# 		}
-		# 	}			
-
-		# 	counterTable <- counterTable/sum( counterTable )
-
-		# 	return( counterTable )
-		# },
-
-		# estimateMoments = function(){
-
-		# 	initializeSojournData()
-
-		# 	X 	<- sojournData$x 
-		# 	Y 	<- sojournData$y 
-		# 	CH  <- sojournData$charge
-
-		# 	moments <- rep.int(0, times=5)
-
-		# 		# EX, EY, D^2 X, D^2 Y, Cov(X,Y) 
-
-		# 	moments[1] <- sum(X*CH)/iterationsNo
-		# 	moments[2] <- sum(Y*CH)/iterationsNo
-		# 	moments[3] <- sum(X^2*CH)/iterationsNo
-		# 	moments[4] <- sum(Y^2*CH)/iterationsNo
-		# 	moments[5] <- sum(X*Y*CH)/iterationsNo
-
-		# 	return( moments )
-		# }
 ###########################################################################
 				# Finis Structurae
 	)

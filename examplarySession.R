@@ -144,6 +144,7 @@ LiangWangExample <- simulation$new(
 	rememberStates  = TRUE,
 	evaluateSojourn = TRUE
 )
+LiangWangExample$targetMeasure$getFirstAndSecondMoments()
 
 system.time(
   LiangWangExample$simulate()  

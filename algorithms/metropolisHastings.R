@@ -241,6 +241,7 @@ metropolisHastings <- setRefClass(
 
 		getLogAlpha = function()
 		{
+			# return( *(proposalLogUDensities - lastStatesLogUDensities) )
 			return( proposalLogUDensities - lastStatesLogUDensities )
 		},
 
