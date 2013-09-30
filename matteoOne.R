@@ -1,7 +1,7 @@
 rm( list = ls())
-directory <- "/home/matteo/Documents/Scienza/Laurea_di_Matematica/Implementation"
+#directory <- "/home/matteo/Documents/Scienza/Laurea_di_Matematica/Implementation"
 #directory <- "F:/Mateusz/gitHub/Parallel_Tempering"
-setwd(directory)
+#setwd(directory)
 
 source("./targetMeasures/targetMeasures.R")
 source("./targetMeasures/targetUnnormalisedDensities.R")
@@ -66,12 +66,13 @@ BigSimulaton <- function( trialNo, minStrat, maxStrat )
 	functionToIntegrate <- function( x ){ return( c( x, x^2, x[1]*x[2]) )}  
 
 	proposalCovariances 	<- vector( "list", 5L )
-	temperatures 	<-  c(1, 2.8, 7.7, 21.6, 60)
+	temperatures 	<- c(1, 2.8, 7.7, 21.6, 60)
+	weights		<- c(3,1,.5,.18,.05)
 	for (i in 1:5 )
 	{
 		proposalCovariances[[i]] <- 
 			diag( 
-				ifelse(i <=3, .05, .01)*temperatures[i]^2,
+				weights[i]*temperatures[i]^2,
 				nrow=2, 
 				ncol=2 
 			) 				
@@ -88,9 +89,9 @@ BigSimulaton <- function( trialNo, minStrat, maxStrat )
 			
 			Matteo <- simulation$new(
 				target 		= 'Matteo',
-				iterationsNo	= 75,
+				iterationsNo	= 7500,
 				strategyNo 	= strategy,
-				burnIn 		= 25,
+				burnIn 		= 2500,
 				chainsNo 	= 5,
 				spaceDim 	= 2,
 				temperatures 	= temperatures,	
@@ -108,12 +109,7 @@ BigSimulaton <- function( trialNo, minStrat, maxStrat )
 
 			write.csv2(
 				results[1:i,],
-				file = paste(
-					directory,
-					"/bigSimulations/MatteoPartial.csv",
-					sep="",
-					collapse=""
-				),
+				file =	"./bigSimulations/MatteoOne.csv",
 				row.names=FALSE
 			) 
 
@@ -126,16 +122,11 @@ BigSimulaton <- function( trialNo, minStrat, maxStrat )
 	return( results )
 }
 
-results <- BigSimulaton( 1, 1, 6)
+results <- BigSimulaton( 100, 1, 1)
 
 write.csv2(
 	results,
-	file = paste(
-		directory,
-		"/bigSimulations/trial.csv",
-		sep="",
-		collapse=""
-	),
+	file = "./bigSimulations/MatteoOne.csv",
 	row.names=FALSE
 )	
 
