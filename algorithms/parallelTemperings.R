@@ -664,25 +664,30 @@ parallelTempering <- setRefClass(
 
 			tmp <- lastStatesLogUDensities[i] - lastStatesLogUDensities[j]
 
-			tmp <- 
-				exp(
-					-ifelse( 
-						s==2, 
-						tmp, 
-						abs(tmp) 
-					)*
-					ifelse( 
-						s==3|s==4, 
-						inverseTemperatures[i] - inverseTemperatures[j], 1)*
+			if( s==7 ){
+				tmp <- exp( -(inverseTemperatures[i] - inverseTemperatures[j])*lastStatesLogUDensities[i]  
+				)
+			}else{	
+				tmp <- 
+					exp(
+						-ifelse( 
+							s==2, 
+							tmp, 
+							abs(tmp) 
+						)*
 						ifelse( 
-							s ==4,
-							1/{1 + stateSpace$measureQuasiDistance(i,j) },
-							1 
-					)
-				) 
+							s==3|s==4, 
+							inverseTemperatures[i] - inverseTemperatures[j], 1)*
+							ifelse( 
+								s ==4,
+								1/{1 + stateSpace$measureQuasiDistance(i,j) },
+								1 
+						)
+					) 
 
-			tmp <- ifelse( s==2 & tmp >1, 1, tmp )
-			
+				tmp <- ifelse( s==2 & tmp >1, 1, tmp )
+				
+			}
 			return( tmp )	
 		}
 

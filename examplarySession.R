@@ -1,7 +1,8 @@
 ############################### Loading files ################################
 rm( list = ls())
 #directory <- "/home/matteo/Documents/Scienza/Laurea_di_Matematica/Implementation"
-#setwd(directory)
+directory <- "/home/matteo/Documents/Scienza/scientificProjects/Parallel_Tempering"
+setwd(directory)
 
 source("./targetMeasures/targetMeasures.R")
 source("./targetMeasures/targetUnnormalisedDensities.R")
@@ -135,7 +136,7 @@ tmpProposalCovariances 	<- vector( "list", 5L )
 
 LiangWangExample <- simulation$new(
 	iterationsNo	= 75,
-	strategyNo 	= 2,
+	strategyNo 	= 7,
 	example 	= TRUE,
 	burnIn 		= 25,
 	trialNo 	= 1L,
